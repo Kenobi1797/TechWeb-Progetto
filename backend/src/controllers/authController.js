@@ -1,8 +1,10 @@
-import pool from '../config/db.js';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+const pool = require('../config/db.js');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-exports.register = async (req, res) => {
+const authController = {};
+
+authController.register = async (req, res) => {
   const { username, email, password } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -21,7 +23,7 @@ exports.register = async (req, res) => {
   }
 };
 
-exports.login = async (req, res) => {
+authController.login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -37,6 +39,7 @@ exports.login = async (req, res) => {
     res.json({ message: 'Login effettuato', token });
   } catch (error) {
     res.status(500).json({ error: 'Errore durante il login', details: error.message });
-    throw error;
   }
 };
+
+module.exports = authController;
