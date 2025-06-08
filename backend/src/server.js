@@ -11,6 +11,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Logging semplice delle richieste
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
 app.use('/auth', authRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/cats', catRoutes);
@@ -25,6 +31,6 @@ initDb()
     });
   })
   .catch(err => {
-    console.error('Error initializing the database', err);
+    console.error('Errore durante l\'inizializzazione del database:', err);
     process.exit(1);
   });

@@ -3,6 +3,9 @@ const path = require('path');
 
 exports.createCat = async (req, res) => {
   const { title, description, latitude, longitude } = req.body;
+  if (!title || !latitude || !longitude) {
+    return res.status(400).json({ error: 'Titolo, latitudine e longitudine sono obbligatori' });
+  }
   const image_url = req.file ? req.file.filename : null;
 
   try {
@@ -14,14 +17,14 @@ exports.createCat = async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Errore durante l’inserimento del gatto' });
+    res.status(500).json({ error: 'Errore durante l’inserimento del gatto', details: err.message });
   }
 };
 
 exports.getAllCats = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, title, latitude, longitude FROM cats ORDER BY created_at DESC'
+      'SELECT id, title, latitude, longitude, image_url, created_at FROM cats ORDER BY created_at DESC'
     );
     res.json(result.rows);
   } catch (err) {
@@ -51,6 +54,6 @@ exports.getCatById = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Errore durante il recupero del dettaglio' });
+    res.status(500).json({ error: 'Errore durante il recupero del dettaglio', details: err.message });
   }
 };

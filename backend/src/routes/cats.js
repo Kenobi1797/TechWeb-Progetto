@@ -13,7 +13,16 @@ const storage = multer.diskStorage({
     cb(null, name);
   }
 });
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    // Accetta solo immagini
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Solo file immagine sono permessi'), false);
+    }
+    cb(null, true);
+  }
+});
 
 router.post('/', auth, upload.single('image'), createCat);
 router.get('/', getAllCats);
