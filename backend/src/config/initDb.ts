@@ -1,4 +1,4 @@
-const pool = require('./db');
+import pool from './db';
 
 async function initDb(): Promise<void> {
   await pool.query(`

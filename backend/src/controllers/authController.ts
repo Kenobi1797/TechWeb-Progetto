@@ -1,10 +1,9 @@
-const pool = require('../config/db.js');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+import { Request, Response } from 'express';
+import pool from '../config/db';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
-const authController = {};
-
-authController.register = async (req, res) => {
+export const register = async (req: Request, res: Response) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'Tutti i campi sono obbligatori' });
@@ -16,18 +15,18 @@ authController.register = async (req, res) => {
       [username, email, hashedPassword]
     );
     const user = result.rows[0];
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
     res.status(201).json({ message: 'Registrazione avvenuta con successo', token, user });
-  } catch (error) {
-    if (error.code === '23505') {
+  } catch (error: unknown) {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === '23505') {
       // email già registrata
       return res.status(400).json({ error: 'Email già registrata' });
     }
-    res.status(500).json({ error: 'Errore durante la registrazione', details: error.message });
+    res.status(500).json({ error: 'Errore durante la registrazione', details: (error as any).message });
   }
 };
 
-authController.login = async (req, res) => {
+export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email e password sono obbligatori' });
@@ -42,11 +41,9 @@ authController.login = async (req, res) => {
     if (!valid) {
       return res.status(401).json({ error: 'Credenziali non valide' });
     }
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
     res.json({ message: 'Login effettuato', token, user: { id: user.id, username: user.username, email: user.email } });
-  } catch (error) {
-    res.status(500).json({ error: 'Errore durante il login', details: error.message });
+  } catch (error: unknown) {
+    res.status(500).json({ error: 'Errore durante il login', details: (error as any).message });
   }
 };
-
-module.exports = authController;
