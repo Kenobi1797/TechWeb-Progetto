@@ -1,6 +1,6 @@
 const pool = require('./db');
 
-async function initDb() {
+async function initDb(): Promise<void> {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -30,4 +30,4 @@ async function initDb() {
   console.log('✅ Database inizializzato (tabelle create se non esistono)');
 }
 
-module.exports = initDb;
+export default initDb;

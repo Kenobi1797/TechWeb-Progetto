@@ -1,18 +1,19 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import initDb from './config/initDb';
+import authRoutes = require('./routes/auth');
+import catRoutes from './routes/cats';
+import commentRoutes from './routes/comments';
 
-const initDb = require('./config/initDb');
-const authRoutes = require('./routes/auth');
-const catRoutes = require('./routes/cats');
-const commentRoutes = require('./routes/comments');
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 // Logging semplice delle richieste
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
@@ -22,15 +23,15 @@ app.use('/uploads', express.static('uploads'));
 app.use('/cats', catRoutes);
 app.use('/comments', commentRoutes);
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT ?? 4000;
 
 initDb()
   .then(() => {
-    app.listen(PORT, () => {
+    app.listen(Number(PORT), () => {
       console.log(`Server listening on port ${PORT}`);
     });
   })
-  .catch(err => {
+  .catch((err: unknown) => {
     console.error('Errore durante l\'inizializzazione del database:', err);
     process.exit(1);
   });
