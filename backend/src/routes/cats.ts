@@ -1,33 +1,20 @@
-import type { Router } from 'express';
-import express = require('express');
-import multer, { StorageEngine, FileFilterCallback } from 'multer';
+import express, { RequestHandler } from 'express';
+import multer from 'multer';
 import auth from '../middleware/authMiddleware';
-const catsController = require('../controllers/catsController');
+import { createCat, getAllCats, getCatById } from '../controllers/catsController';
 
-const router: Router = express.Router();
+const router = express.Router();
 
-// Multer config
-const storage: StorageEngine = multer.diskStorage({
+const storage = multer.diskStorage({
   destination: 'uploads/',
-  filename: (req, file, cb) => {
-    const name = `${Date.now()}-${file.originalname}`;
-    cb(null, name);
-  }
+  filename: (_req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
 });
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb: FileFilterCallback) => {
-    // Accetta solo immagini
-    if (!file.mimetype.startsWith('image/')) {
-      return cb(null, false);
-    }
-    cb(null, true);
-  }
-});
+const upload = multer({ storage });
 
-// Rimuovi il wrap, ora i controller sono compatibili
-router.post('/', auth, upload.single('image'), catsController.createCat);
-router.get('/', catsController.getAllCats);
-router.get('/:id', catsController.getCatById);
+router.post('/', auth, upload.single('image'), createCat as RequestHandler);
+router.get('/', getAllCats);
+router.get('/:id', getCatById);
 
-export = router;
+export default router;

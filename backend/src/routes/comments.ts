@@ -1,11 +1,10 @@
-import type { Router } from 'express';
-import express = require('express');
+import express, { RequestHandler } from 'express';
 import auth from '../middleware/authMiddleware';
-const commentsController = require('../controllers/commentsController');
+import { addComment, getComments } from '../controllers/commentsController';
 
-const router: Router = express.Router();
+const router = express.Router();
 
-router.post('/:cat_id/comments', auth, commentsController.addComment);
-router.get('/:cat_id/comments', commentsController.getComments);
+router.post('/:cat_id/comments', auth, addComment as RequestHandler);
+router.get('/:cat_id/comments', getComments);
 
-export = router;
+export default router;

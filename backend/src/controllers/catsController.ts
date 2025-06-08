@@ -1,19 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
-const pool = require('../config/db');
-const path = require('path');
+import pool from '../config/db';
 
-// Interfaccia per user JWT
-interface AuthUser {
-  userId: number;
-  // ...altri campi se servono
-}
-
-// Estendi Request per user
 interface AuthRequest extends Request {
-  user?: AuthUser;
+  user?: { userId: number };
 }
 
-exports.createCat = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const createCat = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   const { title, description, latitude, longitude } = req.body;
   if (!title || !latitude || !longitude) {
     res.status(400).json({ error: 'Titolo, latitudine e longitudine sono obbligatori' });
@@ -23,8 +19,8 @@ exports.createCat = async (req: AuthRequest, res: Response, next: NextFunction):
     res.status(401).json({ error: 'Utente non autenticato' });
     return;
   }
-  const image_url = req.file ? req.file.filename : null;
 
+  const image_url = req.file?.filename ?? null;
   try {
     const result = await pool.query(
       `INSERT INTO cats (user_id, title, description, image_url, latitude, longitude)
@@ -32,37 +28,36 @@ exports.createCat = async (req: AuthRequest, res: Response, next: NextFunction):
       [req.user.userId, title, description, image_url, latitude, longitude]
     );
     res.status(201).json(result.rows[0]);
+    return;
   } catch (err) {
-    const error = err as Error;
-    console.error(error);
-    res.status(500).json({ error: 'Errore durante l’inserimento del gatto', details: error.message });
+    next(err);
   }
 };
 
-exports.getAllCats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getAllCats = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   const { from, to, lat, lon, radius } = req.query;
 
-  // Se sono presenti lat e lon, calcola la distanza (in km) usando la formula dell'haversine
   let selectFields = `
     id, title, latitude, longitude, image_url, created_at
   `;
   let baseQuery = `SELECT ${selectFields}`;
-  let distanceExpr = '';
-  const values: any[] = [];
+  let values: any[] = [];
   let conditions: string[] = [];
   let idx = 1;
 
   if (lat && lon) {
-    distanceExpr = `,
+    baseQuery = `SELECT ${selectFields},
       (6371 * acos(
         cos(radians($${idx++})) * cos(radians(latitude)) *
         cos(radians(longitude) - radians($${idx++})) +
         sin(radians(${
           idx - 2
         })) * sin(radians(latitude))
-      )) AS distance
-    `;
-    baseQuery = `SELECT ${selectFields}${distanceExpr}`;
+      )) AS distance`;
     values.push(lat, lon);
   }
 
@@ -79,24 +74,26 @@ exports.getAllCats = async (req: Request, res: Response, next: NextFunction): Pr
     const result = await pool.query(query, values);
     let cats: any[] = result.rows;
 
-    // Se radius, lat e lon sono presenti, filtra i risultati per distanza
     if (radius && lat && lon) {
       cats = cats.filter((r: any) => r.distance !== undefined && r.distance <= parseFloat(radius as string));
     }
 
-    // Rimuovi il campo distance dalla risposta finale
     cats = cats.map(({ distance, ...rest }: { distance?: number }) => rest);
 
     res.json(cats);
+    return;
   } catch (err) {
-    const error = err as Error;
-    console.error(error);
-    res.status(500).json({ error: 'Errore durante il recupero dei gatti', details: error.message });
+    next(err);
   }
 };
 
-exports.getCatById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getCatById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   const { id } = req.params;
+
   try {
     const catResult = await pool.query('SELECT * FROM cats WHERE id = $1', [id]);
     if (catResult.rows.length === 0) {
@@ -107,7 +104,7 @@ exports.getCatById = async (req: Request, res: Response, next: NextFunction): Pr
     const comments = await pool.query(
       `SELECT comments.*, users.username
        FROM comments
-       JOIN users ON comments.user_id = users.id
+       JOIN users ON users.id = comments.user_id
        WHERE cat_id = $1
        ORDER BY created_at ASC`,
       [id]
@@ -115,11 +112,10 @@ exports.getCatById = async (req: Request, res: Response, next: NextFunction): Pr
 
     res.json({
       ...catResult.rows[0],
-      comments: comments.rows
+      comments: comments.rows,
     });
+    return;
   } catch (err) {
-    const error = err as Error;
-    console.error(error);
-    res.status(500).json({ error: 'Errore durante il recupero del dettaglio', details: error.message });
+    next(err);
   }
 };

@@ -1,27 +1,28 @@
 import { Request, Response, NextFunction } from 'express';
-const pool = require('../config/db');
+import pool from '../config/db';
 
-// Interfaccia per user JWT
+// Estendi Request per user (se non già fatto globalmente)
 interface AuthUser {
   userId: number;
 }
-
-// Estendi Request per user
 interface AuthRequest extends Request {
   user?: AuthUser;
 }
 
-exports.addComment = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
-  const { id: cat_id } = req.params;
+export const addComment = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   const { content } = req.body;
+  const { cat_id } = req.params;
+
   if (!req.user) {
     res.status(401).json({ error: 'Utente non autenticato' });
     return;
   }
-  const user_id = req.user.userId;
-
   if (!content) {
-    res.status(400).json({ error: 'Il contenuto del commento è obbligatorio' });
+    res.status(400).json({ error: 'Contenuto obbligatorio' });
     return;
   }
 
@@ -29,18 +30,20 @@ exports.addComment = async (req: AuthRequest, res: Response, next: NextFunction)
     const result = await pool.query(
       `INSERT INTO comments (user_id, cat_id, content)
        VALUES ($1, $2, $3) RETURNING *`,
-      [user_id, cat_id, content]
+      [req.user.userId, cat_id, content]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    const error = err as Error;
-    console.error(error);
-    res.status(500).json({ error: 'Errore durante l’inserimento del commento', details: error.message });
+    next(err);
   }
 };
 
-exports.getComments = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const { id: cat_id } = req.params;
+export const getComments = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { cat_id } = req.params;
 
   try {
     const result = await pool.query(
@@ -53,8 +56,6 @@ exports.getComments = async (req: Request, res: Response, next: NextFunction): P
     );
     res.json(result.rows);
   } catch (err) {
-    const error = err as Error;
-    console.error(error);
-    res.status(500).json({ error: 'Errore durante il recupero dei commenti', details: error.message });
+    next(err);
   }
 };

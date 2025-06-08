@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import initDb from './config/initDb';
-import authRoutes = require('./routes/auth');
+import authRoutes from './routes/auth';
 import catRoutes from './routes/cats';
 import commentRoutes from './routes/comments';
 
