@@ -9,7 +9,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <>
       <Header />
-      <main className="min-h-[80vh]">{children}</main>
+      <main className="min-h-[80vh] px-2 sm:px-8 py-4">{children}</main>
       <Footer />
     </>
   );

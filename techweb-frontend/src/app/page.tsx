@@ -14,18 +14,22 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="container mx-auto py-12 px-4">
-      <h1 className="text-4xl font-bold mb-2 text-blue-800 tracking-tight">Avvistamenti di gatti</h1>
-      <p className="mb-8 text-gray-600 text-lg max-w-2xl">
+    <div className="container mx-auto py-8 px-2 sm:py-12 sm:px-4">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-2" style={{ color: "var(--color-primary)" }}>
+        Avvistamenti di gatti
+      </h1>
+      <p className="mb-8 text-base sm:text-lg max-w-2xl" style={{ color: "var(--color-text-secondary)" }}>
         Esplora gli ultimi avvistamenti di gatti randagi nella tua città. Clicca su una card per vedere i dettagli e aiutare la community!
       </p>
-      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+      <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {cats.map((cat) => (
           <CatCard key={cat.id} cat={cat} />
         ))}
       </div>
       {cats.length === 0 && (
-        <div className="text-center text-gray-400 mt-16 text-lg">Nessun avvistamento trovato.</div>
+        <div className="text-center mt-16 text-base sm:text-lg" style={{ color: "var(--color-text-secondary)" }}>
+          Nessun avvistamento trovato.
+        </div>
       )}
     </div>
   );

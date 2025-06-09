@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function Header() {
   return (
     <header
-      className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-8 py-4 shadow"
+      className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-8 py-4 gap-2 sm:gap-0 shadow"
       style={{ background: "var(--color-primary)" }}
     >
       <Link

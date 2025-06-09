@@ -37,7 +37,7 @@ export default function UploadPage() {
 
   return (
     <div
-      className="max-w-md mx-auto p-4"
+      className="max-w-md w-full mx-auto p-4 sm:p-8"
       style={{
         background: "var(--color-background)",
         color: "var(--color-text-primary)",

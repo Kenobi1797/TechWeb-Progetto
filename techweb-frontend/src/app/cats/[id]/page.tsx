@@ -19,11 +19,13 @@ export default function CatDetailPage() {
   if (!cat) return <p>Caricamento...</p>;
 
   return (
-    <main>
-      <h1 className="text-2xl font-bold mb-4">{cat.title}</h1>
-      <img src={cat.imageUrl} alt={cat.title} className="mb-4 max-w-md" />
-      <p>{cat.description}</p>
-      <p className="text-sm text-gray-500 mt-2">Lat: {cat.latitude}, Lng: {cat.longitude}</p>
+    <main className="container mx-auto py-8 px-2 sm:py-12 sm:px-4">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4" style={{ color: "var(--color-primary)" }}>{cat.title}</h1>
+      <img src={cat.imageUrl} alt={cat.title} className="mb-4 w-full max-w-md rounded-xl object-cover" style={{ maxHeight: 350 }} />
+      <p className="mb-2" style={{ color: "var(--color-text-secondary)" }}>{cat.description}</p>
+      <p className="text-sm mt-2" style={{ color: "var(--color-secondary)" }}>
+        Lat: {cat.latitude}, Lng: {cat.longitude}
+      </p>
     </main>
   );
 }

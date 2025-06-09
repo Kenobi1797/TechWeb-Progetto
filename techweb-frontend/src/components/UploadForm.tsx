@@ -24,7 +24,11 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-3 max-w-md w-full mx-auto p-4 sm:p-8"
+      style={{ background: "var(--color-background)" }}
+    >
       <input
         type="text"
         placeholder="Titolo"

@@ -9,7 +9,7 @@ interface CatCardProps {
 export default function CatCard({ cat }: CatCardProps) {
   return (
     <div
-      className="rounded-xl shadow-md hover:shadow-xl transition-shadow border flex flex-col overflow-hidden"
+      className="rounded-xl shadow-md hover:shadow-xl transition-shadow border flex flex-col overflow-hidden w-full h-full"
       style={{
         background: "var(--color-background)",
         borderColor: "var(--color-primary)",

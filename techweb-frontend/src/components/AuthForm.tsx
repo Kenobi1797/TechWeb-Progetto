@@ -9,7 +9,11 @@ export default function AuthForm({ onSubmit, type = "login" }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   return (
-    <form onSubmit={e => { e.preventDefault(); onSubmit(email, password); }} className="flex flex-col gap-3 max-w-xs mx-auto">
+    <form
+      onSubmit={e => { e.preventDefault(); onSubmit(email, password); }}
+      className="flex flex-col gap-3 max-w-xs w-full mx-auto p-4 sm:p-8"
+      style={{ background: "var(--color-background)" }}
+    >
       <input
         type="email"
         placeholder="Email"
