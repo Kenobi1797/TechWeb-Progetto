@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Cat } from "../../lib/types";
 import dynamic from "next/dynamic";
+import { fetchCats } from "../../lib/api";
 
 // Import dinamico per evitare errori SSR con leaflet
 const MapView = dynamic(() => import("../../components/MapView"), { ssr: false });
@@ -10,9 +11,8 @@ export default function MapPage() {
   const [cats, setCats] = useState<Cat[]>([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/cats`)
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("API error"))))
-      .then((data: Cat[]) => setCats(data))
+    fetchCats()
+      .then(setCats)
       .catch(() => setCats([]));
   }, []);
 

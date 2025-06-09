@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 interface UploadFormProps {
-  readonly onSubmit: (data: FormData) => void;
+  readonly onSubmit: (form: FormData) => Promise<void> | void;
 }
 
 export default function UploadForm({ onSubmit }: UploadFormProps) {
@@ -11,16 +11,19 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
   const [longitude, setLongitude] = useState("");
   const [image, setImage] = useState<File | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!image) return;
+    if (!image) {
+      alert("Seleziona un'immagine.");
+      return;
+    }
     const form = new FormData();
     form.append("title", title);
     form.append("description", description);
     form.append("latitude", latitude);
     form.append("longitude", longitude);
     form.append("image", image);
-    onSubmit(form);
+    await onSubmit(form);
   };
 
   return (
