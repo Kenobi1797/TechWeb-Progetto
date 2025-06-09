@@ -25,12 +25,59 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <input type="text" placeholder="Titolo" value={title} onChange={e => setTitle(e.target.value)} required className="border p-2 rounded" />
-      <textarea placeholder="Descrizione" value={description} onChange={e => setDescription(e.target.value)} required className="border p-2 rounded" />
-      <input type="number" placeholder="Latitudine" value={latitude} onChange={e => setLatitude(e.target.value)} required className="border p-2 rounded" />
-      <input type="number" placeholder="Longitudine" value={longitude} onChange={e => setLongitude(e.target.value)} required className="border p-2 rounded" />
-      <input type="file" accept="image/*" onChange={e => setImage(e.target.files?.[0] || null)} required className="border p-2 rounded" />
-      <button type="submit" className="bg-blue-600 text-white rounded p-2 mt-2">Invia</button>
+      <input
+        type="text"
+        placeholder="Titolo"
+        value={title}
+        onChange={e => setTitle(e.target.value)}
+        required
+        className="border p-2 rounded"
+        style={{ borderColor: "var(--color-primary)", color: "var(--color-text-primary)" }}
+      />
+      <textarea
+        placeholder="Descrizione"
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        required
+        className="border p-2 rounded"
+        style={{ borderColor: "var(--color-primary)", color: "var(--color-text-primary)" }}
+      />
+      <input
+        type="number"
+        placeholder="Latitudine"
+        value={latitude}
+        onChange={e => setLatitude(e.target.value)}
+        required
+        className="border p-2 rounded"
+        style={{ borderColor: "var(--color-primary)", color: "var(--color-text-primary)" }}
+      />
+      <input
+        type="number"
+        placeholder="Longitudine"
+        value={longitude}
+        onChange={e => setLongitude(e.target.value)}
+        required
+        className="border p-2 rounded"
+        style={{ borderColor: "var(--color-primary)", color: "var(--color-text-primary)" }}
+      />
+      <input
+        type="file"
+        accept="image/*"
+        onChange={e => setImage(e.target.files?.[0] || null)}
+        required
+        className="border p-2 rounded"
+        style={{ borderColor: "var(--color-primary)", color: "var(--color-text-primary)" }}
+      />
+      <button
+        type="submit"
+        className="rounded p-2 mt-2"
+        style={{
+          background: "var(--color-primary)",
+          color: "#fff",
+        }}
+      >
+        Invia
+      </button>
     </form>
   );
 }

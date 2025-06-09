@@ -36,50 +36,85 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-xl font-bold mb-4">Nuovo Avvistamento</h1>
+    <div
+      className="max-w-md mx-auto p-4"
+      style={{
+        background: "var(--color-background)",
+        color: "var(--color-text-primary)",
+      }}
+    >
+      <h1
+        className="text-xl font-bold mb-4"
+        style={{ color: "var(--color-primary)" }}
+      >
+        Nuovo Avvistamento
+      </h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
           type="text"
           placeholder="Titolo"
           value={title}
-          onChange={e => setTitle(e.target.value)}
+          onChange={(e) => setTitle(e.target.value)}
           required
           className="border p-2 rounded"
+          style={{
+            borderColor: "var(--color-primary)",
+            color: "var(--color-text-primary)",
+          }}
         />
         <textarea
           placeholder="Descrizione"
           value={description}
-          onChange={e => setDescription(e.target.value)}
+          onChange={(e) => setDescription(e.target.value)}
           required
           className="border p-2 rounded"
+          style={{
+            borderColor: "var(--color-primary)",
+            color: "var(--color-text-primary)",
+          }}
         />
         <input
           type="number"
           placeholder="Latitudine"
           value={latitude}
-          onChange={e => setLatitude(e.target.value)}
+          onChange={(e) => setLatitude(e.target.value)}
           required
           className="border p-2 rounded"
+          style={{
+            borderColor: "var(--color-primary)",
+            color: "var(--color-text-primary)",
+          }}
         />
         <input
           type="number"
           placeholder="Longitudine"
           value={longitude}
-          onChange={e => setLongitude(e.target.value)}
+          onChange={(e) => setLongitude(e.target.value)}
           required
           className="border p-2 rounded"
+          style={{
+            borderColor: "var(--color-primary)",
+            color: "var(--color-text-primary)",
+          }}
         />
         <input
           type="file"
           accept="image/*"
-          onChange={e => setImage(e.target.files?.[0] || null)}
+          onChange={(e) => setImage(e.target.files?.[0] || null)}
           required
           className="border p-2 rounded"
+          style={{
+            borderColor: "var(--color-primary)",
+            color: "var(--color-text-primary)",
+          }}
         />
         <button
           type="submit"
-          className="bg-blue-600 text-white rounded p-2 mt-2"
+          className="rounded p-2 mt-2"
+          style={{
+            background: "var(--color-primary)",
+            color: "#fff",
+          }}
         >
           Invia
         </button>

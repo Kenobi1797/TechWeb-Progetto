@@ -10,9 +10,34 @@ export default function AuthForm({ onSubmit, type = "login" }: AuthFormProps) {
   const [password, setPassword] = useState("");
   return (
     <form onSubmit={e => { e.preventDefault(); onSubmit(email, password); }} className="flex flex-col gap-3 max-w-xs mx-auto">
-      <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required className="border p-2 rounded" />
-      <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required className="border p-2 rounded" />
-      <button type="submit" className="bg-blue-600 text-white rounded p-2">{type === "login" ? "Login" : "Registrati"}</button>
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        required
+        className="border p-2 rounded"
+        style={{ borderColor: "var(--color-primary)", color: "var(--color-text-primary)" }}
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={e => setPassword(e.target.value)}
+        required
+        className="border p-2 rounded"
+        style={{ borderColor: "var(--color-primary)", color: "var(--color-text-primary)" }}
+      />
+      <button
+        type="submit"
+        className="rounded p-2"
+        style={{
+          background: "var(--color-primary)",
+          color: "#fff",
+        }}
+      >
+        {type === "login" ? "Login" : "Registrati"}
+      </button>
     </form>
   );
 }

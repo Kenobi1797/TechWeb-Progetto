@@ -8,7 +8,14 @@ interface CatCardProps {
 
 export default function CatCard({ cat }: CatCardProps) {
   return (
-    <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow border border-blue-100 flex flex-col overflow-hidden">
+    <div
+      className="rounded-xl shadow-md hover:shadow-xl transition-shadow border flex flex-col overflow-hidden"
+      style={{
+        background: "var(--color-background)",
+        borderColor: "var(--color-primary)",
+        color: "var(--color-text-primary)",
+      }}
+    >
       <Image
         src={cat.imageUrl}
         alt={cat.title}
@@ -18,12 +25,15 @@ export default function CatCard({ cat }: CatCardProps) {
         priority
       />
       <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-bold text-xl text-blue-800 mb-1">{cat.title}</h3>
-        <p className="text-gray-600 text-sm mb-2 line-clamp-2">{cat.description}</p>
-        <span className="text-xs text-gray-400 mb-2">{new Date(cat.createdAt).toLocaleDateString()}</span>
+        <h3 className="font-bold text-xl mb-1" style={{ color: "var(--color-primary)" }}>{cat.title}</h3>
+        <p className="text-sm mb-2 line-clamp-2" style={{ color: "var(--color-text-secondary)" }}>{cat.description}</p>
+        <span className="text-xs mb-2" style={{ color: "var(--color-secondary)" }}>{new Date(cat.createdAt).toLocaleDateString()}</span>
         <Link
           href={`/cats/${cat.id}`}
-          className="mt-auto text-blue-600 hover:underline font-semibold text-sm"
+          className="mt-auto font-semibold text-sm"
+          style={{
+            color: "var(--color-accent)",
+          }}
         >
           Dettaglio &rarr;
         </Link>
