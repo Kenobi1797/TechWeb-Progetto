@@ -20,7 +20,9 @@ export const createCat = async (
     return;
   }
 
-  const image_url = req.file?.filename ?? null;
+  const image_url = req.file?.filename
+    ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
+    : null;
   try {
     const result = await pool.query(
       `INSERT INTO cats (user_id, title, description, image_url, latitude, longitude)

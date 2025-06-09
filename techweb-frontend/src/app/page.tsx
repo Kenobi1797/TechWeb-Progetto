@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Cat } from "../lib/types";
 import CatCard from "../components/CatCard";
+import MapView from "../components/MapView";
 
 export default function HomePage() {
   const [cats, setCats] = useState<Cat[]>([]);
@@ -21,6 +22,16 @@ export default function HomePage() {
       <p className="mb-8 text-base sm:text-lg max-w-2xl" style={{ color: "var(--color-text-secondary)" }}>
         Esplora gli ultimi avvistamenti di gatti randagi nella tua città. Clicca su una card per vedere i dettagli e aiutare la community!
       </p>
+      <div className="mb-8">
+        <MapView
+          markers={cats.map((cat) => ({
+            lat: cat.latitude,
+            lng: cat.longitude,
+            title: cat.title,
+            imageUrl: cat.imageUrl,
+          }))}
+        />
+      </div>
       <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {cats.map((cat) => (
           <CatCard key={cat.id} cat={cat} />
