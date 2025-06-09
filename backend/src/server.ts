@@ -23,7 +23,7 @@ app.use('/uploads', express.static('uploads'));
 app.use('/cats', catRoutes);
 app.use('/comments', commentRoutes);
 
-const PORT = process.env.PORT ?? 4000;
+const PORT = process.env.PORT ?? 5000;
 
 initDb()
   .then(() => {
