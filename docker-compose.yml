@@ -1,0 +1,45 @@
+services:
+  techweb-backend:
+    build:
+      context: ./backend
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./backend/uploads:/usr/src/app/uploads
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://postgres:postgres@techweb-db:5432/TechWeb-24-25
+      - JWT_SECRET=supersecret
+    depends_on:
+      - techweb-db
+
+  techweb-frontend:
+    build:
+      context: ./techweb-frontend
+    volumes:
+      - ./techweb-frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://techweb-backend:5000
+    depends_on:
+      - techweb-backend
+
+  techweb-db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: TechWeb-24-25
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
