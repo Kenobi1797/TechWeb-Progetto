@@ -2,7 +2,7 @@ import { Cat } from "../lib/types";
 import CatCard from "./CatCard";
 
 interface CatGridProps {
-  cats: Cat[];
+  readonly cats: readonly Cat[];
 }
 
 export default function CatGrid({ cats }: CatGridProps) {
