@@ -15,9 +15,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it">
-      <body className="antialiased min-h-screen" style={{ background: "var(--color-background)", color: "var(--color-text-primary)" }}>
+      <body
+        className="antialiased min-h-screen flex flex-col"
+        style={{ background: "var(--color-background)", color: "var(--color-text-primary)" }}
+      >
         <Header />
-        <main className="min-h-[80vh]">{children}</main>
+        <main className="min-h-[80vh] flex-1">{children}</main>
         <Footer />
       </body>
     </html>
