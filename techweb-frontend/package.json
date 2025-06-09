@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@tailwindcss/cli": "^4.1.8",
     "@tailwindcss/postcss": "^4",
     "@types/babel__core": "^7.20.5",
     "@types/babel__generator": "^7.27.0",
