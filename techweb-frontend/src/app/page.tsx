@@ -1,9 +1,12 @@
 "use client";
+
 import { useEffect, useState } from "react";
-import { Cat } from "../lib/types";
-import MapView from "../components/MapView";
+import { Cat } from "../utils/types";
+import dynamic from "next/dynamic";
 import CatGrid from "../components/CatGrid";
-import { fetchCats } from "../lib/api";
+import { fetchCats } from "../utils/api";
+
+const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 
 export default function HomePage() {
   const [cats, setCats] = useState<Cat[]>([]);

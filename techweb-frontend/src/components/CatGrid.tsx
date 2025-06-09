@@ -1,4 +1,4 @@
-import { Cat } from "../lib/types";
+import { Cat } from "../utils/types";
 import CatCard from "./CatCard";
 
 interface CatGridProps {

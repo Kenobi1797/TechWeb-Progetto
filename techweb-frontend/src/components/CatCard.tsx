@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Cat } from "../lib/types";
+import { Cat } from "../utils/types";
 
 interface CatCardProps {
   readonly cat: Cat;

@@ -1,4 +1,4 @@
-import { Comment } from "../lib/types";
+import { Comment } from "../utils/types";
 
 interface CommentListProps {
   readonly comments: readonly Comment[];

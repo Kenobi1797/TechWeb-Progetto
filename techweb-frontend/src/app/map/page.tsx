@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Cat } from "../../lib/types";
+import { Cat } from "../../utils/types";
 import dynamic from "next/dynamic";
-import { fetchCats } from "../../lib/api";
+import { fetchCats } from "../../utils/api";
 
 // Import dinamico per evitare errori SSR con leaflet
 const MapView = dynamic(() => import("../../components/MapView"), { ssr: false });

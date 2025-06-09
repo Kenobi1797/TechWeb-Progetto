@@ -1,4 +1,4 @@
-import { Cat } from "../lib/types";
+import { Cat } from "../utils/types";
 import Link from "next/link";
 
 interface MapMarkerPopupProps {
