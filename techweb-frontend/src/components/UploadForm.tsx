@@ -114,13 +114,19 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
         />
       </label>
       <label className="block">
-        <span className="label-text">Descrizione <span className="text-xs text-gray-400">(Markdown supportato)</span></span>
+        <span className="label-text flex items-center gap-2">
+          Descrizione{" "}
+          <span className="text-xs text-blue-700 bg-blue-100 dark:bg-blue-900/60 dark:text-blue-200 px-2 py-0.5 rounded font-mono border border-blue-200 dark:border-blue-800">
+            Markdown
+          </span>
+        </span>
         <textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
           required
           rows={3}
-          className="textarea textarea-bordered w-full"
+          className="textarea textarea-bordered w-full font-mono bg-yellow-50 dark:bg-gray-900/40 border-yellow-200 dark:border-yellow-700"
+          placeholder="Puoi usare **grassetto**, *corsivo*, elenchi, link, ecc."
         />
       </label>
       <div>

@@ -153,3 +153,27 @@ img {
   background: #e6fffa !important;
   transition: border-color var(--transition), background var(--transition);
 }
+
+.markdown-hint {
+  display: inline-block;
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 0.85em;
+  border-radius: 0.4em;
+  padding: 0.1em 0.6em;
+  margin-left: 0.5em;
+  border: 1px solid #a5b4fc;
+  font-family: 'Fira Mono', 'Menlo', 'Monaco', monospace;
+}
+
+textarea.font-mono {
+  font-family: 'Fira Mono', 'Menlo', 'Monaco', monospace;
+  background: #fffbe7;
+  color: #374151;
+  border: 1.5px solid #fde68a;
+}
+
+textarea.font-mono:focus {
+  border-color: #fbbf24;
+  background: #fffde7;
+}
