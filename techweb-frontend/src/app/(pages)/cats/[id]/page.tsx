@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Cat } from "../../../utils/types";
+import { Cat } from "../../../../utils/types";
 
 export default function CatDetailPage() {
   const params = useParams();

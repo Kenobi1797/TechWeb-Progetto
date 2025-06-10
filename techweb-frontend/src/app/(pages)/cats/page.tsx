@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Cat } from "../../utils/types";
-import CatGrid from "../../components/CatGrid";
-import { fetchCats } from "../../utils/api";
+import { Cat } from "../../../utils/types";
+import CatGrid from "../../../components/CatGrid";
+import { fetchCats } from "../../../utils/api";
 
 export default function CatsPage() {
   const [cats, setCats] = useState<Cat[]>([]);
