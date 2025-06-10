@@ -23,6 +23,8 @@ export default function CatCard({ cat }: CatCardProps) {
         height={220}
         className="object-cover w-full h-48"
         priority
+        sizes="(max-width: 600px) 100vw, 400px"
+        loading="lazy"
       />
       <div className="p-4 flex flex-col flex-1">
         <h3 className="font-bold text-xl mb-1" style={{ color: "var(--color-primary)" }}>{cat.title}</h3>
@@ -34,6 +36,7 @@ export default function CatCard({ cat }: CatCardProps) {
           style={{
             color: "var(--color-accent)",
           }}
+          aria-label={`Dettaglio di ${cat.title}`}
         >
           Dettaglio &rarr;
         </Link>

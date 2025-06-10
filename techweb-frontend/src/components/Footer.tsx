@@ -7,6 +7,8 @@ export default function Footer() {
         color: "var(--color-accent)",
         marginBottom: 0,
       }}
+      role="contentinfo"
+      aria-label="Footer"
     >
       © {new Date().getFullYear()} Streetcats. Tutti i diritti riservati.
     </footer>

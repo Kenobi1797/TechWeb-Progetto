@@ -14,10 +14,12 @@ export default function CatGrid({ cats }: CatGridProps) {
     );
   }
   return (
-    <div className="grid gap-4 sm:gap-6 md:gap-8 grid-cols-1 xs:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 px-1 sm:px-2 md:px-0">
-      {cats.map((cat) => (
-        <CatCard key={cat.id} cat={cat} />
-      ))}
-    </div>
+    <section aria-label="Griglia avvistamenti gatti">
+      <div className="grid gap-4 sm:gap-6 md:gap-8 grid-cols-1 xs:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 px-1 sm:px-2 md:px-0">
+        {cats.map((cat) => (
+          <CatCard key={cat.id} cat={cat} />
+        ))}
+      </div>
+    </section>
   );
 }

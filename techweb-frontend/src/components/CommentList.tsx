@@ -10,7 +10,9 @@ export default function CommentList({ comments }: CommentListProps) {
       {comments.map(c => (
         <li key={c.id} className="border-b pb-2">
           <span className="font-semibold">{c.userId}</span>: {c.text}
-          <span className="block text-xs text-gray-400">{new Date(c.createdAt).toLocaleString()}</span>
+          <time className="block text-xs text-gray-400" dateTime={new Date(c.createdAt).toISOString()}>
+            {new Date(c.createdAt).toLocaleString()}
+          </time>
         </li>
       ))}
     </ul>

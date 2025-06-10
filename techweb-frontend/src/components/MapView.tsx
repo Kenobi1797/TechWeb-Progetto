@@ -23,16 +23,16 @@ export default function MapView({ markers }: MapViewProps) {
     <MapContainer
       center={defaultPos}
       zoom={13}
-      style={{ height: "300px", minHeight: "200px", width: "100%" }}
+      style={{ height: "450px", minHeight: "450px", width: "100%" }}
       className="rounded-lg shadow-sm"
     >
       <TileLayer
         attribution='&copy; OpenStreetMap contributors'
         url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
       />
-      {markers.map((m) => (
+      {markers.map((m, i) => (
         <Marker
-          key={`${m.lat}-${m.lng}-${m.title ?? ""}`}
+          key={`${m.lat}-${m.lng}-${m.title ?? ""}-${i}`}
           position={[m.lat, m.lng]}
         >
           <Popup>
@@ -45,6 +45,7 @@ export default function MapView({ markers }: MapViewProps) {
                   width={120}
                   height={80}
                   style={{ maxWidth: 120, marginTop: 4, height: "auto" }}
+                  loading="lazy"
                 />
               </div>
             )}
