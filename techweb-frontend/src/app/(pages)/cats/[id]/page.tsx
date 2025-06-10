@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Cat } from "../../../../utils/types";
+import Image from "next/image";
 
 export default function CatDetailPage() {
   const params = useParams();
@@ -19,11 +20,21 @@ export default function CatDetailPage() {
   if (!cat) return <p>Caricamento...</p>;
 
   return (
-    <main className="container mx-auto py-8 px-2 sm:py-12 sm:px-4">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-4" style={{ color: "var(--color-primary)" }}>{cat.title}</h1>
-      <img src={cat.imageUrl} alt={cat.title} className="mb-4 w-full max-w-md rounded-xl object-cover" style={{ maxHeight: 350 }} />
-      <p className="mb-2" style={{ color: "var(--color-text-secondary)" }}>{cat.description}</p>
-      <p className="text-sm mt-2" style={{ color: "var(--color-secondary)" }}>
+    <main className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
+      <h1 className="text-xl sm:text-3xl font-bold mb-4" style={{ color: "var(--color-primary)" }}>{cat.title}</h1>
+      <div className="mb-4 w-full max-w-md">
+        <Image
+          src={cat.imageUrl}
+          alt={cat.title}
+          width={600}
+          height={350}
+          className="rounded-xl object-cover w-full"
+          style={{ maxHeight: 350 }}
+          priority
+        />
+      </div>
+      <p className="mb-2 text-sm sm:text-base" style={{ color: "var(--color-text-secondary)" }}>{cat.description}</p>
+      <p className="text-xs sm:text-sm mt-2" style={{ color: "var(--color-secondary)" }}>
         Lat: {cat.latitude}, Lng: {cat.longitude}
       </p>
     </main>

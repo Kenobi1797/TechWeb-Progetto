@@ -20,7 +20,7 @@ export default function RootLayout({
         style={{ background: "var(--color-background)", color: "var(--color-text-primary)" }}
       >
         <Header />
-        <main className="min-h-[80vh] flex-1">{children}</main>
+        <main className="min-h-[80vh] flex-1 px-1 sm:px-0">{children}</main>
         <Footer />
       </body>
     </html>

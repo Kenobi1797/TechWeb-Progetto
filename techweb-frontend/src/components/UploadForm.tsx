@@ -59,14 +59,14 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-md mx-auto p-6 bg-base-100 shadow-md rounded-lg space-y-4"
+      className="w-full max-w-lg mx-auto p-3 sm:p-6 bg-base-100 shadow-md rounded-lg space-y-4"
       style={{ background: "var(--color-background)" }}
     >
-      <h2 className="text-xl font-semibold mb-2" style={{ color: "var(--color-primary)" }}>
+      <h2 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: "var(--color-primary)" }}>
         Nuovo avvistamento 🐱
       </h2>
       <label
-        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
+        className={`border-2 border-dashed rounded-lg p-4 sm:p-6 text-center cursor-pointer transition-colors
           ${dragActive ? "border-accent bg-accent/10" : "border-secondary hover:bg-secondary/10"}`}
         htmlFor="fileInput"
         onDragEnter={(e) => { handleDrag(e as unknown as React.DragEvent<HTMLDivElement>); }}
@@ -81,11 +81,11 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
             alt="Anteprima"
             width={320}
             height={192}
-            className="mx-auto max-h-48 object-contain rounded"
+            className="mx-auto max-h-40 sm:max-h-48 object-contain rounded"
             style={{ width: "auto", height: "auto", maxHeight: "12rem" }}
           />
         ) : (
-          <p className="text-sm text-gray-500">
+          <p className="text-xs sm:text-sm text-gray-500">
             Trascina qui o clicca per selezionare un&apos;immagine (max 5 MB)
           </p>
         )}
@@ -117,7 +117,7 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
           className="textarea textarea-bordered w-full"
         />
       </label>
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <input
           type="number"
           placeholder="Latitudine"

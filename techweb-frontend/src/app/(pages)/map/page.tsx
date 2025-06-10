@@ -17,8 +17,8 @@ export default function MapPage() {
   }, []);
 
   return (
-    <div className="container mx-auto py-8 px-2 sm:py-12 sm:px-4">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-6" style={{ color: "var(--color-primary)" }}>
+    <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
+      <h1 className="text-xl sm:text-3xl font-bold mb-6" style={{ color: "var(--color-primary)" }}>
         Mappa degli avvistamenti
       </h1>
       <MapView

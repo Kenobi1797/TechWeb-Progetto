@@ -20,7 +20,12 @@ export default function MapView({ markers }: MapViewProps) {
     : [41.4845, 13.4989]; // Default: Fondi
 
   return (
-    <MapContainer center={defaultPos} zoom={13} style={{ height: "400px", width: "100%" }}>
+    <MapContainer
+      center={defaultPos}
+      zoom={13}
+      style={{ height: "300px", minHeight: "200px", width: "100%" }}
+      className="rounded-lg shadow-sm"
+    >
       <TileLayer
         attribution='&copy; OpenStreetMap contributors'
         url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
