@@ -1,5 +1,8 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+
+const CatLocationPicker = dynamic(() => import("./MapPicker"), { ssr: false });
 
 interface UploadFormProps {
   readonly onSubmit: (form: FormData) => Promise<void> | void;
@@ -8,11 +11,10 @@ interface UploadFormProps {
 export default function UploadForm({ onSubmit }: UploadFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
 
   const handleFile = (file: File | null) => {
     setImage(file);
@@ -47,11 +49,15 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
       alert("Seleziona un'immagine.");
       return;
     }
+    if (!position) {
+      alert("Seleziona la posizione sulla mappa.");
+      return;
+    }
     const form = new FormData();
     form.append("title", title);
     form.append("description", description);
-    form.append("latitude", latitude);
-    form.append("longitude", longitude);
+    form.append("latitude", position.lat.toString());
+    form.append("longitude", position.lng.toString());
     form.append("image", image);
     await onSubmit(form);
   };
@@ -117,22 +123,16 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
           className="textarea textarea-bordered w-full"
         />
       </label>
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div>
+        <span className="label-text mb-1 block">Posizione sulla mappa</span>
+        <CatLocationPicker value={position} onChange={setPosition} />
         <input
-          type="number"
-          placeholder="Latitudine"
-          value={latitude}
-          onChange={e => setLatitude(e.target.value)}
-          required
+          type="text"
+          readOnly
+          value={position ? `${position.lat.toFixed(6)}, ${position.lng.toFixed(6)}` : ""}
+          placeholder="Clicca sulla mappa per selezionare la posizione"
           className="input input-bordered w-full"
-        />
-        <input
-          type="number"
-          placeholder="Longitudine"
-          value={longitude}
-          onChange={e => setLongitude(e.target.value)}
-          required
-          className="input input-bordered w-full"
+          style={{ background: "#f9fafb" }}
         />
       </div>
       <button
