@@ -24,7 +24,7 @@ export default function CatDetailPage() {
       <h1 className="text-xl sm:text-3xl font-bold mb-4" style={{ color: "var(--color-primary)" }}>{cat.title}</h1>
       <div className="mb-4 w-full max-w-md">
         <Image
-          src={cat.imageUrl}
+          src={cat.image_url}
           alt={cat.title}
           width={600}
           height={350}

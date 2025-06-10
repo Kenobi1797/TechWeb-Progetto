@@ -43,6 +43,7 @@
     "@types/json-schema": "^7.0.15",
     "@types/mime": "^3.0.3",
     "@types/minimatch": "^5.1.2",
+    "@types/multer": "^1.4.13",
     "@types/node": "^20.4.2",
     "@types/qs": "^6.9.12",
     "@types/range-parser": "^1.2.4",

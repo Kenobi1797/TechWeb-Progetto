@@ -4,13 +4,14 @@ export interface Cat {
   description: string;
   latitude: number;
   longitude: number;
-  imageUrl: string;
+  imageUrl: string; // <-- usa il campo del backend
   createdAt: string;
 }
 
 export interface Comment {
   id: number;
   userId: number;
-  text: string;
+  content: string; // <-- usa il campo del backend
   createdAt: string;
+  username?: string;
 }
