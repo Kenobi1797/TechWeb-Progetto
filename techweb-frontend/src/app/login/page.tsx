@@ -18,7 +18,9 @@ export default function LoginPage() {
     });
     if (res.ok) {
       const { token } = await res.json();
-      localStorage.setItem("token", token);
+      if (typeof window !== "undefined" && token) {
+        localStorage.setItem("token", token);
+      }
       router.push("/");
     } else {
       const data = await res.json().catch(() => ({}));

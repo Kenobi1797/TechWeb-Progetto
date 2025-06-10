@@ -1,14 +1,20 @@
 "use client";
 import UploadForm from "../../../components/UploadForm";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function UploadPage() {
   const router = useRouter();
+  const checkedAuth = useRef(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !localStorage.getItem("token")) {
-      router.push("/login");
+    if (checkedAuth.current) return;
+    checkedAuth.current = true;
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.replace("/login");
+      }
     }
   }, [router]);
 
