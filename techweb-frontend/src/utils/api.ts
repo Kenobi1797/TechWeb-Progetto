@@ -4,7 +4,6 @@ export async function fetchCats(): Promise<Cat[]> {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/cats`);
   if (!res.ok) throw new Error("API error");
   const data = await res.json();
-  // Mappa i campi snake_case → camelCase se necessario
   return data.map((cat: any) => ({
     ...cat,
     imageUrl: cat.image_url,
