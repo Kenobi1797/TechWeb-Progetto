@@ -29,17 +29,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[80vh] py-4 sm:py-8 px-2 sm:px-0">
+    <div className="flex items-center justify-center min-h-[80vh] py-4 sm:py-8 px-2 sm:px-0 bg-transparent">
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 p-3 sm:p-6 rounded-lg shadow-md w-full max-w-xs sm:max-w-md md:max-w-lg transition-all"
+        className="bg-white dark:bg-gray-800/90 p-5 sm:p-8 rounded-xl shadow-lg w-full max-w-xs sm:max-w-md md:max-w-lg transition-all border border-gray-200 dark:border-gray-700"
         style={{
-          background: "var(--color-background)",
+          background: "var(--color-background, #fff)",
           color: "var(--color-text-primary)",
           fontFamily: "inherit",
         }}
       >
-        <h2 className="text-xl sm:text-2xl font-bold mb-3 text-center" style={{ color: "var(--color-primary)" }}>
+        <h2
+          className="text-2xl sm:text-3xl font-extrabold mb-6 text-center tracking-tight"
+          style={{ color: "var(--color-primary)" }}
+        >
           Login
         </h2>
         <input
@@ -47,7 +50,7 @@ export default function LoginPage() {
           placeholder="Email"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-2 w-full rounded mb-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          className="border border-gray-300 dark:border-gray-700 bg-white/90 dark:bg-gray-900/80 text-gray-900 dark:text-gray-100 p-3 w-full rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition placeholder-gray-400 dark:placeholder-gray-500"
           style={{
             borderColor: "var(--color-primary)",
             color: "var(--color-text-primary)",
@@ -60,7 +63,7 @@ export default function LoginPage() {
           placeholder="Password"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-2 w-full rounded mb-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          className="border border-gray-300 dark:border-gray-700 bg-white/90 dark:bg-gray-900/80 text-gray-900 dark:text-gray-100 p-3 w-full rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition placeholder-gray-400 dark:placeholder-gray-500"
           style={{
             borderColor: "var(--color-primary)",
             color: "var(--color-text-primary)",
@@ -68,10 +71,12 @@ export default function LoginPage() {
           }}
           required
         />
-        {error && <p className="text-red-500 mb-2 text-sm">{error}</p>}
+        {error && (
+          <p className="text-red-500 mb-3 text-sm text-center">{error}</p>
+        )}
         <button
           type="submit"
-          className="rounded py-2 w-full font-semibold transition"
+          className="rounded-lg py-2.5 w-full font-bold transition bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           style={{
             background: "var(--color-primary)",
             color: "#fff",
@@ -79,9 +84,14 @@ export default function LoginPage() {
         >
           Accedi
         </button>
-        <p className="mt-3 text-xs sm:text-sm text-center" style={{ color: "var(--color-text-secondary)" }}>
+        <p className="mt-5 text-xs sm:text-sm text-center" style={{ color: "var(--color-text-secondary)" }}>
           Non hai un account?{" "}
-          <a href="/register" className="text-blue-600 hover:underline dark:text-blue-400">Registrati</a>
+          <a
+            href="/register"
+            className="text-blue-600 hover:underline dark:text-blue-400 font-semibold transition-colors"
+          >
+            Registrati
+          </a>
         </p>
       </form>
     </div>
