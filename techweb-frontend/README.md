@@ -4,8 +4,6 @@ Applicazione per la segnalazione e la visualizzazione di avvistamenti di gatti r
 
 ## Avvio rapido
 
-Per avviare il server di sviluppo:
-
 ```bash
 npm run dev
 # oppure
@@ -22,12 +20,19 @@ Puoi modificare la pagina principale modificando `app/page.tsx`. La pagina si ag
 
 ## Stack
 
-- React + Next.js (App Router)
-- TailwindCSS
-- Leaflet (per la mappa)
-- TypeScript
+- **React + Next.js** (App Router)
+- **TailwindCSS** (con DaisyUI)
+- **Leaflet** (per la mappa)
+- **TypeScript**
+
+## UI/UX
+
+- Grafica uniforme, colori chiari e moderni
+- Responsive su mobile e desktop
+- Drag & drop per upload immagini
+- Card e form con ombre e bordi arrotondati
 
 ## Note
 
-Questa app è parte del progetto Streetcats.
+Questa app è parte del progetto Streetcats.<br>
 Per dettagli tecnici consulta la documentazione interna del progetto.

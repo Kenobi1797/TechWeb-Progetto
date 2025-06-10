@@ -14,7 +14,7 @@ export default function CatGrid({ cats }: CatGridProps) {
     );
   }
   return (
-    <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 px-2 sm:px-0">
       {cats.map((cat) => (
         <CatCard key={cat.id} cat={cat} />
       ))}
