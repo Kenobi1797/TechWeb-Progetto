@@ -26,15 +26,30 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-semibold mb-4 text-center">Registrati</h2>
+    <div className="flex items-center justify-center min-h-[80vh] py-4 sm:py-8 px-2 sm:px-0">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white dark:bg-gray-800 p-3 sm:p-6 rounded-lg shadow-md w-full max-w-xs sm:max-w-md md:max-w-lg transition-all"
+        style={{
+          background: "var(--color-background)",
+          color: "var(--color-text-primary)",
+          fontFamily: "inherit",
+        }}
+      >
+        <h2 className="text-xl sm:text-2xl font-bold mb-3 text-center" style={{ color: "var(--color-primary)" }}>
+          Registrati
+        </h2>
         <input
           type="text"
           placeholder="Username"
           value={username}
           onChange={e => setUsername(e.target.value)}
-          className="border p-2 w-full rounded mb-3"
+          className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-2 w-full rounded mb-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          style={{
+            borderColor: "var(--color-primary)",
+            color: "var(--color-text-primary)",
+            background: "var(--color-background)",
+          }}
           required
         />
         <input
@@ -42,7 +57,12 @@ export default function RegisterPage() {
           placeholder="Email"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className="border p-2 w-full rounded mb-3"
+          className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-2 w-full rounded mb-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          style={{
+            borderColor: "var(--color-primary)",
+            color: "var(--color-text-primary)",
+            background: "var(--color-background)",
+          }}
           required
         />
         <input
@@ -50,13 +70,28 @@ export default function RegisterPage() {
           placeholder="Password"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="border p-2 w-full rounded mb-3"
+          className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-2 w-full rounded mb-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          style={{
+            borderColor: "var(--color-primary)",
+            color: "var(--color-text-primary)",
+            background: "var(--color-background)",
+          }}
           required
         />
-        {error && <p className="text-red-500 mb-3">{error}</p>}
-        <button type="submit" className="bg-green-600 text-white py-2 rounded w-full hover:bg-green-700">Registrati</button>
-        <p className="mt-4 text-sm text-center">
-          Hai già un account? <a href="/login" className="text-blue-600">Accedi</a>
+        {error && <p className="text-red-500 mb-2 text-sm">{error}</p>}
+        <button
+          type="submit"
+          className="rounded py-2 w-full font-semibold transition"
+          style={{
+            background: "var(--color-primary)",
+            color: "#fff",
+          }}
+        >
+          Registrati
+        </button>
+        <p className="mt-3 text-xs sm:text-sm text-center" style={{ color: "var(--color-text-secondary)" }}>
+          Hai già un account?{" "}
+          <a href="/login" className="text-blue-600 hover:underline dark:text-blue-400">Accedi</a>
         </p>
       </form>
     </div>
