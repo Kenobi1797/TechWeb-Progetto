@@ -12,16 +12,21 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password }),
-    });
-    if (res.ok) {
-      router.push("/login");
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Errore durante la registrazione");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+    try {
+      const res = await fetch(`${apiUrl}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password }),
+      });
+      if (res.ok) {
+        router.push("/login");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? "Errore durante la registrazione");
+      }
+    } catch {
+      setError("Impossibile contattare il server. Verifica la connessione.");
     }
   };
 

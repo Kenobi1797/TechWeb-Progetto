@@ -18,9 +18,21 @@ export const register = async (req: Request, res: Response) => {
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
     res.status(201).json({ message: 'Registrazione avvenuta con successo', token, user });
   } catch (error: unknown) {
-    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === '23505') {
-      // email già registrata
-      return res.status(400).json({ error: 'Email già registrata' });
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as any).code === '23505'
+    ) {
+      // Violazione di vincolo UNIQUE
+      const detail = (error as any)?.detail as string;
+      if (detail?.includes('email')) {
+        return res.status(400).json({ error: 'Email già registrata' });
+      }
+      if (detail?.includes('username')) {
+        return res.status(400).json({ error: 'Username già registrato' });
+      }
+      return res.status(400).json({ error: 'Utente già registrato' });
     }
     res.status(500).json({ error: 'Errore durante la registrazione', details: (error as any).message });
   }
