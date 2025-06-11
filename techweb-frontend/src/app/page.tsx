@@ -31,7 +31,7 @@ export default function HomePage() {
             lat: cat.latitude,
             lng: cat.longitude,
             title: cat.title,
-            imageUrl: cat.imageUrl,
+            imageUrl: cat.imageUrl ?? "",
           }))}
         />
       </div>
