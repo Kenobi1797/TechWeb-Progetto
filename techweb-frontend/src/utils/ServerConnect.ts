@@ -28,7 +28,35 @@ type CatWithCommentsApiResponse = CatApiResponse & {
   comments?: CommentApiResponse[];
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const API_URL = `http://localhost:5000`;
+
+// --- AUTH ---
+
+export async function registerUser(username: string, email: string, password: string) {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, email, password }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error ?? "Errore durante la registrazione");
+  }
+  return await res.json();
+}
+
+export async function loginUser(email: string, password: string) {
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error ?? "Credenziali non valide");
+  }
+  return await res.json();
+}
 
 // --- GATTI ---
 

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { registerUser } from "@/utils/ServerConnect";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -12,21 +13,20 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
     try {
-      const res = await fetch(`${apiUrl}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
-      });
-      if (res.ok) {
-        router.push("/login");
+      await registerUser(username, email, password);
+      router.push("/login");
+    } catch (err: unknown) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "message" in err &&
+        typeof (err as { message?: unknown }).message === "string"
+      ) {
+        setError((err as { message: string }).message);
       } else {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error ?? "Errore durante la registrazione");
+        setError("Errore durante la registrazione");
       }
-    } catch {
-      setError("Impossibile contattare il server. Verifica la connessione.");
     }
   };
 
