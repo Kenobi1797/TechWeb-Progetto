@@ -1,5 +1,5 @@
 import pool from '../config/db';
-import { User } from './types';
+import { User } from '../config/types';
 
 export async function getUserByEmail(email: string): Promise<User | null> {
   const r = await pool.query<User>('SELECT * FROM users WHERE email = $1', [email]);

@@ -1,5 +1,5 @@
 import pool from '../config/db';
-import { Cat } from './types';
+import { Cat } from '../config/types';
 
 export async function getAllCats(): Promise<Cat[]> {
   const r = await pool.query<Cat>('SELECT * FROM cats ORDER BY created_at DESC');
