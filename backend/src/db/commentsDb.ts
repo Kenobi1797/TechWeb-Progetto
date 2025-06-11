@@ -1,5 +1,5 @@
 import pool from '../config/db';
-import { Comment } from '../config/types';
+import { Comment } from '../utils/types';
 
 export async function getCommentsByCatId(cat_id: number): Promise<Comment[]> {
   const r = await pool.query<Comment>(

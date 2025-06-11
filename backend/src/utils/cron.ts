@@ -1,9 +1,9 @@
 import cron from 'node-cron';
 import fetch from 'node-fetch';
 import { faker } from '@faker-js/faker';
-import { insertCat } from './db/catsDb';
-import { insertComment } from './db/commentsDb';
-import { getAllUsers } from './db/usersDb';
+import { insertCat } from '../db/catsDb';
+import { insertComment } from '../db/commentsDb';
+import { getAllUsers } from '../db/usersDb';
 
 const CAT_API = 'https://api.thecatapi.com/v1/images/search?limit=1';
 

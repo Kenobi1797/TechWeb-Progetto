@@ -5,8 +5,7 @@ import initDb from './config/initDb';
 import authRoutes from './routes/auth';
 import catRoutes from './routes/cats';
 import commentRoutes from './routes/comments';
-import { startCronJobs } from './cron';
-import { populateCatsAndComments } from './utils/populateDebug';
+import { startCronJobs } from './utils/cron';
 
 dotenv.config();
 
@@ -24,16 +23,6 @@ app.use('/auth', authRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/cats', catRoutes);
 app.use('/comments', commentRoutes);
-
-// Rotta di debug per popolazione manuale
-app.post('/debug/populate', async (req, res) => {
-  try {
-    await populateCatsAndComments();
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Errore durante la popolazione', details: (err as any).message });
-  }
-});
 
 const PORT = process.env.PORT ?? 5000;
 
