@@ -2,6 +2,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 
 type MarkerData = {
   lat: number;
@@ -15,43 +16,51 @@ interface MapViewProps {
 }
 
 export default function MapView({ markers }: MapViewProps) {
+  const mapRef = useRef<HTMLDivElement>(null);
+
   const defaultPos: [number, number] = markers.length
     ? [markers[0].lat, markers[0].lng]
     : [41.4845, 13.4989]; // Default: Fondi
 
+  useEffect(() => {
+    if (!mapRef.current) return; // <-- Fix: assicurati che il container esista
+  }, [markers]);
+
   return (
-    <MapContainer
-      center={defaultPos}
-      zoom={13}
-      style={{ height: "450px", minHeight: "450px", width: "100%" }}
-      className="rounded-lg shadow-sm"
-    >
-      <TileLayer
-        attribution='&copy; OpenStreetMap contributors'
-        url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-      />
-      {markers.map((m, i) => (
-        <Marker
-          key={`${m.lat}-${m.lng}-${m.title ?? ""}-${i}`}
-          position={[m.lat, m.lng]}
-        >
-          <Popup>
-            <strong>{m.title ?? "Avvistamento"}</strong>
-            {m.imageUrl && (
-              <div>
-                <Image
-                  src={m.imageUrl}
-                  alt={m.title ?? "Avvistamento"}
-                  width={120}
-                  height={80}
-                  style={{ maxWidth: 120, marginTop: 4, height: "auto" }}
-                  loading="lazy"
-                />
-              </div>
-            )}
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+    <div ref={mapRef} style={{ width: "100%", height: "450px" }}>
+      <MapContainer
+        center={defaultPos}
+        zoom={13}
+        style={{ height: "450px", minHeight: "450px", width: "100%" }}
+        className="rounded-lg shadow-sm"
+      >
+        <TileLayer
+          attribution='&copy; OpenStreetMap contributors'
+          url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        />
+        {markers.map((m, i) => (
+          <Marker
+            key={`${m.lat}-${m.lng}-${m.title ?? ""}-${i}`}
+            position={[m.lat, m.lng]}
+          >
+            <Popup>
+              <strong>{m.title ?? "Avvistamento"}</strong>
+              {m.imageUrl && (
+                <div>
+                  <Image
+                    src={m.imageUrl}
+                    alt={m.title ?? "Avvistamento"}
+                    width={120}
+                    height={80}
+                    style={{ maxWidth: 120, marginTop: 4, height: "auto" }}
+                    loading="lazy"
+                  />
+                </div>
+              )}
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+    </div>
   );
 }
