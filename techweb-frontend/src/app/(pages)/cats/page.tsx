@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Cat } from "../../../utils/types";
 import CatGrid from "../../../components/CatGrid";
-import { fetchCats } from "../../../utils/api";
+import { fetchCats } from "../../../utils/ServerConnect";
 
 export default function CatsPage() {
   const [cats, setCats] = useState<Cat[]>([]);

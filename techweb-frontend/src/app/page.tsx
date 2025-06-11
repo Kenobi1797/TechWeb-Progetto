@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Cat } from "../utils/types";
 import dynamic from "next/dynamic";
 import CatGrid from "../components/CatGrid";
-import { fetchCats } from "../utils/api";
+import { fetchCats } from "../utils/ServerConnect";
 
 const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 
