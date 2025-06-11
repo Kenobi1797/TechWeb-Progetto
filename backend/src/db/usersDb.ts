@@ -18,3 +18,8 @@ export async function insertUser(username: string, email: string, password_hash:
   );
   return r.rows[0];
 }
+
+export async function getAllUsers(): Promise<User[]> {
+  const r = await pool.query<User>('SELECT * FROM users');
+  return r.rows;
+}
