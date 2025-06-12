@@ -16,15 +16,24 @@ export default function CatCard({ cat }: CatCardProps) {
         color: "var(--color-text-primary)",
       }}
     >
-      <Image
-        src={cat.imageUrl ?? ""}
-        alt={cat.title}
-        width={400}
-        height={220}
-        className="object-cover w-full h-48"
-        priority
-        sizes="(max-width: 600px) 100vw, 400px"
-      />
+      {cat.imageUrl ? (
+        <Image
+          src={cat.imageUrl}
+          alt={cat.title}
+          width={400}
+          height={220}
+          className="object-cover w-full h-48"
+          priority
+          sizes="(max-width: 600px) 100vw, 400px"
+        />
+      ) : (
+        <div
+          className="flex items-center justify-center w-full h-48 bg-gray-100 text-gray-400"
+          style={{ fontSize: 32 }}
+        >
+          🐱
+        </div>
+      )}
       <div className="p-4 flex flex-col flex-1">
         <h3 className="font-bold text-xl mb-1" style={{ color: "var(--color-primary)" }}>{cat.title}</h3>
         <p className="text-sm mb-2 line-clamp-2" style={{ color: "var(--color-text-secondary)" }}>{cat.description}</p>
