@@ -23,10 +23,11 @@ export default function MapPage() {
       </h1>
       <MapView
         markers={cats.map(cat => ({
+          id: cat.id,
           lat: cat.latitude,
           lng: cat.longitude,
           title: cat.title,
-          imageUrl: cat.imageUrl,
+          imageUrl: cat.imageUrl ?? undefined,
         }))}
       />
     </div>
