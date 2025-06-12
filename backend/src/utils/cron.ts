@@ -20,7 +20,12 @@ export function startCronJobs() {
           headers: { 'x-api-key': process.env.CATAPI_KEY ?? '' }
         });
         const data = await res.json();
-        const imageUrl = Array.isArray(data) ? data[0]?.url : null;
+        let imageUrl = data?.[0]?.url ?? null;
+        // Salta se è una GIF
+        if (imageUrl?.toLowerCase().endsWith('.gif')) {
+          console.log('Cron: immagine GIF scartata:', imageUrl);
+          continue;
+        }
         if (!imageUrl) continue;
 
         const latitude = parseString(faker.location.latitude().toString());

@@ -82,6 +82,11 @@ export const getAllCats = async (
 
     cats = cats.map(({ distance, ...rest }: { distance?: number }) => rest);
 
+    // Filtra immagini GIF
+    cats = cats.filter((cat: any) =>
+      !cat.image_url?.toLowerCase().endsWith('.gif')
+    );
+
     res.json(cats);
     return;
   } catch (err) {
