@@ -1,6 +1,7 @@
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "../utils/fixLeafletIcon";
 
 interface MapPickerProps {
   readonly position?: LatLngExpression | null;

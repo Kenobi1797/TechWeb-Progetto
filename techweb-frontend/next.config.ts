@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
         pathname: "/images/**",
       },
     ],
+    // Consenti anche le immagini locali di leaflet
+    unoptimized: true,
   },
 };
 

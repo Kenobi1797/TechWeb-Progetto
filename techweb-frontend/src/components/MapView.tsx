@@ -1,4 +1,5 @@
 "use client";
+import "../utils/fixLeafletIcon";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import Image from "next/image";
