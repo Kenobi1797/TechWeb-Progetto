@@ -1,22 +1,31 @@
 export const strayCatComments = [
+  "Qualcuno sa se ha un nome?",
+  "I bambini del quartiere gli hanno dato dell'acqua.",
+  "Mi ha seguito fino a casa, era molto affettuoso.",
+  "Ha fatto amicizia con il mio cane!",
+  "Ha rubato un pezzo di pollo dal mio piatto!",
+  "Ha fatto amicizia con il postino.",
+  "Mi segue quando porto fuori la spazzatura.",
+  "L'ho visto litigare con un altro gatto.",
+  "Sembra che aspetti qualcuno ogni mattina.",
+  "Ha un musetto davvero simpatico."
+];
+
+export const strayCatDescriptions = [
   "Sembra che abbia fame... qualcuno l'ha visto di recente?",
   "Poverino, era sotto la pioggia vicino alla stazione.",
   "L'ho visto dormire su una sedia fuori dal bar.",
   "Era nascosto sotto una macchina, sembrava spaventato.",
-  "Qualcuno sa se ha un nome?",
   "L'ho visto giocare con altri gatti nel parco.",
   "Ha una zampa ferita, forse serve aiuto.",
-  "Mi ha seguito fino a casa, era molto affettuoso.",
   "L'ho nutrito ieri sera, sembrava molto affamato.",
   "Si è rifugiato nel mio cortile durante il temporale.",
   "Ha il pelo arruffato, forse non sta bene.",
-  "I bambini del quartiere gli hanno dato dell'acqua.",
   "Si avvicina solo se non ci sono cani nei dintorni.",
   "L'ho visto spesso vicino alla scuola elementare.",
   "Ha un collare rosso, forse si è perso.",
   "Miagola spesso davanti al supermercato.",
   "Si arrampica sugli alberi del viale principale.",
-  "Ha fatto amicizia con il mio cane!",
   "L'ho trovato che dormiva nella scatola delle consegne.",
   "Qualcuno vuole adottarlo? Sembra molto dolce.",
   "Ha paura delle persone, ma si avvicina per il cibo.",
@@ -30,7 +39,6 @@ export const strayCatComments = [
   "Ha un miagolio molto particolare.",
   "L'ho visto giocare con una pallina di carta.",
   "Si lascia accarezzare solo da chi conosce.",
-  "Ha rubato un pezzo di pollo dal mio piatto!",
   "Sembra che abbia partorito da poco.",
   "L'ho visto arrampicarsi sul tetto del condominio.",
   "Ha paura dei rumori forti.",
@@ -39,13 +47,7 @@ export const strayCatComments = [
   "Ha il pelo bianco con delle macchie nere.",
   "Sembra molto giovane, forse è un cucciolo.",
   "L'ho visto spesso vicino alla fermata dell'autobus.",
-  "Ha fatto amicizia con il postino.",
   "Si rifugia sotto il portico quando piove.",
   "L'ho visto giocare con una foglia secca.",
-  "Ha un orecchio piegato, forse si è ferito.",
-  "Mi segue quando porto fuori la spazzatura.",
-  "L'ho visto litigare con un altro gatto.",
-  "Sembra che aspetti qualcuno ogni mattina.",
-  "Ha un musetto davvero simpatico.",
-  "L'ho visto saltare tra i cespugli del giardino pubblico."
+  "Ha un orecchio piegato, forse si è ferito."
 ];

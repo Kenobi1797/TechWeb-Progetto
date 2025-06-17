@@ -4,7 +4,8 @@ import { faker } from '@faker-js/faker';
 import { insertCat } from '../db/catsDb';
 import { insertComment } from '../db/commentsDb';
 import { getAllUsers } from '../db/usersDb';
-import { strayCatComments } from './strayCatComments';
+import { strayCatComments, strayCatDescriptions } from './strayCat';
+import pool from '../config/db';
 
 const CAT_API = 'https://api.thecatapi.com/v1/images/search?limit=1';
 
@@ -44,19 +45,8 @@ export function startCronJobs() {
         const { latitude, longitude } = getRandomItalianCoords();
         // Genera un titolo casuale per l'avvistamento
         const title = faker.word.noun({ length: { min: 5, max: 15 } });
-        // Genera una descrizione casuale
-        const description = faker.helpers.arrayElement([
-          "Gatto avvistato nei pressi del parcheggio.",
-          "Era nascosto sotto una macchina.",
-          "Sembrava affamato e spaesato.",
-          "Gatto molto docile e tranquillo.",
-          "Ha miagolato quando mi sono avvicinato.",
-          "Si aggirava tra i cespugli vicino al parco.",
-          "Sembrava spaventato dai rumori del traffico.",
-          "Ha seguito alcune persone fino all'ingresso del supermercato.",
-          "Si è rifugiato sotto una panchina durante la pioggia.",
-          "Ha il pelo arruffato e sembra aver bisogno di cure."
-        ]);
+        // Usa un commento casuale anche per la descrizione
+        const description = faker.helpers.arrayElement(strayCatDescriptions);
 
         // Inserisci il nuovo avvistamento nel database
         const cat = await insertCat(
@@ -85,6 +75,37 @@ export function startCronJobs() {
     } catch (err) {
       // Gestione degli errori: stampa l'errore in console
       console.error('Errore nel cron job:', err);
+    }
+  });
+
+  // Ogni ora aggiorna solo descrizioni e commenti non coerenti
+  cron.schedule('0 * * * *', async () => {
+    try {
+      // Aggiorna descrizioni dei gatti non coerenti
+      const { rows: cats } = await pool.query('SELECT id, description FROM cats');
+      for (const cat of cats) {
+        if (!strayCatDescriptions.includes(cat.description)) {
+          const newDescription = faker.helpers.arrayElement(strayCatDescriptions);
+          await pool.query(
+            'UPDATE cats SET description = $1 WHERE id = $2',
+            [newDescription, cat.id]
+          );
+        }
+      }
+      // Aggiorna commenti non coerenti
+      const { rows: comments } = await pool.query('SELECT id, content FROM comments');
+      for (const comment of comments) {
+        if (!strayCatComments.includes(comment.content)) {
+          const newContent = faker.helpers.arrayElement(strayCatComments);
+          await pool.query(
+            'UPDATE comments SET content = $1 WHERE id = $2',
+            [newContent, comment.id]
+          );
+        }
+      }
+      console.log('Cron: descrizioni e commenti non coerenti aggiornati.');
+    } catch (err) {
+      console.error('Errore aggiornamento descrizioni/commenti:', err);
     }
   });
 }
