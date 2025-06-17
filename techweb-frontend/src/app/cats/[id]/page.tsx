@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { fetchCatById } from "@/utils/ServerConnect";
 import { Cat, Comment } from "@/utils/types";
+import MarkdownViewer from "@/components/MarkdownViewer";
 
 export default function CatDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -49,7 +50,9 @@ export default function CatDetailPage() {
       )}
       <div className="mb-4">
         <strong>Descrizione:</strong>
-        <div>{cat.description || <span className="italic text-gray-400">Nessuna descrizione</span>}</div>
+        <MarkdownViewer>
+          {cat.description || "*Nessuna descrizione*"}
+        </MarkdownViewer>
       </div>
       <div className="mb-4">
         <strong>Posizione:</strong>
