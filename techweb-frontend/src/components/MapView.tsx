@@ -3,7 +3,7 @@ import "../utils/fixLeafletIcon";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import Image from "next/image";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 
 type MarkerData = {
   lat: number;
@@ -18,6 +18,7 @@ interface MapViewProps {
 
 export default function MapView({ markers }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
+  const [maptilerKey, setMaptilerKey] = useState<string>("");
 
   // Rileva la lingua dell'utente, usa solo il codice principale (es: "it", "en")
   const userLang = useMemo(() => {
@@ -31,11 +32,17 @@ export default function MapView({ markers }: MapViewProps) {
     return "en";
   }, []);
 
-  // Sostituisci con la tua MapTiler API KEY gratuita
-  const MAPTILER_KEY = "get_your_own_D6rA4zTHduk6KOKTXzGB"; // demo key, sostituisci in produzione
+  // Recupera la chiave MapTiler dal backend
+  useEffect(() => {
+    fetch("http://localhost:5000/maptiler-key")
+      .then(res => res.json())
+      .then(data => setMaptilerKey(data.key ?? ""));
+  }, []);
 
   // URL tile con lingua dinamica
-  const tileUrl = `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}&lang=${userLang}`;
+  const tileUrl = maptilerKey
+    ? `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${maptilerKey}&lang=${userLang}`
+    : "";
 
   const defaultPos: [number, number] = markers.length
     ? [markers[0].lat, markers[0].lng]
@@ -46,45 +53,47 @@ export default function MapView({ markers }: MapViewProps) {
   }, [markers]);
 
   return (
-    <div ref={mapRef} style={{ width: "100%", height: "450px" }}>
-      <MapContainer
-        center={defaultPos}
-        zoom={13}
-        minZoom={2}
-        style={{ height: "450px", minHeight: "450px", width: "100%" }}
-        className="rounded-lg shadow-sm"
-        maxBounds={[[-90, -180], [90, 180]]}
-        maxBoundsViscosity={1.0}
-        worldCopyJump={false}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
-          url={tileUrl}
-          noWrap={true}
-        />
-        {markers.map((m, i) => (
-          <Marker
-            key={`${m.lat}-${m.lng}-${m.title ?? ""}-${i}`}
-            position={[m.lat, m.lng]}
-          >
-            <Popup>
-              <strong>{m.title ?? "Avvistamento"}</strong>
-              {m.imageUrl && (
-                <div>
-                  <Image
-                    src={m.imageUrl}
-                    alt={m.title ?? "Avvistamento"}
-                    width={120}
-                    height={80}
-                    style={{ maxWidth: 120, marginTop: 4, height: "auto" }}
-                    loading="lazy"
-                  />
-                </div>
-              )}
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+    <div ref={mapRef} className="w-full" style={{ minHeight: 300 }}>
+      {maptilerKey && (
+        <MapContainer
+          center={defaultPos}
+          zoom={13}
+          minZoom={2}
+          style={{ width: "100%", height: 300 }}
+          className="rounded-lg shadow-sm"
+          maxBounds={[[-90, -180], [90, 180]]}
+          maxBoundsViscosity={1.0}
+          worldCopyJump={false}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
+            url={tileUrl}
+            noWrap={true}
+          />
+          {markers.map((m, i) => (
+            <Marker
+              key={`${m.lat}-${m.lng}-${m.title ?? ""}-${i}`}
+              position={[m.lat, m.lng]}
+            >
+              <Popup>
+                <strong>{m.title ?? "Avvistamento"}</strong>
+                {m.imageUrl && (
+                  <div>
+                    <Image
+                      src={m.imageUrl}
+                      alt={m.title ?? "Avvistamento"}
+                      width={120}
+                      height={80}
+                      style={{ maxWidth: 120, marginTop: 4, height: "auto" }}
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      )}
     </div>
   );
 }

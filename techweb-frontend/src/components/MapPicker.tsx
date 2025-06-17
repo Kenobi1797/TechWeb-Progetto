@@ -2,7 +2,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "../utils/fixLeafletIcon";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 interface MapPickerProps {
   readonly position?: LatLngExpression | null;
@@ -39,26 +39,36 @@ export default function CatLocationPicker({
     return "en";
   }, []);
 
-  // Sostituisci con la tua MapTiler API KEY gratuita
-  const MAPTILER_KEY = "get_your_own_D6rA4zTHduk6KOKTXzGB"; // demo key, sostituisci in produzione
+  // Recupera la chiave MapTiler dal backend
+  const [maptilerKey, setMaptilerKey] = useState<string>("");
 
-  const tileUrl = `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}&lang=${userLang}`;
+  useEffect(() => {
+    fetch("http://localhost:5000/maptiler-key")
+      .then((res) => res.json())
+      .then((data) => setMaptilerKey(data.key ?? ""));
+  }, []);
+
+  const tileUrl = maptilerKey
+    ? `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${maptilerKey}&lang=${userLang}`
+    : "";
 
   return (
-    <div className="h-64 w-full mb-2">
-      <MapContainer
-        center={value ? [value.lat, value.lng] : [41.4845, 13.4989]}
-        zoom={13}
-        minZoom={2}
-        className="h-full rounded-lg shadow"
-        style={{ minHeight: 200, width: "100%" }}
-        maxBounds={[[-90, -180], [90, 180]]}
-        maxBoundsViscosity={1.0}
-        worldCopyJump={false}
-      >
-        <TileLayer url={tileUrl} noWrap={true} />
-        <MapPicker position={value ? [value.lat, value.lng] : undefined} onChange={onChange} />
-      </MapContainer>
+    <div className="w-full mb-2" style={{ minHeight: 200 }}>
+      {maptilerKey && (
+        <MapContainer
+          center={value ? [value.lat, value.lng] : [41.4845, 13.4989]}
+          zoom={13}
+          minZoom={2}
+          className="rounded-lg shadow"
+          style={{ width: "100%", height: 200 }}
+          maxBounds={[[-90, -180], [90, 180]]}
+          maxBoundsViscosity={1.0}
+          worldCopyJump={false}
+        >
+          <TileLayer url={tileUrl} noWrap={true} />
+          <MapPicker position={value ? [value.lat, value.lng] : undefined} onChange={onChange} />
+        </MapContainer>
+      )}
     </div>
   );
 }

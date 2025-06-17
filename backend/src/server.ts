@@ -24,6 +24,11 @@ app.use('/uploads', express.static('uploads'));
 app.use('/cats', catRoutes);
 app.use('/comments', commentRoutes);
 
+// Espone la chiave MapTiler in modo sicuro solo al frontend
+app.get('/maptiler-key', (req, res) => {
+  res.json({ key: process.env.MAPTILER_KEY ?? "" });
+});
+
 const PORT = process.env.PORT ?? 5000;
 
 initDb()
