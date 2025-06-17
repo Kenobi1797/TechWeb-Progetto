@@ -5,6 +5,19 @@ import { insertCat } from '../db/catsDb';
 import { insertComment } from '../db/commentsDb';
 import { getAllUsers } from '../db/usersDb';
 
+const strayCatComments = [
+  "Sembra che abbia fame... qualcuno l'ha visto di recente?",
+  "Poverino, era sotto la pioggia vicino alla stazione.",
+  "L'ho visto spesso qui, sembra tranquillo.",
+  "Attenzione, potrebbe essere ferito a una zampa.",
+  "Ha gli occhi dolcissimi, ma sembra molto spaventato.",
+  "Era in cerca di cibo tra i bidoni questa mattina.",
+  "Ha un collare? Forse si è perso.",
+  "Era con altri due gatti, forse è una colonia.",
+  "Chi può portargli un po' di cibo?",
+  "È molto magro... servirebbe aiuto urgente."
+];
+
 const CAT_API = 'https://api.thecatapi.com/v1/images/search?limit=1';
 
 export function startCronJobs() {
@@ -46,7 +59,7 @@ export function startCronJobs() {
         const nComments = faker.number.int({ min: 1, max: 3 });
         for (let i = 0; i < nComments; i++) {
           const commenter = faker.helpers.arrayElement(users);
-          const content = faker.hacker.phrase();
+          const content = faker.helpers.arrayElement(strayCatComments);
           await insertComment(commenter.id, Number(cat.id), content);
         }
 
