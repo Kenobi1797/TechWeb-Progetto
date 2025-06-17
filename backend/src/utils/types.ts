@@ -25,3 +25,11 @@ export interface Comment {
   created_at: Date;
   username?: string;
 }
+
+export interface CityRegion {
+  name: string;
+  latMin: number;
+  latMax: number;
+  lonMin: number;
+  lonMax: number;
+}

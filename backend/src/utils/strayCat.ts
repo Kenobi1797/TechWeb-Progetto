@@ -1,3 +1,19 @@
+import { CityRegion } from '../utils/types';
+
+export const cityRegions: CityRegion[] = [
+  { name: "Rome, IT", latMin: 41.8, latMax: 42.0, lonMin: 12.4, lonMax: 12.6 },
+  { name: "New York, US", latMin: 40.5, latMax: 40.9, lonMin: -74.3, lonMax: -73.7 },
+  { name: "Tokyo, JP", latMin: 35.6, latMax: 35.8, lonMin: 139.6, lonMax: 139.9 },
+  { name: "Mumbai, IN", latMin: 18.9, latMax: 19.2, lonMin: 72.7, lonMax: 72.9 },
+  { name: "São Paulo, BR", latMin: -23.7, latMax: -23.4, lonMin: -46.8, lonMax: -46.3 },
+  { name: "Paris, FR", latMin: 48.8, latMax: 48.9, lonMin: 2.2, lonMax: 2.4 },
+  { name: "London, UK", latMin: 51.4, latMax: 51.6, lonMin: -0.3, lonMax: 0.1 },
+  { name: "Sydney, AU", latMin: -34.0, latMax: -33.7, lonMin: 150.9, lonMax: 151.3 },
+  { name: "Berlin, DE", latMin: 52.4, latMax: 52.6, lonMin: 13.2, lonMax: 13.6 },
+  { name: "Los Angeles, US", latMin: 33.9, latMax: 34.1, lonMin: -118.5, lonMax: -118.1 },
+  // ...aggiungi altre città se vuoi
+];
+
 export const strayCatComments = [
   "Qualcuno sa se ha un nome? Lo vedo spesso vicino al tabaccaio.",
   "I bambini del quartiere gli hanno costruito una piccola cuccia.",

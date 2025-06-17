@@ -4,88 +4,88 @@ import { faker } from '@faker-js/faker';
 import { insertCat } from '../db/catsDb';
 import { insertComment } from '../db/commentsDb';
 import { getAllUsers } from '../db/usersDb';
-import { strayCatComments, strayCatDescriptions } from './strayCat';
+import { strayCatComments, strayCatDescriptions, cityRegions } from './strayCat';
 import pool from '../config/db';
+
+function getRandomCoordsInCity(): { latitude: number; longitude: number; city: string } {
+  const city = faker.helpers.arrayElement(cityRegions);
+  const latitude = faker.number.float({ min: city.latMin, max: city.latMax, fractionDigits: 4 });
+  const longitude = faker.number.float({ min: city.lonMin, max: city.lonMax, fractionDigits: 4 });
+  return { latitude, longitude, city: city.name };
+}
 
 const CAT_API = 'https://api.thecatapi.com/v1/images/search?limit=1';
 
-// Coordinate plausibili per l'Italia
-function getRandomItalianCoords() {
-  const latRange = [37.0, 46.5];
-  const lonRange = [6.6, 13.9];
-  const latitude = faker.number.float({ min: latRange[0], max: latRange[1], fractionDigits: 4 });
-  const longitude = faker.number.float({ min: lonRange[0], max: lonRange[1], fractionDigits: 4 });
-  return { latitude, longitude };
-}
-
 export function startCronJobs() {
-  // Schedula un job che si attiva ogni 10 minuti
+  // Ogni 10 minuti crea 2 nuovi avvistamenti in città reali
   cron.schedule('*/10 * * * *', async () => {
     try {
-      // Ottieni tutti gli utenti dal database
       const users = await getAllUsers();
-      // Se non ci sono utenti, esci
       if (!users.length) return;
-      // Crea 2 nuovi avvistamenti per ogni esecuzione del job
       for (let j = 0; j < 2; j++) {
-        // Scegli casualmente un utente che pubblicherà l'avvistamento
         const systemUser = faker.helpers.arrayElement(users);
-
-        // Richiedi un'immagine casuale di gatto dall'API esterna
         const res = await fetch(CAT_API, {
           headers: { 'x-api-key': process.env.CATAPI_KEY ?? '' }
         });
         const data = await res.json();
         const imageUrl: string | null = data?.[0]?.url ?? null;
-        // Se l'immagine è una GIF, scartala (preferiamo solo immagini statiche)
         if (!imageUrl || imageUrl.toLowerCase().endsWith('.gif')) {
           continue;
         }
-        // Genera coordinate casuali per la posizione dell'avvistamento
-        const { latitude, longitude } = getRandomItalianCoords();
-        // Genera un titolo casuale per l'avvistamento
+        const { latitude, longitude, city } = getRandomCoordsInCity();
         const title = faker.word.noun({ length: { min: 5, max: 15 } });
-        // Usa un commento casuale anche per la descrizione
-        const description = faker.helpers.arrayElement(strayCatDescriptions);
+        // Inserisci la città nella descrizione per maggiore realismo
+        const description = `${faker.helpers.arrayElement(strayCatDescriptions)} (${city})`;
 
-        // Inserisci il nuovo avvistamento nel database
         const cat = await insertCat(
-          systemUser.id, // ID dell'utente che pubblica
-          title,         // Titolo dell'avvistamento
-          description,   // Descrizione
-          imageUrl,      // URL dell'immagine del gatto
-          latitude,      // Latitudine
-          longitude      // Longitudine
+          systemUser.id,
+          title,
+          description,
+          imageUrl,
+          latitude,
+          longitude
         );
 
-        // Determina quanti commenti casuali aggiungere (tra 1 e 3)
         const nComments = faker.number.int({ min: 1, max: 3 });
         for (let i = 0; i < nComments; i++) {
-          // Scegli casualmente un utente che commenterà
           const commenter = faker.helpers.arrayElement(users);
-          // Scegli casualmente un contenuto per il commento
           const content = faker.helpers.arrayElement(strayCatComments);
-          // Inserisci il commento nel database
           await insertComment(commenter.id, Number(cat.id), content);
         }
 
-        // Log di conferma per debug
-        console.log(`Cron: creato avvistamento #${cat.id} con ${nComments} commenti`);
+        console.log(`Cron: creato avvistamento #${cat.id} (${city}) con ${nComments} commenti`);
       }
     } catch (err) {
-      // Gestione degli errori: stampa l'errore in console
       console.error('Errore nel cron job:', err);
     }
   });
 
-  // Ogni ora aggiorna solo descrizioni e commenti non coerenti
+  // Ogni ora correggi descrizioni, commenti e coordinate non plausibili
   cron.schedule('0 * * * *', async () => {
     try {
-      // Aggiorna descrizioni dei gatti non coerenti
-      const { rows: cats } = await pool.query('SELECT id, description FROM cats');
+      // Aggiorna descrizioni dei gatti non coerenti e correggi coordinate fuori città
+      const { rows: cats } = await pool.query('SELECT id, description, latitude, longitude FROM cats');
       for (const cat of cats) {
-        if (!strayCatDescriptions.includes(cat.description)) {
-          const newDescription = faker.helpers.arrayElement(strayCatDescriptions);
+        // Correggi descrizione se non coerente
+        let updateDesc = false;
+        let newDescription = cat.description;
+        if (!strayCatDescriptions.some(d => cat.description?.startsWith(d))) {
+          newDescription = faker.helpers.arrayElement(strayCatDescriptions);
+          updateDesc = true;
+        }
+        // Correggi coordinate se fuori da tutte le città
+        const found = cityRegions.find(c =>
+          cat.latitude >= c.latMin && cat.latitude <= c.latMax &&
+          cat.longitude >= c.lonMin && cat.longitude <= c.lonMax
+        );
+        if (!found) {
+          const { latitude, longitude, city } = getRandomCoordsInCity();
+          newDescription = `${faker.helpers.arrayElement(strayCatDescriptions)} (coordinata corretta in ${city})`;
+          await pool.query(
+            'UPDATE cats SET latitude = $1, longitude = $2, description = $3 WHERE id = $4',
+            [latitude, longitude, newDescription, cat.id]
+          );
+        } else if (updateDesc) {
           await pool.query(
             'UPDATE cats SET description = $1 WHERE id = $2',
             [newDescription, cat.id]
@@ -103,9 +103,9 @@ export function startCronJobs() {
           );
         }
       }
-      console.log('Cron: descrizioni e commenti non coerenti aggiornati.');
+      console.log('Cron: descrizioni, commenti e coordinate non coerenti/valide aggiornati.');
     } catch (err) {
-      console.error('Errore aggiornamento descrizioni/commenti:', err);
+      console.error('Errore aggiornamento descrizioni/commenti/coordinate:', err);
     }
   });
 }
