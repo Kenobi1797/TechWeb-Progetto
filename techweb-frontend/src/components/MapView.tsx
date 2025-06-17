@@ -50,12 +50,17 @@ export default function MapView({ markers }: MapViewProps) {
       <MapContainer
         center={defaultPos}
         zoom={13}
+        minZoom={2}
         style={{ height: "450px", minHeight: "450px", width: "100%" }}
         className="rounded-lg shadow-sm"
+        maxBounds={[[-90, -180], [90, 180]]}
+        maxBoundsViscosity={1.0}
+        worldCopyJump={false}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
           url={tileUrl}
+          noWrap={true}
         />
         {markers.map((m, i) => (
           <Marker

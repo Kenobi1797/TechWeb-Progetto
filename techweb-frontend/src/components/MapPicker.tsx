@@ -49,10 +49,14 @@ export default function CatLocationPicker({
       <MapContainer
         center={value ? [value.lat, value.lng] : [41.4845, 13.4989]}
         zoom={13}
+        minZoom={2}
         className="h-full rounded-lg shadow"
         style={{ minHeight: 200, width: "100%" }}
+        maxBounds={[[-90, -180], [90, 180]]}
+        maxBoundsViscosity={1.0}
+        worldCopyJump={false}
       >
-        <TileLayer url={tileUrl} />
+        <TileLayer url={tileUrl} noWrap={true} />
         <MapPicker position={value ? [value.lat, value.lng] : undefined} onChange={onChange} />
       </MapContainer>
     </div>
