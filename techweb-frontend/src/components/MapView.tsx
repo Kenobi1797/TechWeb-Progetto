@@ -3,7 +3,7 @@ import "../utils/fixLeafletIcon";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 
 type MarkerData = {
   lat: number;
@@ -19,12 +19,30 @@ interface MapViewProps {
 export default function MapView({ markers }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
 
+  // Rileva la lingua dell'utente, usa solo il codice principale (es: "it", "en")
+  const userLang = useMemo(() => {
+    if (typeof window !== "undefined") {
+      const lang =
+        navigator.language ||
+        (navigator.languages && navigator.languages[0]) ||
+        "en";
+      return lang.split("-")[0];
+    }
+    return "en";
+  }, []);
+
+  // Sostituisci con la tua MapTiler API KEY gratuita
+  const MAPTILER_KEY = "get_your_own_D6rA4zTHduk6KOKTXzGB"; // demo key, sostituisci in produzione
+
+  // URL tile con lingua dinamica
+  const tileUrl = `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}&lang=${userLang}`;
+
   const defaultPos: [number, number] = markers.length
     ? [markers[0].lat, markers[0].lng]
     : [41.4845, 13.4989]; // Default: Fondi
 
   useEffect(() => {
-    if (!mapRef.current) return; // <-- Fix: assicurati che il container esista
+    if (!mapRef.current) return;
   }, [markers]);
 
   return (
@@ -36,8 +54,8 @@ export default function MapView({ markers }: MapViewProps) {
         className="rounded-lg shadow-sm"
       >
         <TileLayer
-          attribution='&copy; OpenStreetMap contributors'
-          url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
+          url={tileUrl}
         />
         {markers.map((m, i) => (
           <Marker

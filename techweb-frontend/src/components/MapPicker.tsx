@@ -2,6 +2,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "../utils/fixLeafletIcon";
+import { useMemo } from "react";
 
 interface MapPickerProps {
   readonly position?: LatLngExpression | null;
@@ -29,6 +30,20 @@ export default function CatLocationPicker({
   value: { lat: number; lng: number } | null;
   onChange: (pos: { lat: number; lng: number }) => void;
 }>) {
+  // Rileva la lingua dell'utente
+  const userLang = useMemo(() => {
+    if (typeof window !== "undefined") {
+      const lang = navigator.language || (navigator.languages && navigator.languages[0]) || "en";
+      return lang.split("-")[0];
+    }
+    return "en";
+  }, []);
+
+  // Sostituisci con la tua MapTiler API KEY gratuita
+  const MAPTILER_KEY = "get_your_own_D6rA4zTHduk6KOKTXzGB"; // demo key, sostituisci in produzione
+
+  const tileUrl = `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}&lang=${userLang}`;
+
   return (
     <div className="h-64 w-full mb-2">
       <MapContainer
@@ -37,7 +52,7 @@ export default function CatLocationPicker({
         className="h-full rounded-lg shadow"
         style={{ minHeight: 200, width: "100%" }}
       >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer url={tileUrl} />
         <MapPicker position={value ? [value.lat, value.lng] : undefined} onChange={onChange} />
       </MapContainer>
     </div>
