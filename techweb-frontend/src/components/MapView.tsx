@@ -24,7 +24,7 @@ export default function MapView({ markers }: MapViewProps) {
     if (typeof window !== "undefined") {
       const lang =
         navigator.language ||
-        (navigator.languages && navigator.languages[0]) ||
+        navigator.languages?.[0] ||
         "en";
       return lang.split("-")[0];
     }

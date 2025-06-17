@@ -33,7 +33,7 @@ export default function CatLocationPicker({
   // Rileva la lingua dell'utente
   const userLang = useMemo(() => {
     if (typeof window !== "undefined") {
-      const lang = navigator.language || (navigator.languages && navigator.languages[0]) || "en";
+      const lang = navigator.language || navigator.languages?.[0] || "en";
       return lang.split("-")[0];
     }
     return "en";
