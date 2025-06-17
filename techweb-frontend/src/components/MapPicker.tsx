@@ -53,14 +53,23 @@ export default function CatLocationPicker({
     : "";
 
   return (
-    <div className="w-full mb-2" style={{ minHeight: 200 }}>
+    <div
+      className="w-full relative overflow-x-auto"
+      style={{
+        aspectRatio: "16/9",
+        minHeight: 180,
+        height: "auto",
+        minWidth: 0,
+        maxWidth: "100vw",
+      }}
+    >
       {maptilerKey && (
         <MapContainer
           center={value ? [value.lat, value.lng] : [41.4845, 13.4989]}
           zoom={13}
           minZoom={2}
-          className="rounded-lg shadow"
-          style={{ width: "100%", height: 200 }}
+          className="rounded-lg shadow h-full"
+          style={{ width: "100%", height: "100%", minWidth: 0, maxWidth: "100vw" }}
           maxBounds={[[-90, -180], [90, 180]]}
           maxBoundsViscosity={1.0}
           worldCopyJump={false}

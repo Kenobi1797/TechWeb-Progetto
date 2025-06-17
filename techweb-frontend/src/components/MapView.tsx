@@ -53,14 +53,24 @@ export default function MapView({ markers }: MapViewProps) {
   }, [markers]);
 
   return (
-    <div ref={mapRef} className="w-full" style={{ minHeight: 300 }}>
+    <div
+      ref={mapRef}
+      className="w-full relative overflow-x-auto"
+      style={{
+        aspectRatio: "16/9",
+        minHeight: 220,
+        height: "auto",
+        minWidth: 0,
+        maxWidth: "100vw",
+      }}
+    >
       {maptilerKey && (
         <MapContainer
           center={defaultPos}
           zoom={13}
           minZoom={2}
-          style={{ width: "100%", height: 300 }}
-          className="rounded-lg shadow-sm"
+          style={{ width: "100%", height: "100%", minWidth: 0, maxWidth: "100vw" }}
+          className="rounded-lg shadow-sm h-full"
           maxBounds={[[-90, -180], [90, 180]]}
           maxBoundsViscosity={1.0}
           worldCopyJump={false}
