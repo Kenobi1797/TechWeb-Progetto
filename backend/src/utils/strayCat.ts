@@ -11,7 +11,16 @@ export const cityRegions: CityRegion[] = [
   { name: "Sydney, AU", latMin: -34.0, latMax: -33.7, lonMin: 150.9, lonMax: 151.3 },
   { name: "Berlin, DE", latMin: 52.4, latMax: 52.6, lonMin: 13.2, lonMax: 13.6 },
   { name: "Los Angeles, US", latMin: 33.9, latMax: 34.1, lonMin: -118.5, lonMax: -118.1 },
-  // ...aggiungi altre città se vuoi
+  { name: "Madrid, ES", latMin: 40.3, latMax: 40.5, lonMin: -3.8, lonMax: -3.5 },
+  { name: "Moscow, RU", latMin: 55.6, latMax: 55.9, lonMin: 37.4, lonMax: 37.8 },
+  { name: "Istanbul, TR", latMin: 41.0, latMax: 41.2, lonMin: 28.8, lonMax: 29.2 },
+  { name: "Cairo, EG", latMin: 30.0, latMax: 30.2, lonMin: 31.1, lonMax: 31.4 },
+  { name: "Beijing, CN", latMin: 39.8, latMax: 40.0, lonMin: 116.2, lonMax: 116.6 },
+  { name: "Toronto, CA", latMin: 43.6, latMax: 43.8, lonMin: -79.6, lonMax: -79.2 },
+  { name: "Mexico City, MX", latMin: 19.2, latMax: 19.5, lonMin: -99.3, lonMax: -98.9 },
+  { name: "Seoul, KR", latMin: 37.4, latMax: 37.7, lonMin: 126.8, lonMax: 127.1 },
+  { name: "Bangkok, TH", latMin: 13.6, latMax: 13.9, lonMin: 100.4, lonMax: 100.7 },
+  { name: "Johannesburg, ZA", latMin: -26.3, latMax: -26.1, lonMin: 27.9, lonMax: 28.2 },
 ];
 
 export const strayCatComments = [
