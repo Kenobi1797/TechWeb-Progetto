@@ -10,12 +10,22 @@ const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 
 export default function HomePage() {
   const [cats, setCats] = useState<Cat[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setLoading(true);
     fetchCats()
       .then(setCats)
-      .catch(() => setCats([]));
+      .catch(() => {
+        setCats([]);
+        setError("Errore nel caricamento degli avvistamenti.");
+      })
+      .finally(() => setLoading(false));
   }, []);
+
+  if (loading) return <div className="text-center py-10">Caricamento...</div>;
+  if (error) return <div className="text-center py-10">{error}</div>;
 
   return (
     <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
@@ -26,14 +36,18 @@ export default function HomePage() {
         Esplora gli ultimi avvistamenti di gatti randagi nella tua città. Clicca su una card per vedere i dettagli e aiutare la community!
       </p>
       <div className="mb-8">
-        <MapView
-          markers={cats.map((cat) => ({
-            lat: cat.latitude,
-            lng: cat.longitude,
-            title: cat.title,
-            imageUrl: cat.imageUrl ?? "",
-          }))}
-        />
+        {cats.length > 0 ? (
+          <MapView
+            markers={cats.map((cat) => ({
+              lat: cat.latitude,
+              lng: cat.longitude,
+              title: cat.title,
+              imageUrl: cat.imageUrl ?? "",
+            }))}
+          />
+        ) : (
+          <div className="text-center py-10">Nessun dato disponibile per la mappa.</div>
+        )}
       </div>
       <CatGrid cats={cats} />
     </div>

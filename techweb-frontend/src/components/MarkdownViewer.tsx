@@ -11,7 +11,11 @@ interface MarkdownViewerProps {
 
 export default function MarkdownViewer({ children, className }: MarkdownViewerProps) {
   return (
-    <div className={className ?? "prose max-w-none"}>
+    <div
+      className={className ?? "prose prose-sm sm:prose lg:prose-lg max-w-none"}
+      role="region"
+      aria-label="Contenuto formattato"
+    >
       <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
         {children}
       </ReactMarkdown>

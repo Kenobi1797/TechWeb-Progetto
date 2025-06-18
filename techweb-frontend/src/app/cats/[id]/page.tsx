@@ -70,7 +70,7 @@ export default function CatDetailPage() {
             <li key={comment.id} className="mb-3 border-b pb-2">
               <div className="font-semibold">{comment.username}</div>
               <div className="text-sm text-gray-600">{new Date(comment.createdAt).toLocaleString()}</div>
-              <div>{comment.content}</div>
+              <MarkdownViewer className="prose prose-sm max-w-none">{comment.content}</MarkdownViewer>
             </li>
           ))}
         </ul>

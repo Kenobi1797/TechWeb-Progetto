@@ -21,6 +21,15 @@ Tutte le chiamate al backend devono essere fatte tramite il modulo `src/utils/Se
 
 Puoi modificare la pagina principale modificando `app/page.tsx`. La pagina si aggiorna automaticamente.
 
+## Best practice e ottimizzazione
+
+- Usa sempre le funzioni di comunicazione in `src/utils/ServerConnect.ts` per interagire col backend.
+- Gestisci loading e errori nelle pagine per una UX migliore.
+- Usa componenti dinamici (`dynamic import`) per caricare solo ciò che serve (es. MapView).
+- Per accessibilità, usa sempre `aria-label` e ruoli semantici dove necessario.
+- Ottimizza le immagini usando il componente `next/image` e configura i domini remoti in `next.config.ts`.
+- Mantieni il codice DRY e centralizza la gestione degli errori.
+
 ## Stack
 
 - **React + Next.js** (App Router)
