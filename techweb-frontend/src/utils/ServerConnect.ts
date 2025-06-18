@@ -39,7 +39,7 @@ async function handleFetch<T>(promise: Promise<Response>, defaultMsg = "API erro
       let data: Record<string, unknown> = {};
       try { data = await res.json(); } catch { /* ignore */ }
       throw new Error(typeof data === "object" && data !== null && "error" in data && typeof data.error === "string"
-        ? (data.error as string)
+        ? data.error
         : defaultMsg
       );
     }
