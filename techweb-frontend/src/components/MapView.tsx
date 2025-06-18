@@ -58,13 +58,12 @@ export default function MapView({ markers }: MapViewProps) {
   return (
     <div
       ref={mapRef}
-      className="w-full relative overflow-x-auto"
+      className="w-full relative aspect-ratio-16-9"
       style={{
-        aspectRatio: "16/9",
         minHeight: 220,
-        height: "auto",
         minWidth: 0,
         maxWidth: "100vw",
+        height: "auto",
       }}
     >
       {maptilerKey && (
@@ -72,7 +71,7 @@ export default function MapView({ markers }: MapViewProps) {
           center={defaultPos}
           zoom={13}
           minZoom={2}
-          style={{ width: "100%", height: "100%", minWidth: 0, maxWidth: "100vw" }}
+          style={{ width: "100%", height: "100%" }}
           className="rounded-lg shadow-sm h-full"
           maxBounds={[[-90, -180], [90, 180]]}
           maxBoundsViscosity={1.0}
@@ -81,7 +80,6 @@ export default function MapView({ markers }: MapViewProps) {
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
             url={tileUrl}
-            noWrap={true}
           />
           {markers.map((m, i) => (
             <Marker

@@ -54,13 +54,12 @@ export default function CatLocationPicker({
 
   return (
     <div
-      className="w-full relative overflow-x-auto"
+      className="w-full relative aspect-ratio-16-9"
       style={{
-        aspectRatio: "16/9",
         minHeight: 180,
-        height: "auto",
         minWidth: 0,
         maxWidth: "100vw",
+        height: "auto",
       }}
     >
       {maptilerKey && (
@@ -69,12 +68,12 @@ export default function CatLocationPicker({
           zoom={13}
           minZoom={2}
           className="rounded-lg shadow h-full"
-          style={{ width: "100%", height: "100%", minWidth: 0, maxWidth: "100vw" }}
+          style={{ width: "100%", height: "100%" }}
           maxBounds={[[-90, -180], [90, 180]]}
           maxBoundsViscosity={1.0}
           worldCopyJump={false}
         >
-          <TileLayer url={tileUrl} noWrap={true} />
+          <TileLayer url={tileUrl} />
           <MapPicker position={value ? [value.lat, value.lng] : undefined} onChange={onChange} />
         </MapContainer>
       )}

@@ -202,8 +202,16 @@ textarea.font-mono:focus {
   width: 100% !important;
   height: 100% !important;
   box-sizing: border-box;
+  /* Fix per dispositivi mobili */
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--color-background, #fff); /* Cambia il colore di fondo se necessario */
 }
 
 .aspect-ratio-16-9 {
   aspect-ratio: 16/9;
+  width: 100%;
+  height: auto;
+  display: block;
+  position: relative;
 }
