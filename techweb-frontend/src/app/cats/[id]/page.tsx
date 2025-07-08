@@ -2,13 +2,21 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { fetchCatById } from "@/utils/ServerConnect";
 import { Cat, Comment } from "@/utils/types";
 import MarkdownViewer from "@/components/MarkdownViewer";
 
+const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
+
+type CatWithDetails = Cat & { 
+  comments: Comment[]; 
+  descriptionHtml?: string;
+};
+
 export default function CatDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [cat, setCat] = useState<(Cat & { comments: Comment[] }) | null>(null);
+  const [cat, setCat] = useState<CatWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,32 +56,75 @@ export default function CatDetailPage() {
           />
         </div>
       )}
-      <div className="mb-4">
-        <strong>Descrizione:</strong>
-        <MarkdownViewer>
-          {cat.description || "*Nessuna descrizione*"}
-        </MarkdownViewer>
+      
+      {/* Descrizione */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-2">Descrizione</h2>
+        {cat.descriptionHtml ? (
+          <div 
+            className="prose prose-sm max-w-none"
+            dangerouslySetInnerHTML={{ __html: cat.descriptionHtml }}
+          />
+        ) : null}
+        {!cat.descriptionHtml && cat.description ? (
+          <MarkdownViewer className="prose prose-sm max-w-none">
+            {cat.description}
+          </MarkdownViewer>
+        ) : null}
+        {!cat.descriptionHtml && !cat.description ? (
+          <p className="text-gray-500 italic">Nessuna descrizione disponibile</p>
+        ) : null}
       </div>
-      <div className="mb-4">
-        <strong>Posizione:</strong>
-        <div>
-          Lat: {cat.latitude}, Lon: {cat.longitude}
+
+      {/* Mappa con posizione */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-2">Posizione</h2>
+        <div className="h-64 mb-2">
+          <MapView
+            markers={[{
+              lat: cat.latitude,
+              lng: cat.longitude,
+              title: cat.title,
+              imageUrl: cat.imageUrl ?? "",
+              id: cat.id,
+              createdAt: cat.createdAt,
+              description: cat.description ?? ""
+            }]}
+          />
         </div>
+        <p className="text-sm text-gray-600">
+          Coordinate: {cat.latitude.toFixed(6)}, {cat.longitude.toFixed(6)}
+        </p>
       </div>
       <div className="mt-8">
-        <h2 className="text-lg font-semibold mb-2">Commenti</h2>
-        {cat.comments.length === 0 && (
-          <div className="text-gray-400 italic">Nessun commento.</div>
+        <h2 className="text-lg font-semibold mb-4">Commenti ({cat.comments.length})</h2>
+        {cat.comments.length === 0 ? (
+          <div className="text-gray-400 italic bg-gray-50 p-4 rounded">
+            Nessun commento ancora. Sii il primo a commentare questo avvistamento!
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {cat.comments.map((comment) => (
+              <div key={comment.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="font-semibold text-blue-600">{comment.username}</div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(comment.createdAt).toLocaleDateString('it-IT', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </div>
+                </div>
+                <MarkdownViewer className="prose prose-sm max-w-none">
+                  {comment.content}
+                </MarkdownViewer>
+              </div>
+            ))}
+          </div>
         )}
-        <ul>
-          {cat.comments.map((comment) => (
-            <li key={comment.id} className="mb-3 border-b pb-2">
-              <div className="font-semibold">{comment.username}</div>
-              <div className="text-sm text-gray-600">{new Date(comment.createdAt).toLocaleString()}</div>
-              <MarkdownViewer className="prose prose-sm max-w-none">{comment.content}</MarkdownViewer>
-            </li>
-          ))}
-        </ul>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import MarkdownViewer from "./MarkdownViewer";
 
 const CatLocationPicker = dynamic(() => import("./MapPicker"), { ssr: false });
 
@@ -15,6 +16,7 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
 
   const handleFile = (file: File | null) => {
     setImage(file);
@@ -114,20 +116,37 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
         />
       </label>
       <label className="block">
-        <span className="label-text flex items-center gap-2">
-          Descrizione{" "}
-          <span className="text-xs text-blue-700 bg-blue-100 dark:bg-blue-900/60 dark:text-blue-200 px-2 py-0.5 rounded font-mono border border-blue-200 dark:border-blue-800">
-            Markdown
+        <div className="flex items-center justify-between mb-1">
+          <span className="label-text flex items-center gap-2">
+            Descrizione{" "}
+            <span className="text-xs text-blue-700 bg-blue-100 dark:bg-blue-900/60 dark:text-blue-200 px-2 py-0.5 rounded font-mono border border-blue-200 dark:border-blue-800">
+              Markdown
+            </span>
           </span>
-        </span>
-        <textarea
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          required
-          rows={3}
-          className="textarea textarea-bordered w-full font-mono bg-yellow-50 dark:bg-gray-900/40 border-yellow-200 dark:border-yellow-700"
-          placeholder="Puoi usare **grassetto**, *corsivo*, elenchi, link, ecc."
-        />
+          <button
+            type="button"
+            onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
+            className="text-xs text-blue-600 hover:text-blue-800 underline"
+          >
+            {showMarkdownPreview ? "Modifica" : "Anteprima"}
+          </button>
+        </div>
+        {showMarkdownPreview ? (
+          <div className="border border-gray-300 rounded p-3 min-h-[5rem] bg-white">
+            <MarkdownViewer className="prose prose-sm max-w-none">
+              {description || "*Nessuna descrizione*"}
+            </MarkdownViewer>
+          </div>
+        ) : (
+          <textarea
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            required
+            rows={4}
+            className="textarea textarea-bordered w-full font-mono bg-yellow-50 dark:bg-gray-900/40 border-yellow-200 dark:border-yellow-700"
+            placeholder="Puoi usare **grassetto**, *corsivo*, [link](url), elenchi, ecc.&#10;&#10;Esempio:&#10;## Gatto trovato!&#10;Questo **bellissimo** gatto *sembrava* perso..."
+          />
+        )}
       </label>
       <div>
         <span className="label-text mb-1 block">Posizione sulla mappa</span>

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import pool from '../config/db';
+import { validateMarkdown, parseMarkdown } from '../utils/markdown';
 
 interface AuthRequest extends Request {
   user?: { userId: number };
@@ -18,6 +19,15 @@ export const createCat = async (
   if (!req.user) {
     res.status(401).json({ error: 'Utente non autenticato' });
     return;
+  }
+
+  // Validazione markdown se la descrizione è presente
+  if (description) {
+    const validation = validateMarkdown(description);
+    if (!validation.valid) {
+      res.status(400).json({ error: validation.error });
+      return;
+    }
   }
 
   const image_url = req.file?.filename
@@ -117,8 +127,22 @@ export const getCatById = async (
       [id]
     );
 
+    const cat = catResult.rows[0];
+    
+    // Converte la descrizione markdown in HTML se presente
+    let descriptionHtml = null;
+    if (cat.description) {
+      try {
+        descriptionHtml = await parseMarkdown(cat.description);
+      } catch (error) {
+        console.error('Errore nel parsing markdown:', error);
+        descriptionHtml = cat.description; // Fallback al testo originale
+      }
+    }
+
     res.json({
-      ...catResult.rows[0],
+      ...cat,
+      descriptionHtml,
       comments: comments.rows,
     });
     return;

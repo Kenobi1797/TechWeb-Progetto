@@ -43,6 +43,9 @@ export default function HomePage() {
               lng: cat.longitude,
               title: cat.title,
               imageUrl: cat.imageUrl ?? "",
+              id: cat.id,
+              createdAt: cat.createdAt,
+              description: cat.description ?? ""
             }))}
           />
         ) : (

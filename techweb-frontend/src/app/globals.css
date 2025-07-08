@@ -47,11 +47,12 @@ h1, h2, h3, h4, h5 {
   line-height: 1.2;
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-h3 { font-size: 1.5rem; }
-h4 { font-size: 1.2rem; }
-h5 { font-size: 1rem; }
+/* Responsive typography */
+h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); }
+h2 { font-size: clamp(1.5rem, 4vw, 2rem); }
+h3 { font-size: clamp(1.3rem, 3.5vw, 1.5rem); }
+h4 { font-size: clamp(1.1rem, 3vw, 1.2rem); }
+h5 { font-size: clamp(1rem, 2.5vw, 1rem); }
 
 a {
   color: var(--color-secondary);
@@ -214,4 +215,83 @@ textarea.font-mono:focus {
   height: auto;
   display: block;
   position: relative;
+}
+
+/* Mobile-first responsive improvements */
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Improve touch targets on mobile */
+  button, a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Better spacing on mobile */
+  .space-y-4 > * + * {
+    margin-top: 0.75rem;
+  }
+  
+  /* Responsive tables */
+  table {
+    font-size: 0.85rem;
+  }
+  
+  /* Better form elements on mobile */
+  input, textarea, select {
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 44px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Tablet styles */
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  /* Desktop styles */
+  body {
+    font-size: 16px;
+  }
+  
+  /* Hover effects only on devices with hover capability */
+  @media (hover: hover) {
+    button:hover, a:hover {
+      transform: translateY(-1px);
+    }
+  }
+}
+
+/* Improved focus visibility for accessibility */
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: #000;
+    --color-text-primary: #000;
+    --color-text-secondary: #333;
+  }
+  
+  button, input, textarea, select {
+    border-width: 2px;
+  }
 }

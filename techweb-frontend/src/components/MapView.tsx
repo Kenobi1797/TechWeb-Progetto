@@ -10,6 +10,9 @@ type MarkerData = {
   lng: number;
   title?: string;
   imageUrl?: string;
+  id?: number;
+  createdAt?: string;
+  description?: string;
 };
 
 interface MapViewProps {
@@ -86,20 +89,42 @@ export default function MapView({ markers }: MapViewProps) {
               key={`${m.lat}-${m.lng}-${m.title ?? ""}-${i}`}
               position={[m.lat, m.lng]}
             >
-              <Popup>
-                <strong>{m.title ?? "Avvistamento"}</strong>
-                {m.imageUrl && (
-                  <div>
-                    <Image
-                      src={m.imageUrl}
-                      alt={m.title ?? "Avvistamento"}
-                      width={120}
-                      height={80}
-                      style={{ maxWidth: 120, marginTop: 4, height: "auto" }}
-                      loading="lazy"
-                    />
-                  </div>
-                )}
+              <Popup maxWidth={250} closeButton={true}>
+                <div className="popup-content">
+                  <h3 className="font-bold text-lg mb-2">{m.title ?? "Avvistamento"}</h3>
+                  {m.imageUrl && (
+                    <div className="mb-2">
+                      <Image
+                        src={m.imageUrl}
+                        alt={m.title ?? "Avvistamento"}
+                        width={200}
+                        height={120}
+                        style={{ maxWidth: "100%", height: "auto", borderRadius: "4px" }}
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+                  {m.description && (
+                    <p className="text-sm text-gray-600 mb-2 line-clamp-3">
+                      {m.description.length > 100 
+                        ? `${m.description.substring(0, 100)}...` 
+                        : m.description}
+                    </p>
+                  )}
+                  {m.createdAt && (
+                    <p className="text-xs text-gray-500 mb-2">
+                      {new Date(m.createdAt).toLocaleDateString('it-IT')}
+                    </p>
+                  )}
+                  {m.id && (
+                    <a 
+                      href={`/cats/${m.id}`}
+                      className="inline-block bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+                    >
+                      Vedi dettagli
+                    </a>
+                  )}
+                </div>
               </Popup>
             </Marker>
           ))}
