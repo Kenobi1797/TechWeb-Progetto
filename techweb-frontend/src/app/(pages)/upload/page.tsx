@@ -1,11 +1,12 @@
 "use client";
 import UploadForm from "../../../components/UploadForm";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function UploadPage() {
   const router = useRouter();
   const checkedAuth = useRef(false);
+  const [isAuth, setIsAuth] = useState<null | boolean>(null);
 
   useEffect(() => {
     if (checkedAuth.current) return;
@@ -13,7 +14,9 @@ export default function UploadPage() {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token");
       if (!token) {
-        router.replace("/login");
+        setIsAuth(false);
+      } else {
+        setIsAuth(true);
       }
     }
   }, [router]);
@@ -34,6 +37,21 @@ export default function UploadPage() {
       alert("Errore durante l'upload");
     }
   };
+
+  if (isAuth === false) {
+    return (
+      <div className="container mx-auto py-12 px-4 text-center">
+        <h1 className="text-2xl font-bold mb-4" style={{ color: "var(--color-primary)" }}>
+          Devi essere autenticato per inserire un nuovo avvistamento
+        </h1>
+        <a href="/login" className="btn">Vai al login</a>
+      </div>
+    );
+  }
+
+  if (isAuth === null) {
+    return null; // oppure uno spinner
+  }
 
   return (
     <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
