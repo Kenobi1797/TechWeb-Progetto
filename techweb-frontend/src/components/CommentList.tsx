@@ -5,11 +5,13 @@ interface CommentListProps {
 }
 
 export default function CommentList({ comments }: CommentListProps) {
+  // Rimuovo gestione errori inutilizzata per evitare warning lint.
+
   return (
     <ul className="flex flex-col gap-2">
       {comments.map(c => (
         <li key={c.id} className="border-b pb-2">
-          <span className="font-semibold">{c.userId}</span>: {c.text}
+          <span className="font-semibold">{c.userId}</span>: {c.content}
           <time className="block text-xs text-gray-400" dateTime={new Date(c.createdAt).toISOString()}>
             {new Date(c.createdAt).toLocaleString()}
           </time>

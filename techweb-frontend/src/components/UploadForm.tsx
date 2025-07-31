@@ -22,6 +22,7 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
     setImage(file);
     setPreview(file ? URL.createObjectURL(file) : null);
   };
+  const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
@@ -47,21 +48,29 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError(null);
     if (!image) {
       alert("Seleziona un'immagine.");
-      return;
-    }
-    if (!position) {
-      alert("Seleziona la posizione sulla mappa.");
       return;
     }
     const form = new FormData();
     form.append("title", title);
     form.append("description", description);
-    form.append("latitude", position.lat.toString());
-    form.append("longitude", position.lng.toString());
-    form.append("image", image);
-    await onSubmit(form);
+    if (image) form.append("image", image);
+    if (position) {
+      form.append("lat", String(position.lat));
+      form.append("lng", String(position.lng));
+    }
+    try {
+      await onSubmit(form);
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err !== null && 'response' in err) {
+        // @ts-expect-error: err potrebbe avere la proprietà response solo in caso di errore API
+        setError(err?.response?.data?.errors?.[0]?.msg || "Errore di upload");
+      } else {
+        setError("Errore di upload");
+      }
+    }
   };
 
   return (
@@ -70,6 +79,7 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
       className="w-full max-w-lg mx-auto p-3 sm:p-6 bg-base-100 shadow-md rounded-lg space-y-4"
       style={{ background: "var(--color-background)" }}
     >
+      {error && <div className="error" style={{ color: 'red' }}>{error}</div>}
       <h2 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: "var(--color-primary)" }}>
         Nuovo avvistamento 🐱
       </h2>
