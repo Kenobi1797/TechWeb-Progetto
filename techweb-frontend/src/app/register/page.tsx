@@ -48,6 +48,7 @@ export default function RegisterPage() {
           Registrati
         </h2>
         <input
+          name="username"
           type="text"
           placeholder="Username"
           value={username}
@@ -61,6 +62,7 @@ export default function RegisterPage() {
           required
         />
         <input
+          name="email"
           type="email"
           placeholder="Email"
           value={email}
@@ -74,6 +76,7 @@ export default function RegisterPage() {
           required
         />
         <input
+          name="password"
           type="password"
           placeholder="Password"
           value={password}

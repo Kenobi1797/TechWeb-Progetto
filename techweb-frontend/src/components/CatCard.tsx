@@ -15,7 +15,7 @@ export default function CatCard({ cat }: CatCardProps) {
 
   return (
     <article
-      className="group rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border flex flex-col overflow-hidden w-full h-full transform hover:scale-105 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+      className="cat-card group rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border flex flex-col overflow-hidden w-full h-full transform hover:scale-105 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
       style={{
         background: "var(--color-surface)",
         borderColor: "var(--color-border)",

@@ -16,7 +16,7 @@ export default function CatsPage() {
   return (
     <main className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
       <h1 className="text-xl sm:text-3xl font-bold mb-6" style={{ color: "var(--color-primary)" }}>
-        Tutti gli avvistamenti
+        Gatti
       </h1>
       <CatGrid cats={cats} />
     </main>
