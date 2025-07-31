@@ -31,24 +31,32 @@ export default function AuthForm({ onSubmit, type = "login" }: AuthFormProps) {
       className="flex flex-col gap-3 max-w-xs w-full mx-auto p-4 sm:p-8"
       style={{ background: "var(--color-background)" }}
     >
-      {error && <div className="error" style={{ color: 'red' }}>{error}</div>}
+      {error && <div className="error" role="alert" style={{ color: 'red', marginBottom: '8px' }}>{error}</div>}
+      <label htmlFor="email" className="label-text">Email</label>
       <input
+        id="email"
         type="email"
         placeholder="Email"
         value={email}
         onChange={e => setEmail(e.target.value)}
         required
-        className="border p-2 rounded"
+        className="border p-2 rounded focus:ring-2 focus:ring-primary"
         style={{ borderColor: "var(--color-primary)", color: "var(--color-text-primary)" }}
+        aria-required="true"
+        aria-label="Email"
       />
+      <label htmlFor="password" className="label-text">Password</label>
       <input
+        id="password"
         type="password"
         placeholder="Password"
         value={password}
         onChange={e => setPassword(e.target.value)}
         required
-        className="border p-2 rounded"
+        className="border p-2 rounded focus:ring-2 focus:ring-primary"
         style={{ borderColor: "var(--color-primary)", color: "var(--color-text-primary)" }}
+        aria-required="true"
+        aria-label="Password"
       />
       <button
         type="submit"

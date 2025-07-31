@@ -79,7 +79,7 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
       className="w-full max-w-lg mx-auto p-3 sm:p-6 bg-base-100 shadow-md rounded-lg space-y-4"
       style={{ background: "var(--color-background)" }}
     >
-      {error && <div className="error" style={{ color: 'red' }}>{error}</div>}
+      {error && <div className="error" role="alert" style={{ color: 'red', marginBottom: '8px' }}>{error}</div>}
       <h2 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: "var(--color-primary)" }}>
         Nuovo avvistamento 🐱
       </h2>
@@ -115,49 +115,52 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
           onChange={handleInputChange}
         />
       </label>
-      <label className="block">
-        <span className="label-text">Titolo</span>
-        <input
-          type="text"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          required
-          className="input input-bordered w-full"
-        />
-      </label>
-      <label className="block">
-        <div className="flex items-center justify-between mb-1">
-          <span className="label-text flex items-center gap-2">
-            Descrizione{" "}
-            <span className="text-xs text-blue-700 bg-blue-100 dark:bg-blue-900/60 dark:text-blue-200 px-2 py-0.5 rounded font-mono border border-blue-200 dark:border-blue-800">
-              Markdown
-            </span>
+      <label htmlFor="title" className="block label-text">Titolo</label>
+      <input
+        id="title"
+        type="text"
+        value={title}
+        onChange={e => setTitle(e.target.value)}
+        required
+        className="input input-bordered w-full focus:ring-2 focus:ring-primary"
+        aria-required="true"
+        aria-label="Titolo"
+      />
+      <label htmlFor="description" className="block label-text">Descrizione</label>
+      <div className="flex items-center justify-between mb-1">
+        <span className="label-text flex items-center gap-2">
+          <span>Descrizione</span>
+          <span className="text-xs text-blue-700 bg-blue-100 dark:bg-blue-900/60 dark:text-blue-200 px-2 py-0.5 rounded font-mono border border-blue-200 dark:border-blue-800">
+            Markdown
           </span>
-          <button
-            type="button"
-            onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
-            className="text-xs text-blue-600 hover:text-blue-800 underline"
-          >
-            {showMarkdownPreview ? "Modifica" : "Anteprima"}
-          </button>
+        </span>
+        <button
+          type="button"
+          onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
+          className="text-xs text-blue-600 hover:text-blue-800 underline"
+        >
+          {showMarkdownPreview ? "Modifica" : "Anteprima"}
+        </button>
+      </div>
+      {showMarkdownPreview ? (
+        <div className="border border-gray-300 rounded p-3 min-h-[5rem] bg-white">
+          <MarkdownViewer className="prose prose-sm max-w-none">
+            {description || "*Nessuna descrizione*"}
+          </MarkdownViewer>
         </div>
-        {showMarkdownPreview ? (
-          <div className="border border-gray-300 rounded p-3 min-h-[5rem] bg-white">
-            <MarkdownViewer className="prose prose-sm max-w-none">
-              {description || "*Nessuna descrizione*"}
-            </MarkdownViewer>
-          </div>
-        ) : (
-          <textarea
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            required
-            rows={4}
-            className="textarea textarea-bordered w-full font-mono bg-yellow-50 dark:bg-gray-900/40 border-yellow-200 dark:border-yellow-700"
-            placeholder="Puoi usare **grassetto**, *corsivo*, [link](url), elenchi, ecc.&#10;&#10;Esempio:&#10;## Gatto trovato!&#10;Questo **bellissimo** gatto *sembrava* perso..."
-          />
-        )}
-      </label>
+      ) : (
+        <textarea
+          id="description"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          required
+          rows={4}
+          className="textarea textarea-bordered w-full font-mono bg-yellow-50 dark:bg-gray-900/40 border-yellow-200 dark:border-yellow-700 focus:ring-2 focus:ring-primary"
+          placeholder="Puoi usare **grassetto**, *corsivo*, [link](url), elenchi, ecc.&#10;&#10;Esempio:&#10;## Gatto trovato!&#10;Questo **bellissimo** gatto *sembrava* perso..."
+          aria-required="true"
+          aria-label="Descrizione"
+        />
+      )}
       <div>
         <span className="label-text mb-1 block">Posizione sulla mappa</span>
         <CatLocationPicker value={position} onChange={setPosition} />
