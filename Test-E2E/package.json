@@ -1,0 +1,23 @@
+{
+  "name": "techweb-progetto",
+  "version": "1.0.0",
+  "description": "Benvenuto su **Streetcats**, l'applicazione web per segnalare e visualizzare gli avvistamenti di gatti randagi nella tua città! Con Streetcats puoi contribuire a una comunità attenta agli animali, condividere foto, commentare e scoprire dove si trovano i mici più curiosi del quartiere.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kenobi1797/TechWeb-Progetto.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kenobi1797/TechWeb-Progetto/issues"
+  },
+  "homepage": "https://github.com/Kenobi1797/TechWeb-Progetto#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.54.1"
+  }
+}
