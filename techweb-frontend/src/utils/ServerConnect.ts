@@ -29,7 +29,7 @@ type CatWithCommentsApiResponse = CatApiResponse & {
   comments?: CommentApiResponse[];
 };
 
-const API_URL = `http://localhost:5000`;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Utility per gestire errori fetch
 async function handleFetch<T>(promise: Promise<Response>, defaultMsg = "API error"): Promise<T> {
@@ -155,7 +155,7 @@ export async function addComment(
   content: string
 ): Promise<Comment> {
   const data = await handleFetch<CommentApiResponse>(
-    fetch(`${API_URL}/comments/${catId}`, {
+    fetch(`${API_URL}/${catId}/comments`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
