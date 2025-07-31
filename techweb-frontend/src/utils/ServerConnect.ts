@@ -145,7 +145,7 @@ export async function createCat(
 
 export async function fetchComments(catId: number | string): Promise<Comment[]> {
   const data = await handleFetch<CommentApiResponse[]>(
-    fetch(`${API_URL}/comments/${catId}`)
+    fetch(`${API_URL}/${catId}/comments`)
   );
   return data.map(mapCommentApiResponse);
 }
