@@ -19,14 +19,14 @@ export default function Header() {
           className="px-3 py-1 rounded-lg transition-all hover:bg-white/10 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50 font-medium"
           style={{ color: "var(--color-secondary)" }}
         >
-          🐾 Gatti
+          🏠 Home
         </Link>
         <Link 
-          href="/" 
+          href="/cats" 
           className="px-3 py-1 rounded-lg transition-all hover:bg-white/10 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50 font-medium"
           style={{ color: "var(--color-secondary)" }}
         >
-          🏠 Home
+          🐾 Gatti
         </Link>
         <Link 
           href="/map" 
