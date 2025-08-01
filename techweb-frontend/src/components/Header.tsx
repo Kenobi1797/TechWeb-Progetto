@@ -15,7 +15,7 @@ export default function Header() {
       </Link>
       <nav className="flex flex-wrap gap-3 sm:gap-5 lg:gap-8 mt-2 sm:mt-0 text-base sm:text-lg">
         <Link 
-          href="/cats" 
+          href="/" 
           className="px-3 py-1 rounded-lg transition-all hover:bg-white/10 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50 font-medium"
           style={{ color: "var(--color-secondary)" }}
         >
