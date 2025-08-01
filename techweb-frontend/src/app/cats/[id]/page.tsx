@@ -80,45 +80,63 @@ export default function CatDetailPage() {
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Posizione</h2>
         <div className="h-64 mb-2">
-          <MapView
-            markers={[{
-              lat: cat.latitude,
-              lng: cat.longitude,
-              title: cat.title,
-              imageUrl: cat.imageUrl ?? "",
-              id: cat.id,
-              createdAt: cat.createdAt,
-              description: cat.description ?? ""
-            }]}
-          />
+          {typeof window !== "undefined" &&
+            typeof cat.latitude === "number" &&
+            typeof cat.longitude === "number" ? (
+            <MapView
+              key={cat.id}
+              markers={[{
+                lat: cat.latitude,
+                lng: cat.longitude,
+                title: cat.title,
+                imageUrl: cat.imageUrl ?? "",
+                id: cat.id,
+                createdAt: cat.createdAt,
+                description: cat.description ?? ""
+              }]}
+            />
+          ) : (
+            <div className="text-gray-400 italic">Mappa non disponibile</div>
+          )}
         </div>
         <p className="text-sm text-gray-600">
-          Coordinate: {cat.latitude.toFixed(6)}, {cat.longitude.toFixed(6)}
+          Coordinate: {typeof cat.latitude === "number" && typeof cat.longitude === "number"
+            ? `${cat.latitude.toFixed(6)}, ${cat.longitude.toFixed(6)}`
+            : "Non disponibili"}
         </p>
       </div>
       <div className="mt-8">
         <h2 className="text-lg font-semibold mb-4">Commenti ({cat.comments.length})</h2>
         {cat.comments.length === 0 ? (
-          <div className="text-gray-400 italic bg-gray-50 p-4 rounded">
+          <div className="text-gray-400 italic bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-xl shadow">
             Nessun commento ancora. Sii il primo a commentare questo avvistamento!
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {cat.comments.map((comment) => (
-              <div key={comment.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="font-semibold text-blue-600">{comment.username}</div>
-                  <div className="text-sm text-gray-500">
-                    {new Date(comment.createdAt).toLocaleDateString('it-IT', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+              <div
+                key={comment.id}
+                className="border border-blue-200 rounded-xl p-5 bg-gradient-to-br from-blue-50 via-white to-blue-100 shadow-lg hover:shadow-xl transition-shadow duration-200"
+              >
+                <div className="flex items-center mb-3 gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-tr from-blue-400 via-blue-200 to-blue-500 text-white font-bold text-lg shadow-lg border-2 border-blue-300">
+                    {comment.username ? comment.username.charAt(0).toUpperCase() : "?"}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-blue-900 text-base">{comment.username}</div>
+                    <div className="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded inline-block mt-1 shadow">
+                      {new Date(comment.createdAt).toLocaleDateString('it-IT', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
                   </div>
                 </div>
-                <MarkdownViewer className="prose prose-sm max-w-none">
+                <hr className="my-3 border-blue-100" />
+                <MarkdownViewer className="prose prose-sm max-w-none text-blue-900">
                   {comment.content}
                 </MarkdownViewer>
               </div>
