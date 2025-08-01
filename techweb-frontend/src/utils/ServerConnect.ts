@@ -1,3 +1,14 @@
+// Geocoding inverso: ottieni luogo da lat/lon
+export async function fetchLocationFromCoordsServer(lat: number, lon: number): Promise<string | null> {
+  try {
+    const res = await fetch(`${API_URL}/geocode?lat=${lat}&lon=${lon}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.location || null;
+  } catch {
+    return null;
+  }
+}
 // --- TEST CONNESSIONE ---
 export async function testBackendConnection(): Promise<boolean> {
   try {

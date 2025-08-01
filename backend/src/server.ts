@@ -5,6 +5,7 @@ import initDb from './config/initDb';
 import authRoutes from './routes/auth';
 import catRoutes from './routes/cats';
 import commentRoutes from './routes/comments';
+import geocodeRoutes from './routes/geocode';
 import { startCronJobs } from './utils/cron';
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use('/auth', authRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/cats', catRoutes);
 app.use('/comments', commentRoutes);
+app.use('/geocode', geocodeRoutes);
 
 // Espone la chiave MapTiler in modo sicuro solo al frontend
 

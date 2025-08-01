@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Cat } from "../utils/types";
+import { useEffect, useState } from "react";
+import { fetchLocationFromCoordsServer } from "../utils/ServerConnect";
 
 interface CatCardProps {
   readonly cat: Cat;
@@ -12,6 +14,23 @@ export default function CatCard({ cat }: CatCardProps) {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
+
+  const [location, setLocation] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof cat.latitude === "number" && typeof cat.longitude === "number") {
+      fetchLocationFromCoordsServer(cat.latitude, cat.longitude)
+        .then(loc => {
+          setLocation(loc);
+          if (!loc) {
+            // Log errore se non arriva il luogo
+            console.warn(`Geocoding fallito per coordinate: ${cat.latitude}, ${cat.longitude}`);
+          }
+        })
+        .catch(err => {
+          console.error("Errore geocoding:", err);
+        });
+    }
+  }, [cat.latitude, cat.longitude]);
 
   return (
     <article
@@ -62,7 +81,15 @@ export default function CatCard({ cat }: CatCardProps) {
         
         <div className="flex items-center justify-between mt-auto pt-2 border-t" style={{ borderColor: "var(--color-border)" }}>
           <span className="text-xs opacity-75" style={{ color: "var(--color-text-secondary)" }}>
-            📍 Lat: {cat.latitude.toFixed(3)}
+            {(() => {
+              let luogo = "Coordinate non disponibili";
+              if (location) {
+                luogo = `📍 ${location}`;
+              } else if (typeof cat.latitude === "number" && typeof cat.longitude === "number") {
+                luogo = `📍 Lat: ${cat.latitude.toFixed(3)}, Lon: ${cat.longitude.toFixed(3)}`;
+              }
+              return luogo;
+            })()}
           </span>
           <Link
             href={`/cats/${cat.id}`}

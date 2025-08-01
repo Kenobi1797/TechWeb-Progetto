@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { fetchCatById } from "@/utils/ServerConnect";
+import { fetchCatById, fetchLocationFromCoordsServer } from "@/utils/ServerConnect";
 import { Cat, Comment } from "@/utils/types";
 import MarkdownViewer from "@/components/MarkdownViewer";
 
@@ -18,23 +18,46 @@ export default function CatDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [cat, setCat] = useState<CatWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [location, setLocation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetchCatById(id)
-      .then((data) => {
-        console.log("Dettaglio gatto:", data);
+    const fetchData = async () => {
+      try {
+        const data = await fetchCatById(id);
         setCat(data);
-      })
-      .catch(() => setError("Errore nel caricamento dell'avvistamento"))
-      .finally(() => setLoading(false));
+        if (data && typeof data.latitude === "number" && typeof data.longitude === "number") {
+          const loc = await fetchLocationFromCoordsServer(data.latitude, data.longitude);
+          setLocation(loc);
+        }
+      } catch {
+        setError("Errore nel caricamento dell'avvistamento");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, [id]);
 
-  if (loading) return <div className="text-center py-10">Caricamento...</div>;
-  if (error) return <div className="text-center py-10">{error}</div>;
-  if (!cat) return <div className="text-center py-10">Avvistamento non trovato.</div>;
+  // Calcola il valore del luogo in modo sicuro
+  let luogoValue = "Non disponibili";
+  if (location) {
+    luogoValue = location;
+  } else if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number") {
+    luogoValue = `${cat.latitude.toFixed(6)}, ${cat.longitude.toFixed(6)}`;
+  }
+
+  if (loading) {
+    return <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">Caricamento...</div>;
+  }
+  if (error) {
+    return <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl text-red-600">{error}</div>;
+  }
+  if (!cat) {
+    return <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl text-gray-500">Nessun dato disponibile</div>;
+  }
 
   return (
     <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
@@ -56,24 +79,24 @@ export default function CatDetailPage() {
           />
         </div>
       )}
-      
+
       {/* Descrizione */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Descrizione</h2>
-        {cat.descriptionHtml ? (
-          <div 
+        {cat.descriptionHtml && (
+          <div
             className="prose prose-sm max-w-none"
             dangerouslySetInnerHTML={{ __html: cat.descriptionHtml }}
           />
-        ) : null}
-        {!cat.descriptionHtml && cat.description ? (
+        )}
+        {!cat.descriptionHtml && cat.description && (
           <MarkdownViewer className="prose prose-sm max-w-none">
             {cat.description}
           </MarkdownViewer>
-        ) : null}
-        {!cat.descriptionHtml && !cat.description ? (
+        )}
+        {!cat.descriptionHtml && !cat.description && (
           <p className="text-gray-500 italic">Nessuna descrizione disponibile</p>
-        ) : null}
+        )}
       </div>
 
       {/* Mappa con posizione */}
@@ -81,8 +104,7 @@ export default function CatDetailPage() {
         <h2 className="text-lg font-semibold mb-2">Posizione</h2>
         <div className="h-64 mb-2">
           {typeof window !== "undefined" &&
-            typeof cat.latitude === "number" &&
-            typeof cat.longitude === "number" ? (
+            cat && typeof cat.latitude === "number" && typeof cat.longitude === "number" ? (
             <MapView
               key={cat.id}
               markers={[{
@@ -100,9 +122,7 @@ export default function CatDetailPage() {
           )}
         </div>
         <p className="text-sm text-gray-600">
-          Coordinate: {typeof cat.latitude === "number" && typeof cat.longitude === "number"
-            ? `${cat.latitude.toFixed(6)}, ${cat.longitude.toFixed(6)}`
-            : "Non disponibili"}
+          Luogo: {luogoValue}
         </p>
       </div>
       <div className="mt-8">
