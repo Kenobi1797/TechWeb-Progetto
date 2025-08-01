@@ -42,12 +42,14 @@ export default function CatDetailPage() {
   }, [id]);
 
   // Calcola il valore del luogo in modo sicuro
-  let luogoValue = "Non disponibili";
-  if (location) {
-    luogoValue = location;
-  } else if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number") {
-    luogoValue = `${cat.latitude.toFixed(6)}, ${cat.longitude.toFixed(6)}`;
-  }
+let luogoValue = "Non disponibili";
+if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number" && location === null) {
+  luogoValue = "Caricamento luogo...";
+} else if (location) {
+  luogoValue = location;
+} else if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number") {
+  luogoValue = `${cat.latitude.toFixed(6)}, ${cat.longitude.toFixed(6)}`;
+}
 
   if (loading) {
     return <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">Caricamento...</div>;

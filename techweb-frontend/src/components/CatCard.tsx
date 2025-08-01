@@ -82,13 +82,19 @@ export default function CatCard({ cat }: CatCardProps) {
         <div className="flex items-center justify-between mt-auto pt-2 border-t" style={{ borderColor: "var(--color-border)" }}>
           <span className="text-xs opacity-75" style={{ color: "var(--color-text-secondary)" }}>
             {(() => {
-              let luogo = "Coordinate non disponibili";
-              if (location) {
-                luogo = `📍 ${location}`;
-              } else if (typeof cat.latitude === "number" && typeof cat.longitude === "number") {
-                luogo = `📍 Lat: ${cat.latitude.toFixed(3)}, Lon: ${cat.longitude.toFixed(3)}`;
+              // Se la geocodifica è in corso (location === null), mostra placeholder
+              if (typeof cat.latitude === "number" && typeof cat.longitude === "number" && location === null) {
+                return "📍 Caricamento luogo...";
               }
-              return luogo;
+              // Se la geocodifica ha successo
+              if (location) {
+                return `📍 ${location}`;
+              }
+              // Se la geocodifica fallisce (location === "" o altro valore falsy)
+              if (typeof cat.latitude === "number" && typeof cat.longitude === "number") {
+                return `📍 Lat: ${cat.latitude.toFixed(3)}, Lon: ${cat.longitude.toFixed(3)}`;
+              }
+              return "Coordinate non disponibili";
             })()}
           </span>
           <Link
