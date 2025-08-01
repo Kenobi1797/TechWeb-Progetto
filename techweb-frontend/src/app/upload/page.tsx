@@ -1,5 +1,5 @@
 "use client";
-import UploadForm from "../../../components/UploadForm";
+import UploadForm from "../../components/UploadForm";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 

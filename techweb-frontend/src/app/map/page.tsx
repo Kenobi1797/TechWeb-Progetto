@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Cat } from "../../../utils/types";
+import { Cat } from "../../utils/types";
 import dynamic from "next/dynamic";
-import { fetchCats } from "../../../utils/ServerConnect";
+import { fetchCats } from "../../utils/ServerConnect";
 
 // Import dinamico per evitare errori SSR con leaflet
-const MapView = dynamic(() => import("../../../components/MapView"), { ssr: false });
+const MapView = dynamic(() => import("../../components/MapView"), { ssr: false });
 
 export default function MapPage() {
   const [cats, setCats] = useState<Cat[]>([]);
