@@ -1,3 +1,12 @@
+// --- TEST CONNESSIONE ---
+export async function testBackendConnection(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/ping`);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
 import { Cat } from "./types";
 import type { Comment } from "./types";
 
@@ -29,7 +38,7 @@ type CatWithCommentsApiResponse = CatApiResponse & {
   comments?: CommentApiResponse[];
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+export const API_URL = "http://localhost:5000";
 
 // Utility per gestire errori fetch
 async function handleFetch<T>(promise: Promise<Response>, defaultMsg = "API error"): Promise<T> {
@@ -142,6 +151,17 @@ export async function createCat(
 }
 
 // --- COMMENTI ---
+
+// --- MAPTILER KEY ---
+export async function fetchMaptilerKey(): Promise<string> {
+  try {
+    const res = await fetch(`${API_URL}/maptiler-key`);
+    const data = await res.json();
+    return data.key ?? "";
+  } catch {
+    return "";
+  }
+}
 
 export async function fetchComments(catId: number | string): Promise<Comment[]> {
   const data = await handleFetch<CommentApiResponse[]>(

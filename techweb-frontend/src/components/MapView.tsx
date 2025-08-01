@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import Image from "next/image";
 import { useEffect, useRef, useMemo, useState } from "react";
+import { fetchMaptilerKey } from "../utils/ServerConnect";
 
 type MarkerData = {
   lat: number;
@@ -37,12 +38,7 @@ export default function MapView({ markers }: MapViewProps) {
 
   // Recupera la chiave MapTiler dal backend
   useEffect(() => {
-    const controller = new AbortController();
-    fetch("http://localhost:5000/maptiler-key", { signal: controller.signal })
-      .then(res => res.json())
-      .then(data => setMaptilerKey(data.key ?? ""))
-      .catch(() => setMaptilerKey(""));
-    return () => controller.abort();
+    fetchMaptilerKey().then((key) => setMaptilerKey(key));
   }, []);
 
   // URL tile con lingua dinamica

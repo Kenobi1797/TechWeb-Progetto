@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Cat } from "../utils/types";
 import dynamic from "next/dynamic";
 import CatGrid from "../components/CatGrid";
-import { fetchCats } from "../utils/ServerConnect";
+import { fetchCats, testBackendConnection } from "../utils/ServerConnect";
 
 const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 
@@ -12,20 +12,33 @@ export default function HomePage() {
   const [cats, setCats] = useState<Cat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [backendStatus, setBackendStatus] = useState<'ok'|'fail'|'loading'>('loading');
 
   useEffect(() => {
     setLoading(true);
-    fetchCats()
-      .then(setCats)
-      .catch(() => {
-        setCats([]);
-        setError("Errore nel caricamento degli avvistamenti.");
-      })
-      .finally(() => setLoading(false));
+    testBackendConnection().then((ok) => {
+      setBackendStatus(ok ? 'ok' : 'fail');
+      if (ok) {
+        fetchCats()
+          .then(setCats)
+          .catch(() => {
+            setCats([]);
+            setError("Errore nel caricamento degli avvistamenti.");
+          })
+          .finally(() => setLoading(false));
+      } else {
+        setError("Connessione al backend fallita.");
+        setLoading(false);
+      }
+    });
   }, []);
 
   if (loading) return <div className="text-center py-10">Caricamento...</div>;
   if (error) return <div className="text-center py-10">{error}</div>;
+  // Stato connessione backend
+  if (backendStatus === 'fail') {
+    return <div className="text-center py-10 text-red-600">Connessione al backend fallita.</div>;
+  }
 
   return (
     <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">

@@ -25,8 +25,14 @@ app.use('/cats', catRoutes);
 app.use('/comments', commentRoutes);
 
 // Espone la chiave MapTiler in modo sicuro solo al frontend
+
 app.get('/maptiler-key', (req, res) => {
   res.json({ key: process.env.MAPTILER_KEY ?? "" });
+});
+
+// Rotta di test connessione
+app.get('/ping', (req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
 const PORT = process.env.PORT ?? 5000;

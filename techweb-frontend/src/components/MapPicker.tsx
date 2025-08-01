@@ -3,6 +3,7 @@ import { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "../utils/fixLeafletIcon";
 import { useMemo, useState, useEffect } from "react";
+import { fetchMaptilerKey } from "../utils/ServerConnect";
 
 interface MapPickerProps {
   readonly position?: LatLngExpression | null;
@@ -43,9 +44,7 @@ export default function CatLocationPicker({
   const [maptilerKey, setMaptilerKey] = useState<string>("");
 
   useEffect(() => {
-    fetch("http://localhost:5000/maptiler-key")
-      .then((res) => res.json())
-      .then((data) => setMaptilerKey(data.key ?? ""));
+    fetchMaptilerKey().then((key) => setMaptilerKey(key));
   }, []);
 
   const tileUrl = maptilerKey
