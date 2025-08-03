@@ -12,7 +12,7 @@ interface MapPickerProps {
 
 function PickerMarker({ position }: { readonly position?: LatLngExpression | null }) {
   if (!position) return null;
-  return <Marker position={position} />;
+  return <Marker position={position} aria-label="Posizione selezionata" />;
 }
 
 function MapPicker({ position, onChange }: MapPickerProps) {
@@ -44,7 +44,15 @@ export default function CatLocationPicker({
   const [maptilerKey, setMaptilerKey] = useState<string>("");
 
   useEffect(() => {
-    fetchMaptilerKey().then((key) => setMaptilerKey(key));
+    const cachedKey = typeof window !== 'undefined' ? sessionStorage.getItem('maptilerKey') : null;
+    if (cachedKey) {
+      setMaptilerKey(cachedKey);
+    } else {
+      fetchMaptilerKey().then((key) => {
+        setMaptilerKey(key);
+        if (typeof window !== 'undefined') sessionStorage.setItem('maptilerKey', key);
+      });
+    }
   }, []);
 
   const tileUrl = maptilerKey
