@@ -4,6 +4,13 @@ import { Cat } from "../utils/types";
 import { useEffect, useState } from "react";
 import { fetchLocationFromCoordsServer } from "../utils/ServerConnect";
 
+// Tipizzazione globale per la cache geocoding su window
+declare global {
+  interface Window {
+    _geoCache?: Record<string, string | null>;
+  }
+}
+
 interface CatCardProps {
   readonly cat: Cat;
 }
@@ -15,16 +22,24 @@ export default function CatCard({ cat }: CatCardProps) {
     return text.substring(0, maxLength) + '...';
   };
 
+
+  // Cache geocoding in memoria (valida per la sessione)
   const [location, setLocation] = useState<string | null>(null);
   useEffect(() => {
     if (typeof cat.latitude === "number" && typeof cat.longitude === "number") {
+      const key = `${cat.latitude},${cat.longitude}`;
+      if (window._geoCache?.[key]) {
+        setLocation(window._geoCache[key] ?? null);
+        return;
+      }
       fetchLocationFromCoordsServer(cat.latitude, cat.longitude)
         .then(loc => {
           setLocation(loc);
           if (!loc) {
-            // Log errore se non arriva il luogo
             console.warn(`Geocoding fallito per coordinate: ${cat.latitude}, ${cat.longitude}`);
           }
+          window._geoCache ??= {};
+          window._geoCache[key] = loc;
         })
         .catch(err => {
           console.error("Errore geocoding:", err);
