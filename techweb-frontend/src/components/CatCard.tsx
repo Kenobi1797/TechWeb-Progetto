@@ -46,18 +46,14 @@ export default function CatCard({ cat }: CatCardProps) {
           <Image
             src={cat.imageUrl}
             alt={cat.title}
-            width={400}
-            height={220}
-            className="object-cover w-full h-40 sm:h-48 transition-transform duration-300 group-hover:scale-110"
-            priority
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            width={300}
+            height={200}
+            className="rounded-lg object-cover"
+            loading="lazy"
           />
         ) : (
-          <div
-            className="flex items-center justify-center w-full h-40 sm:h-48 bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400 transition-colors group-hover:from-blue-50 group-hover:to-blue-100"
-            style={{ fontSize: "2rem" }}
-          >
-            🐱
+          <div className="bg-gray-200 rounded-lg w-full h-48 flex items-center justify-center text-gray-400">
+            Nessuna immagine
           </div>
         )}
         <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">

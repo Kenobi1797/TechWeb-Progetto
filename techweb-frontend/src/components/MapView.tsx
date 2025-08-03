@@ -97,6 +97,7 @@ export default function MapView({ markers }: MapViewProps) {
                         height={120}
                         style={{ maxWidth: "100%", height: "auto", borderRadius: "4px" }}
                         loading="lazy"
+                        priority={i === 0}
                       />
                     </div>
                   )}
