@@ -1,12 +1,4 @@
 // --- TEST CONNESSIONE ---
-export async function testBackendConnection(): Promise<boolean> {
-  try {
-    const res = await fetch(`${API_URL}/ping`);
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
 import { Cat } from "./types";
 import type { Comment } from "./types";
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Cat } from "../utils/types";
 import dynamic from "next/dynamic";
 import CatGrid from "../components/CatGrid";
-import { fetchCats, testBackendConnection } from "../utils/ServerConnect";
+import { fetchCats } from "../utils/ServerConnect";
 
 const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 
@@ -13,28 +13,19 @@ export default function HomePage() {
   const [cats, setCats] = useState<Cat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [backendStatus, setBackendStatus] = useState<'ok'|'fail'|'loading'>('loading');
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
   // Funzione per aggiornare la lista
   const updateCats = () => {
     setLoading(true);
-    testBackendConnection().then((ok) => {
-      setBackendStatus(ok ? 'ok' : 'fail');
-      if (ok) {
-        fetchCats()
-          .then(setCats)
-          .catch(() => {
-            setCats([]);
-            setError("Errore nel caricamento degli avvistamenti.");
-          })
-          .finally(() => setLoading(false));
-      } else {
-        setError("Connessione al backend fallita.");
-        setLoading(false);
-      }
-    });
+    fetchCats()
+      .then(setCats)
+      .catch(() => {
+        setCats([]);
+        setError("Errore nel caricamento degli avvistamenti.");
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -45,9 +36,6 @@ export default function HomePage() {
 
   if (loading) return <div className="text-center py-10">Caricamento...</div>;
   if (error) return <div className="text-center py-10">{error}</div>;
-  if (backendStatus === 'fail') {
-    return <div className="text-center py-10 text-red-600">Connessione al backend fallita.</div>;
-  }
 
   // Paginazione
   const totalPages = Math.ceil(cats.length / pageSize);
