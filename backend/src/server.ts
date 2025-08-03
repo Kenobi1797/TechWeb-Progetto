@@ -15,10 +15,13 @@ app.use(cors());
 app.use(express.json());
 
 // Logging semplice delle richieste
-app.use((req: Request, res: Response, next: NextFunction) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
+// Log delle richieste solo in ambiente di sviluppo
+if (process.env.NODE_ENV === 'development') {
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+  });
+}
 
 app.use('/auth', authRoutes);
 app.use('/uploads', express.static('uploads'));
@@ -29,7 +32,8 @@ app.use('/geocode', geocodeRoutes);
 // Espone la chiave MapTiler in modo sicuro solo al frontend
 
 app.get('/maptiler-key', (req, res) => {
-  res.json({ key: process.env.MAPTILER_KEY ?? "" });
+  // Non esporre direttamente variabili env sensibili
+  res.json({ key: process.env.NODE_ENV === 'production' ? undefined : process.env.MAPTILER_KEY ?? "" });
 });
 
 // Rotta di test connessione

@@ -1,8 +1,8 @@
-FROM node:18-alpine AS dev
+FROM node:18-alpine AS base
 
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm install
+RUN npm ci --prefer-offline --no-audit --progress=false
 
 COPY . .
 EXPOSE 5000

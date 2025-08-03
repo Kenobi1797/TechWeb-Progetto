@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Header() {
   return (
@@ -6,35 +7,22 @@ export default function Header() {
       className="sticky top-0 z-50 flex flex-col sm:flex-row items-center justify-between px-4 sm:px-10 py-4 gap-2 sm:gap-0 shadow-xl fade-in"
       style={{ background: "var(--color-primary)", boxShadow: "0 4px 24px 0 rgba(60,72,88,0.13)" }}
     >
-      <Link
-        href="/"
-        className="font-extrabold text-2xl sm:text-3xl lg:text-4xl tracking-tight transition-transform hover:scale-105"
-        style={{ color: "var(--color-accent)", letterSpacing: "-1px" }}
-      >
-        🐱 Streetcats
-      </Link>
-      <nav className="flex flex-wrap gap-3 sm:gap-5 lg:gap-8 mt-2 sm:mt-0 text-base sm:text-lg">
-        <Link 
-          href="/" 
-          className="px-3 py-1 rounded-lg transition-all hover:bg-white/10 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50 font-medium"
-          style={{ color: "var(--color-secondary)" }}
+      <div className="flex items-center gap-2">
+        <Link
+          href="/"
+          tabIndex={0}
+          aria-label="Home"
         >
-          🏠 Home
+          <Image src="/file.svg" alt="Logo sito" width={40} height={40} priority />
         </Link>
-        <Link 
-          href="/cats" 
-          className="px-3 py-1 rounded-lg transition-all hover:bg-white/10 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50 font-medium"
-          style={{ color: "var(--color-secondary)" }}
-        >
-          🐾 Gatti
-        </Link>
-        <Link 
-          href="/map" 
-          className="px-3 py-1 rounded-lg transition-all hover:bg-white/10 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50 font-medium"
-          style={{ color: "var(--color-secondary)" }}
-        >
-          🗺️ Mappa
-        </Link>
+        <span className="font-extrabold text-2xl sm:text-3xl lg:text-4xl tracking-tight transition-transform hover:scale-105" style={{ color: "var(--color-accent)", letterSpacing: "-1px" }}>
+          🐱 Streetcats
+        </span>
+      </div>
+      <nav className="flex gap-4 items-center">
+        <Link href="/" tabIndex={0} aria-label="Home" className="font-medium">🏠 Home</Link>
+        <Link href="/cats" tabIndex={0} aria-label="Vai alla pagina Gatti" className="font-medium">🐾 Gatti</Link>
+        <Link href="/map" tabIndex={0} aria-label="Vai alla mappa" className="font-medium">🗺️ Mappa</Link>
         <Link 
           href="/upload" 
           className="px-4 py-1 rounded-lg font-bold transition-all bg-[var(--color-accent)] text-[var(--color-primary)] shadow hover:bg-yellow-300 focus:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-white/50 border border-yellow-300"
