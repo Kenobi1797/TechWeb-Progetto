@@ -12,7 +12,8 @@ export default function CatsPage() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
-  useEffect(() => {
+  // Funzione per aggiornare la lista
+  const updateCats = () => {
     setLoading(true);
     fetchCats()
       .then(setCats)
@@ -21,6 +22,12 @@ export default function CatsPage() {
         setError("Errore nel caricamento degli avvistamenti.");
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    updateCats();
+    const interval = setInterval(updateCats, 30000); // ogni 30s
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) return <div className="text-center py-10">Caricamento...</div>;
@@ -35,25 +42,27 @@ export default function CatsPage() {
         Gatti
       </h1>
       <CatGrid cats={pagedCats} />
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-8">
-          <button
-            className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-semibold disabled:opacity-50"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            Indietro
-          </button>
-          <span className="font-bold">Pagina {page} di {totalPages}</span>
-          <button
-            className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-semibold disabled:opacity-50"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-          >
-            Avanti
-          </button>
-        </div>
-      )}
+      <div className="flex flex-col items-center gap-4 mt-8">
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4">
+            <button
+              className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-semibold disabled:opacity-50"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              Indietro
+            </button>
+            <span className="font-bold">Pagina {page} di {totalPages}</span>
+            <button
+              className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-semibold disabled:opacity-50"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              Avanti
+            </button>
+          </div>
+        )}
+      </div>
     </main>
   );
 }
