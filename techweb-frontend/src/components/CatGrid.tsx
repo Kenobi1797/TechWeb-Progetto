@@ -6,6 +6,16 @@ interface CatGridProps {
 }
 
 export default function CatGrid({ cats }: CatGridProps) {
+  if (cats === undefined) {
+    // Skeleton loader per caricamento dati
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {[...Array(6)].map(() => (
+          <div key="skeleton" className="animate-pulse bg-gray-200 rounded-xl h-64 w-full" />
+        ))}
+      </div>
+    );
+  }
   if (cats.length === 0) {
     return (
       <div className="text-center mt-16 text-base sm:text-lg" style={{ color: "var(--color-text-secondary)" }}>
