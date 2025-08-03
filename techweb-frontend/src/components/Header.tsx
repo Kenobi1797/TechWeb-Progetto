@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 
 export default function Header() {
   return (
@@ -8,13 +7,6 @@ export default function Header() {
       style={{ background: "var(--color-primary)", boxShadow: "0 4px 24px 0 rgba(60,72,88,0.13)" }}
     >
       <div className="flex items-center gap-2">
-        <Link
-          href="/"
-          tabIndex={0}
-          aria-label="Home"
-        >
-          <Image src="/file.svg" alt="Logo sito" width={40} height={40} priority />
-        </Link>
         <span className="font-extrabold text-2xl sm:text-3xl lg:text-4xl tracking-tight transition-transform hover:scale-105" style={{ color: "var(--color-accent)", letterSpacing: "-1px" }}>
           🐱 Streetcats
         </span>
