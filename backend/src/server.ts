@@ -14,7 +14,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Logging semplice delle richieste
 // Log delle richieste solo in ambiente di sviluppo
 if (process.env.NODE_ENV === 'development') {
   app.use((req: Request, res: Response, next: NextFunction) => {
@@ -29,16 +28,9 @@ app.use('/cats', catRoutes);
 app.use('/comments', commentRoutes);
 app.use('/geocode', geocodeRoutes);
 
-// Espone la chiave MapTiler in modo sicuro solo al frontend
-
+// Espone la chiave MapTiler solo in sviluppo
 app.get('/maptiler-key', (req, res) => {
-  // Non esporre direttamente variabili env sensibili
   res.json({ key: process.env.NODE_ENV === 'production' ? undefined : process.env.MAPTILER_KEY ?? "" });
-});
-
-// Rotta di test connessione
-app.get('/ping', (req, res) => {
-  res.status(200).json({ status: 'ok' });
 });
 
 const PORT = process.env.PORT ?? 5000;

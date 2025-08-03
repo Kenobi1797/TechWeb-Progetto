@@ -22,10 +22,10 @@ export const register = async (req: Request, res: Response) => {
       typeof error === 'object' &&
       error !== null &&
       'code' in error &&
-      (error as any).code === '23505'
+      (error as { code?: string }).code === '23505'
     ) {
       // Violazione di vincolo UNIQUE
-      const detail = (error as any)?.detail as string;
+      const detail = (error as { detail?: string })?.detail as string;
       if (detail?.includes('email')) {
         return res.status(400).json({ error: 'Email già registrata' });
       }
@@ -34,7 +34,7 @@ export const register = async (req: Request, res: Response) => {
       }
       return res.status(400).json({ error: 'Utente già registrato' });
     }
-    res.status(500).json({ error: 'Errore durante la registrazione', details: (error as any).message });
+    res.status(500).json({ error: 'Errore durante la registrazione', details: (error as { message?: string }).message });
   }
 };
 
@@ -56,6 +56,6 @@ export const login = async (req: Request, res: Response) => {
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
     res.json({ message: 'Login effettuato', token, user: { id: user.id, username: user.username, email: user.email } });
   } catch (error: unknown) {
-    res.status(500).json({ error: 'Errore durante il login', details: (error as any).message });
+    res.status(500).json({ error: 'Errore durante il login', details: (error as { message?: string }).message });
   }
 };

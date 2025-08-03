@@ -57,7 +57,7 @@ export const getAllCats = async (
     id, title, latitude, longitude, image_url, created_at
   `;
   let baseQuery = `SELECT ${selectFields}`;
-  let values: any[] = [];
+  let values: unknown[] = [];
   let conditions: string[] = [];
   let idx = 1;
 
@@ -84,18 +84,19 @@ export const getAllCats = async (
 
   try {
     const result = await pool.query(query, values);
-    let cats: any[] = result.rows;
+    let cats: Array<Record<string, unknown>> = result.rows;
 
     if (radius && lat && lon) {
-      cats = cats.filter((r: any) => r.distance !== undefined && r.distance <= parseFloat(radius as string));
+      cats = cats.filter((r: Record<string, unknown>) => typeof r.distance === 'number' && r.distance <= parseFloat(radius as string));
     }
 
     cats = cats.map(({ distance, ...rest }: { distance?: number }) => rest);
 
     // Filtra immagini GIF
-    cats = cats.filter((cat: any) =>
-      !cat.image_url?.toLowerCase().endsWith('.gif')
-    );
+    cats = cats.filter((cat: Record<string, unknown>) => {
+      const imageUrl = cat.image_url;
+      return typeof imageUrl !== 'string' || !imageUrl.toLowerCase().endsWith('.gif');
+    });
 
     res.json(cats);
     return;
