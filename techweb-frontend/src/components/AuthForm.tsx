@@ -31,7 +31,7 @@ export default function AuthForm({ onSubmit, type = "login" }: AuthFormProps) {
       className="flex flex-col gap-3 max-w-xs w-full mx-auto p-4 sm:p-8"
       style={{ background: "var(--color-background)" }}
     >
-      {error && <div className="error" role="alert" style={{ color: 'red', marginBottom: '8px' }}>{error}</div>}
+      {error && <div className="error-message text-red-500 mb-3 text-sm text-center" role="alert">{error}</div>}
       <label htmlFor="email" className="label-text">Email</label>
       <input
         id="email"

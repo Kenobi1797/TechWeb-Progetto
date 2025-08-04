@@ -79,7 +79,7 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
       className="w-full max-w-lg mx-auto p-3 sm:p-6 bg-base-100 shadow-md rounded-lg space-y-4"
       style={{ background: "var(--color-background)" }}
     >
-      {error && <div className="error" role="alert" style={{ color: 'red', marginBottom: '8px' }}>{error}</div>}
+      {error && <div className="error-message text-red-500 mb-3 text-sm text-center" role="alert">{error}</div>}
       <h2 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: "var(--color-primary)" }}>
         Nuovo avvistamento 🐱
       </h2>
@@ -166,10 +166,22 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
         <CatLocationPicker value={position} onChange={setPosition} />
         <input
           type="text"
+          name="latitude"
+          required
           readOnly
-          value={position ? `${position.lat.toFixed(6)}, ${position.lng.toFixed(6)}` : ""}
-          placeholder="Clicca sulla mappa per selezionare la posizione"
-          className="input input-bordered w-full"
+          value={position ? position.lat.toFixed(6) : ""}
+          placeholder="Latitudine"
+          className="input input-bordered w-full mb-2"
+          style={{ background: "#f9fafb" }}
+        />
+        <input
+          type="text"
+          name="longitude"
+          required
+          readOnly
+          value={position ? position.lng.toFixed(6) : ""}
+          placeholder="Longitudine"
+          className="input input-bordered w-full mb-2"
           style={{ background: "#f9fafb" }}
         />
       </div>
