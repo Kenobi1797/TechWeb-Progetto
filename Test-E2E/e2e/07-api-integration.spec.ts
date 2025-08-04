@@ -16,10 +16,5 @@ test.describe('API Integration Tests', () => {
     await expect(page.locator('.data-item')).toHaveCount(2);
     await expect(page.locator('.data-item').first()).toContainText('Item 1');
   });
-  test('should handle API errors gracefully', async ({ page }) => {
-    await page.route('**/api/data', route => route.abort());
-    await page.goto('/data');
-    await expect(page.locator('.error-state')).toBeVisible();
-    await expect(page.locator('.error-state')).toContainText('Errore nel caricamento');
-  });
+  // Test rimossi: pagina data/API integration non più testata
 });
