@@ -7,6 +7,7 @@ export default function UploadPage() {
   const router = useRouter();
   const checkedAuth = useRef(false);
   const [isAuth, setIsAuth] = useState<null | boolean>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (checkedAuth.current) return;
@@ -34,7 +35,7 @@ export default function UploadPage() {
     if (res.ok) {
       router.push("/");
     } else {
-      alert("Errore durante l'upload");
+      setError("Errore durante l'upload");
     }
   };
 
@@ -59,6 +60,7 @@ export default function UploadPage() {
         Nuovo avvistamento
       </h1>
       <UploadForm onSubmit={handleSubmit} />
+      {error && <div className="error-message text-red-500 mt-4">{error}</div>}
     </div>
   );
 }

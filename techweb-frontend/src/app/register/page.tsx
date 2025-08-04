@@ -119,7 +119,7 @@ export default function RegisterPage() {
           </button>
         </div>
         {error && (
-          <p className="text-red-500 mb-3 text-sm text-center">{error}</p>
+          <p className="error-message text-red-500 mb-3 text-sm text-center">{error}</p>
         )}
         <button
           type="submit"

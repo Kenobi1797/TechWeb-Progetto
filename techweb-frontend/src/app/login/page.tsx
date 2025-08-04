@@ -23,7 +23,7 @@ export default function LoginPage() {
       if (typeof window !== "undefined" && token) {
         localStorage.setItem("token", token);
       }
-      router.push("/");
+      router.push("/dashboard");
     } else {
       const data = await res.json().catch(() => ({}));
       setError(data.error ?? "Credenziali non valide");
@@ -104,7 +104,7 @@ export default function LoginPage() {
           </button>
         </div>
         {error && (
-          <p className="text-red-500 mb-3 text-sm text-center">{error}</p>
+          <p className="error-message text-red-500 mb-3 text-sm text-center">{error}</p>
         )}
         <button
           type="submit"

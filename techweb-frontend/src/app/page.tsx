@@ -14,6 +14,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
   const pageSize = 20;
 
   // Funzione per aggiornare la lista
@@ -41,6 +42,14 @@ export default function HomePage() {
   const totalPages = Math.ceil(cats.length / pageSize);
   const pagedCats = cats.slice((page - 1) * pageSize, page * pageSize);
 
+  // SEARCH
+  const filteredCats = search
+    ? cats.filter(cat =>
+        cat.title?.toLowerCase().includes(search.toLowerCase()) ||
+        cat.description?.toLowerCase().includes(search.toLowerCase())
+      )
+    : pagedCats;
+
   return (
     <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
       <h1 className="text-2xl sm:text-4xl font-bold mb-2" style={{ color: "var(--color-primary)" }}>
@@ -49,10 +58,19 @@ export default function HomePage() {
       <p className="mb-6 text-sm sm:text-lg max-w-2xl" style={{ color: "var(--color-text-secondary)" }}>
         Esplora gli ultimi avvistamenti di gatti randagi nella tua città. Clicca su una card per vedere i dettagli e aiutare la community!
       </p>
-      <div className="mb-8">
-        {pagedCats.length > 0 ? (
+      <div className="mb-4">
+        <input
+          type="search"
+          placeholder="Cerca..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="border p-2 rounded w-full sm:w-1/2"
+        />
+      </div>
+      <div className="search-results mb-8">
+        {filteredCats.length > 0 ? (
           <MapView
-            markers={pagedCats.map((cat) => ({
+            markers={filteredCats.map((cat) => ({
               lat: cat.latitude,
               lng: cat.longitude,
               title: cat.title,
@@ -66,9 +84,8 @@ export default function HomePage() {
           <div className="text-center py-10">Nessun dato disponibile per la mappa.</div>
         )}
       </div>
-      <CatGrid cats={pagedCats} />
+      <CatGrid cats={filteredCats} />
       <div className="flex flex-col items-center gap-4 mt-8">
-        
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-4">
             <button
