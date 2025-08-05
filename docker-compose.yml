@@ -4,7 +4,6 @@ services:
       context: ./backend
     volumes:
       - ./backend:/usr/src/app
-      - /usr/src/app/node_modules
       - ./backend/uploads:/usr/src/app/uploads
     ports:
       - "5000:5000"
@@ -14,13 +13,14 @@ services:
       - JWT_SECRET=supersecret
     depends_on:
       - techweb-db
+    restart: unless-stopped
+    # Consigliato: usa variabili d'ambiente tramite file .env per maggiore sicurezza
 
   techweb-frontend:
     build:
       context: ./techweb-frontend
     volumes:
       - ./techweb-frontend:/usr/src/app
-      - /usr/src/app/node_modules
     ports:
       - "3000:3000"
     environment:
@@ -28,10 +28,11 @@ services:
       - NEXT_PUBLIC_API_URL=http://techweb-backend:5000
     depends_on:
       - techweb-backend
+    restart: unless-stopped
 
   techweb-db:
     image: postgres:latest
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_DB: TechWeb-24-25
       POSTGRES_USER: postgres
@@ -40,6 +41,12 @@ services:
       - "5433:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Consigliato: proteggi la password in produzione
 
 volumes:
   db_data:
