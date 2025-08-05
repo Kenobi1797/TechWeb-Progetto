@@ -22,9 +22,7 @@ marked.setOptions({
   gfm: true
 });
 
-/**
- * Converte il markdown in HTML sicuro
- */
+// Converte il markdown in HTML sicuro
 export async function parseMarkdown(markdownText: string): Promise<string> {
   if (!markdownText || typeof markdownText !== 'string') {
     return '';
@@ -44,9 +42,7 @@ export async function parseMarkdown(markdownText: string): Promise<string> {
   }
 }
 
-/**
- * Valida che il testo markdown non sia troppo lungo o contenga contenuti pericolosi
- */
+// Valida che il testo markdown non sia troppo lungo o contenga contenuti pericolosi
 export function validateMarkdown(text: string): { valid: boolean; error?: string } {
   if (!text || typeof text !== 'string') {
     return { valid: true };
