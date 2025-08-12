@@ -1,14 +1,13 @@
 "use client";
 import "../utils/fixLeafletIcon";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import "leaflet.markercluster/dist/MarkerCluster.css";
-import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+import { MapContainer, TileLayer, Marker, Popup, ZoomControl, LayersControl } from "react-leaflet";
 import L from "leaflet";
-import Image from "next/image";
-import { useEffect, useRef, useMemo, useState } from "react";
+import "leaflet/dist/leaflet.css";
+import { useEffect, useMemo, useState } from "react";
 import { fetchMaptilerKey } from "../utils/ServerConnect";
 import dynamic from "next/dynamic";
+import MapMarkerPopup from "./MapMarkerPopup";
+
 const GeoLocateButton = dynamic(() => import("./GeoLocateButton"), { ssr: false });
 
 type MarkerData = {
@@ -21,51 +20,27 @@ type MarkerData = {
   description?: string;
 };
 
+
 interface MapViewProps {
   readonly markers: readonly MarkerData[];
 }
 
 export default function MapView({ markers }: MapViewProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [maptilerKey, setMaptilerKey] = useState<string>("");
-  const [clusterLayer, setClusterLayer] = useState<L.MarkerClusterGroup | null>(null);
 
-  // Rileva la lingua dell'utente, usa solo il codice principale (es: "it", "en")
+  const [maptilerKey, setMaptilerKey] = useState<string>("");
+  // Lingua utente
   const userLang = useMemo(() => {
     if (typeof window !== "undefined") {
-      const lang =
-        navigator.language ||
-        navigator.languages?.[0] ||
-        "en";
+      const lang = navigator.language || navigator.languages?.[0] || "en";
       return lang.split("-")[0];
     }
     return "en";
   }, []);
 
-  // Recupera la chiave MapTiler dal backend
   useEffect(() => {
     fetchMaptilerKey().then((key) => setMaptilerKey(key));
   }, []);
 
-  // Clustering marker
-  // Dipendenza stabile: hash dei marker
-  const markersHash = useMemo(() => markers.map(m => `${m.lat},${m.lng},${m.title ?? ""}`).join("|"), [markers]);
-  useEffect(() => {
-    if (!mapRef.current || !markers.length) return;
-    import("leaflet.markercluster").then(() => {
-      if (!clusterLayer && window.L) {
-        const cluster = L.markerClusterGroup();
-        markers.forEach(m => {
-          const marker = L.marker([m.lat, m.lng]);
-          marker.bindPopup(`<b>${m.title ?? "Avvistamento"}</b>`);
-          cluster.addLayer(marker);
-        });
-        setClusterLayer(cluster);
-      }
-    });
-  }, [markers, markersHash, clusterLayer]);
-
-  // URL tile con lingua dinamica
   const tileUrl = maptilerKey
     ? `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${maptilerKey}&lang=${userLang}`
     : "";
@@ -74,13 +49,8 @@ export default function MapView({ markers }: MapViewProps) {
     ? [markers[0].lat, markers[0].lng]
     : [41.4845, 13.4989]; // Default: Fondi
 
-  useEffect(() => {
-    if (!mapRef.current) return;
-  }, [markers]);
-
   return (
     <div
-      ref={mapRef}
       className="w-full relative aspect-video sm:aspect-[16/9]"
       style={{
         minHeight: 220,
@@ -99,61 +69,67 @@ export default function MapView({ markers }: MapViewProps) {
           maxBounds={[[-90, -180], [90, 180]]}
           maxBoundsViscosity={1.0}
           worldCopyJump={false}
+          zoomControl={false}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
-            url={tileUrl}
-          />
-          {/* Pulsante geolocalizzazione */}
+          <ZoomControl position="topright" />
+          <LayersControl position="topright">
+            <LayersControl.BaseLayer checked name="Strade">
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
+                url={tileUrl}
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Satellite">
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
+                url={maptilerKey ? `https://api.maptiler.com/maps/satellite/256/{z}/{x}/{y}.jpg?key=${maptilerKey}` : ""}
+              />
+            </LayersControl.BaseLayer>
+          </LayersControl>
           <GeoLocateButton />
-          {/* Marker clustering: fallback ai marker normali se cluster non disponibile */}
-          {clusterLayer == null ? (
-            markers.map((m, i) => (
+          {/* Pulsante reset posizione */}
+          <button
+            type="button"
+            aria-label="Reset posizione mappa"
+            className="absolute top-2 left-2 z-[1000] bg-white/80 rounded px-2 py-1 shadow hover:bg-blue-100"
+            onClick={() => window.location.reload()}
+          >
+            Reset
+          </button>
+          {markers.map((m, i) => {
+            // Icona personalizzata: blu se c'è immagine, rossa se manca
+            const customIcon = new L.Icon({
+              iconUrl: m.imageUrl
+                ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png"
+                : "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+              shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34],
+              shadowSize: [41, 41],
+            });
+            return (
               <Marker
                 key={`${m.lat}-${m.lng}-${m.title ?? ""}-${i}`}
                 position={[m.lat, m.lng]}
+                aria-label={m.title ?? "Avvistamento"}
+                icon={customIcon}
               >
                 <Popup maxWidth={250} closeButton={true} className="custom-popup">
-                  <div className="popup-content">
-                    <h3 className="font-bold text-lg mb-2 text-blue-700">{m.title ?? "Avvistamento"}</h3>
-                    {m.imageUrl && (
-                      <div className="mb-2">
-                        <Image
-                          src={m.imageUrl}
-                          alt={m.title ?? "Avvistamento"}
-                          width={200}
-                          height={120}
-                          style={{ maxWidth: "100%", height: "auto", borderRadius: "4px" }}
-                          loading="lazy"
-                          priority={i === 0}
-                        />
-                      </div>
-                    )}
-                    {m.description && (
-                      <p className="text-sm text-gray-600 mb-2 line-clamp-3">
-                        {m.description.length > 100 
-                          ? `${m.description.substring(0, 100)}...` 
-                          : m.description}
-                      </p>
-                    )}
-                    {m.createdAt && (
-                      <p className="text-xs text-gray-500 mb-2">
-                        {new Date(m.createdAt).toLocaleDateString('it-IT')}
-                      </p>
-                    )}
-                    {m.id && (
-                      <a 
-                        href={`/cats/${m.id}`}
-                        className="inline-block bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
-                      >
-                        Vedi dettagli
-                      </a>
-                    )}
-                  </div>
+                  <MapMarkerPopup cat={{
+                    id: m.id ?? 0,
+                    userId: 0,
+                    title: m.title ?? "Avvistamento",
+                    description: m.description ?? "",
+                    imageUrl: m.imageUrl ?? null,
+                    latitude: m.lat,
+                    longitude: m.lng,
+                    createdAt: m.createdAt ?? "",
+                  }} />
                 </Popup>
               </Marker>
-            ))
-          ) : null}
+            );
+          })}
         </MapContainer>
       )}
     </div>

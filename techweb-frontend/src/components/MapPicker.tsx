@@ -24,14 +24,11 @@ function MapPicker({ position, onChange }: MapPickerProps) {
   return <PickerMarker position={position} />;
 }
 
-export default function CatLocationPicker({
-  value,
-  onChange,
-}: Readonly<{
+export default function CatLocationPicker({ value, onChange }: Readonly<{
   value: { lat: number; lng: number } | null;
   onChange: (pos: { lat: number; lng: number }) => void;
 }>) {
-  // Rileva la lingua dell'utente
+  // Lingua utente
   const userLang = useMemo(() => {
     if (typeof window !== "undefined") {
       const lang = navigator.language || navigator.languages?.[0] || "en";
@@ -40,19 +37,9 @@ export default function CatLocationPicker({
     return "en";
   }, []);
 
-  // Recupera la chiave MapTiler dal backend
   const [maptilerKey, setMaptilerKey] = useState<string>("");
-
   useEffect(() => {
-    const cachedKey = typeof window !== 'undefined' ? sessionStorage.getItem('maptilerKey') : null;
-    if (cachedKey) {
-      setMaptilerKey(cachedKey);
-    } else {
-      fetchMaptilerKey().then((key) => {
-        setMaptilerKey(key);
-        if (typeof window !== 'undefined') sessionStorage.setItem('maptilerKey', key);
-      });
-    }
+    fetchMaptilerKey().then((key) => setMaptilerKey(key));
   }, []);
 
   const tileUrl = maptilerKey
@@ -61,7 +48,7 @@ export default function CatLocationPicker({
 
   return (
     <div
-      className="w-full relative aspect-ratio-16-9"
+      className="w-full relative aspect-video sm:aspect-[16/9]"
       style={{
         minHeight: 180,
         minWidth: 0,
