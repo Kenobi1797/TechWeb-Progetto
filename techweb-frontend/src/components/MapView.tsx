@@ -96,7 +96,18 @@ export default function MapView({ markers }: MapViewProps) {
           >
             Reset
           </button>
-          {markers.map((m, i) => {
+          {markers.map((m, i, arr) => {
+            // Offset casuale se marker troppo vicini
+            let lat = m.lat;
+            let lng = m.lng;
+            const threshold = 0.00015; // ~15m
+            const isNear = arr.some((other, j) =>
+              i !== j && Math.abs(other.lat - m.lat) < threshold && Math.abs(other.lng - m.lng) < threshold
+            );
+            if (isNear) {
+              lat += (Math.random() - 0.5) * threshold;
+              lng += (Math.random() - 0.5) * threshold;
+            }
             // Icona personalizzata: blu se c'è immagine, rossa se manca
             const customIcon = new L.Icon({
               iconUrl: m.imageUrl
@@ -111,7 +122,7 @@ export default function MapView({ markers }: MapViewProps) {
             return (
               <Marker
                 key={`${m.lat}-${m.lng}-${m.title ?? ""}-${i}`}
-                position={[m.lat, m.lng]}
+                position={[lat, lng]}
                 aria-label={m.title ?? "Avvistamento"}
                 icon={customIcon}
               >
