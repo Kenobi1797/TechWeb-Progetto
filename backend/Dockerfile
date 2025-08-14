@@ -2,7 +2,10 @@ FROM node:18-alpine AS base
 
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm ci --prefer-offline --no-audit --progress=false
+RUN npm prune \
+	&& npm install \
+	&& npm dedupe \
+	&& npm audit fix
 
 COPY . .
 EXPOSE 5000
