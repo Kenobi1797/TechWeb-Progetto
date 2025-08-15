@@ -1,11 +1,17 @@
 "use client";
 import "../utils/fixLeafletIcon";
-import { MapContainer, TileLayer, Marker, Popup, ZoomControl, LayersControl } from "react-leaflet";
+import dynamic from "next/dynamic";
+const MapContainer = dynamic(() => import("react-leaflet").then(mod => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then(mod => mod.TileLayer), { ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then(mod => mod.Marker), { ssr: false });
+const Popup = dynamic(() => import("react-leaflet").then(mod => mod.Popup), { ssr: false });
+const ZoomControl = dynamic(() => import("react-leaflet").then(mod => mod.ZoomControl), { ssr: false });
+import { LayersControl } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo, useState } from "react";
 import { fetchMaptilerKey } from "../utils/ServerConnect";
-import dynamic from "next/dynamic";
+
 import MapMarkerPopup from "./MapMarkerPopup";
 
 const GeoLocateButton = dynamic(() => import("./GeoLocateButton"), { ssr: false });
@@ -51,15 +57,17 @@ export default function MapView({ markers }: MapViewProps) {
 
   return (
     <div
-      className="w-full relative aspect-video sm:aspect-[16/9]"
+      className="w-full aspect-video sm:aspect-[16/9] min-h-[220px] h-[520px] relative z-0"
       style={{
         minHeight: 220,
-        minWidth: 0,
         maxWidth: "100vw",
-        height: "auto",
+        height: "520px",
+        position: "relative",
+        zIndex: 0
       }}
     >
-      {maptilerKey && (
+  {!maptilerKey && <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">Caricamento mappa...</div>}
+  {maptilerKey && (
         <MapContainer
           center={defaultPos}
           zoom={13}
@@ -91,7 +99,7 @@ export default function MapView({ markers }: MapViewProps) {
           <button
             type="button"
             aria-label="Reset posizione mappa"
-            className="absolute top-2 left-2 z-[1000] bg-white/80 rounded px-2 py-1 shadow hover:bg-blue-100"
+            className="absolute top-2 left-2 z-10 bg-white/80 rounded px-2 py-1 shadow hover:bg-blue-100"
             onClick={() => window.location.reload()}
           >
             Reset

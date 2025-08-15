@@ -163,6 +163,9 @@ header, footer {
   box-shadow: 0 4px 32px 0 rgba(60, 72, 88, 0.13);
   backdrop-filter: blur(12px) saturate(1.2);
   border-bottom: 1.5px solid var(--color-border);
+  position: sticky !important;
+  top: 0;
+  z-index: 100 !important;
 }
 footer {
   border-top: 1.5px solid var(--color-border);
