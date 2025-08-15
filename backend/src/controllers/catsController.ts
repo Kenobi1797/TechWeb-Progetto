@@ -51,7 +51,7 @@ export const getAllCats = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { from, to, lat, lon, radius } = req.query;
+  const { from, to, lat, lon, radius, page = 1, limit = 20 } = req.query;
 
   let selectFields = `
     id, title, latitude, longitude, image_url, created_at
@@ -81,6 +81,8 @@ export const getAllCats = async (
   let query = baseQuery + ' FROM cats';
   if (conditions.length) query += ' WHERE ' + conditions.join(' AND ');
   query += ' ORDER BY created_at DESC';
+  query += ` LIMIT $${values.length + 1} OFFSET $${values.length + 2}`;
+  values.push(Number(limit), (Number(page) - 1) * Number(limit));
 
   try {
     const result = await pool.query(query, values);

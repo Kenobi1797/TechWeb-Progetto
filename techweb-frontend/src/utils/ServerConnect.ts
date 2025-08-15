@@ -105,9 +105,9 @@ export async function loginUser(email: string, password: string) {
 
 // --- GATTI ---
 
-export async function fetchCats(): Promise<Cat[]> {
+export async function fetchCats(page = 1, limit = 20): Promise<Cat[]> {
   const data = await handleFetch<CatApiResponse[]>(
-    fetch(`${API_URL}/cats`)
+    fetch(`${API_URL}/cats?page=${page}&limit=${limit}`)
   );
   return data.map(mapCatApiResponse);
 }

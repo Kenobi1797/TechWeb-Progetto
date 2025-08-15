@@ -46,13 +46,15 @@ export const getComments = async (
   const { cat_id } = req.params;
 
   try {
+    const { page = 1, limit = 20 } = req.query;
     const result = await pool.query(
       `SELECT comments.*, users.username
        FROM comments
        JOIN users ON users.id = comments.user_id
        WHERE cat_id = $1
-       ORDER BY created_at ASC`,
-      [cat_id]
+       ORDER BY created_at ASC
+       LIMIT $2 OFFSET $3`,
+      [cat_id, Number(limit), (Number(page) - 1) * Number(limit)]
     );
     res.json(result.rows);
   } catch (err) {
