@@ -191,7 +191,14 @@ export default function MapView({ markers }: MapViewProps) {
                 aria-label={m.title ?? "Avvistamento"}
                 icon={customIcon}
               >
-                <Popup maxWidth={320} closeButton={true} className="custom-popup">
+                <Popup 
+                  maxWidth={300} 
+                  closeButton={true} 
+                  className="custom-popup"
+                  autoPan={true}
+                  keepInView={true}
+                  closeOnEscapeKey={true}
+                >
                   <MapMarkerPopup cat={{
                     id: m.id ?? 0,
                     userId: 0,

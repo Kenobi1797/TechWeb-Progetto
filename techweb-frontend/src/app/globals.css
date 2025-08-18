@@ -264,3 +264,76 @@ footer {
     border-width: 2px;
   }
 }
+
+/* Stili specifici per i popup della mappa */
+.leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  background: white;
+  color: inherit;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.custom-popup .leaflet-popup-tip {
+  background: white;
+}
+
+/* Stabilizza il contenuto del popup */
+.cat-popup {
+  position: relative;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.cat-popup * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Stili per il markdown semplificato nei popup */
+.cat-popup strong {
+  font-weight: 600;
+  color: inherit;
+}
+
+.cat-popup em {
+  font-style: italic;
+  color: inherit;
+}
+
+.cat-popup code {
+  background: rgba(0, 0, 0, 0.1);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.cat-popup a {
+  color: var(--color-secondary);
+  text-decoration: underline;
+}
+
+.cat-popup a:hover {
+  color: var(--color-accent);
+}
+
+/* Previeni il movimento del popup */
+.leaflet-popup-pane {
+  pointer-events: none;
+}
+
+.leaflet-popup {
+  pointer-events: auto;
+  margin-bottom: 0;
+}
