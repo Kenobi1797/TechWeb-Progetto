@@ -21,7 +21,7 @@ export default function GeoLocateButton() {
 
   return (
     <button
-      className="absolute top-2 right-2 z-[1000] bg-white border border-gray-300 rounded px-3 py-1 shadow hover:bg-gray-100 transition"
+      className="absolute bottom-2 right-2 z-[1000] bg-white border border-gray-300 rounded px-3 py-1 shadow hover:bg-gray-100 transition"
       onClick={handleLocate}
       title="Centra sulla tua posizione"
       style={{ cursor: "pointer" }}

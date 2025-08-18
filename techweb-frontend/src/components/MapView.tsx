@@ -6,7 +6,7 @@ const TileLayer = dynamic(() => import("react-leaflet").then(mod => mod.TileLaye
 const Marker = dynamic(() => import("react-leaflet").then(mod => mod.Marker), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then(mod => mod.Popup), { ssr: false });
 const ZoomControl = dynamic(() => import("react-leaflet").then(mod => mod.ZoomControl), { ssr: false });
-import { LayersControl } from "react-leaflet";
+import { LayersControl, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo, useState } from "react";
@@ -15,6 +15,31 @@ import { fetchMaptilerKey } from "../utils/ServerConnect";
 import MapMarkerPopup from "./MapMarkerPopup";
 
 const GeoLocateButton = dynamic(() => import("./GeoLocateButton"), { ssr: false });
+
+// Componente per il pulsante che inquadra tutti i marker
+function FitAllMarkersButton({ markers }: { readonly markers: readonly MarkerData[] }) {
+  const map = useMap();
+
+  const handleFitAll = () => {
+    if (markers.length === 0) return;
+    
+    const group = L.featureGroup(
+      markers.map(m => L.marker([m.lat, m.lng]))
+    );
+    map.fitBounds(group.getBounds(), { padding: [20, 20] });
+  };
+
+  return (
+    <button
+      className="absolute top-2 right-2 z-[1000] bg-white border border-gray-300 rounded px-3 py-1 shadow hover:bg-gray-100 transition"
+      onClick={handleFitAll}
+      title="Inquadra tutti i marker"
+      style={{ cursor: "pointer" }}
+    >
+      🗺️
+    </button>
+  );
+}
 
 type MarkerData = {
   lat: number;
@@ -34,6 +59,8 @@ interface MapViewProps {
 export default function MapView({ markers }: MapViewProps) {
 
   const [maptilerKey, setMaptilerKey] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  
   // Lingua utente
   const userLang = useMemo(() => {
     if (typeof window !== "undefined") {
@@ -44,11 +71,27 @@ export default function MapView({ markers }: MapViewProps) {
   }, []);
 
   useEffect(() => {
-    fetchMaptilerKey().then((key) => setMaptilerKey(key));
+    setIsLoading(true);
+    fetchMaptilerKey()
+      .then((key) => {
+        setMaptilerKey(key);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   const tileUrl = maptilerKey
     ? `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${maptilerKey}&lang=${userLang}`
+    : "";
+
+  const satelliteUrl = maptilerKey
+    ? `https://api.maptiler.com/maps/satellite/256/{z}/{x}/{y}.jpg?key=${maptilerKey}`
+    : "";
+
+  const hybridUrl = maptilerKey
+    ? `https://api.maptiler.com/maps/hybrid/256/{z}/{x}/{y}.jpg?key=${maptilerKey}&lang=${userLang}`
     : "";
 
   const defaultPos: [number, number] = markers.length
@@ -66,44 +109,58 @@ export default function MapView({ markers }: MapViewProps) {
         zIndex: 0
       }}
     >
-  {!maptilerKey && <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">Caricamento mappa...</div>}
-  {maptilerKey && (
+  {(!maptilerKey || isLoading) && (
+    <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
+      {isLoading ? "Caricamento mappa..." : "Inizializzazione..."}
+    </div>
+  )}
+  {maptilerKey && !isLoading && (
         <MapContainer
           center={defaultPos}
           zoom={13}
           minZoom={2}
+          maxZoom={19}
           style={{ width: "100%", height: "100%" }}
           className="rounded-lg shadow-sm h-full"
           maxBounds={[[-90, -180], [90, 180]]}
           maxBoundsViscosity={1.0}
           worldCopyJump={false}
           zoomControl={false}
+          preferCanvas={true}
+          key={`map-${maptilerKey}`}
         >
-          <ZoomControl position="topright" />
-          <LayersControl position="topright">
+          <ZoomControl position="topleft" />
+          <LayersControl position="topleft">
             <LayersControl.BaseLayer checked name="Strade">
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
                 url={tileUrl}
+                key="streets-layer"
+                maxZoom={19}
+                errorTileUrl="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
               />
             </LayersControl.BaseLayer>
             <LayersControl.BaseLayer name="Satellite">
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
-                url={maptilerKey ? `https://api.maptiler.com/maps/satellite/256/{z}/{x}/{y}.jpg?key=${maptilerKey}` : ""}
+                url={satelliteUrl}
+                key="satellite-layer"
+                maxZoom={19}
+                errorTileUrl="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Ibrida">
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
+                url={hybridUrl}
+                key="hybrid-layer"
+                maxZoom={19}
+                errorTileUrl="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
               />
             </LayersControl.BaseLayer>
           </LayersControl>
           <GeoLocateButton />
-          {/* Pulsante reset posizione */}
-          <button
-            type="button"
-            aria-label="Reset posizione mappa"
-            className="absolute top-2 left-2 z-10 bg-white/80 rounded px-2 py-1 shadow hover:bg-blue-100"
-            onClick={() => window.location.reload()}
-          >
-            Reset
-          </button>
+          <FitAllMarkersButton markers={markers} />
           {markers.map((m, i, arr) => {
             // Offset casuale se marker troppo vicini
             let lat = m.lat;
@@ -134,7 +191,7 @@ export default function MapView({ markers }: MapViewProps) {
                 aria-label={m.title ?? "Avvistamento"}
                 icon={customIcon}
               >
-                <Popup maxWidth={250} closeButton={true} className="custom-popup">
+                <Popup maxWidth={320} closeButton={true} className="custom-popup">
                   <MapMarkerPopup cat={{
                     id: m.id ?? 0,
                     userId: 0,
