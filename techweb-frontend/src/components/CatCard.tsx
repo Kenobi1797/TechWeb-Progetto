@@ -15,22 +15,36 @@ interface CatCardProps {
   readonly cat: Cat;
 }
 
-// Funzioni helper per il rendering
-function getImageHeight(hasRichContent: boolean) {
-  return hasRichContent ? 'h-48 sm:h-52' : 'h-40 sm:h-44';
+// Funzioni helper per il rendering - refactored per SonarLint
+function getRichContentImageHeight() {
+  return 'h-48 sm:h-52';
 }
 
-function getPlaceholderHeight(hasMinimalContent: boolean) {
-  return hasMinimalContent ? 'h-24' : 'h-32';
+function getStandardImageHeight() {
+  return 'h-40 sm:h-44';
+}
+
+function getMinimalPlaceholderHeight() {
+  return 'h-24';
+}
+
+function getStandardPlaceholderHeight() {
+  return 'h-32';
 }
 
 function getTitleSize(titleLength: number) {
   return titleLength > 30 ? 'text-base sm:text-lg' : 'text-lg sm:text-xl';
 }
 
-function getLineClamp(hasRichContent: boolean, hasMinimalContent: boolean) {
-  if (hasRichContent) return 'line-clamp-4';
-  if (hasMinimalContent) return 'line-clamp-2';
+function getRichContentLineClamp() {
+  return 'line-clamp-4';
+}
+
+function getMinimalContentLineClamp() {
+  return 'line-clamp-2';
+}
+
+function getStandardLineClamp() {
   return 'line-clamp-3';
 }
 
@@ -71,6 +85,13 @@ export default function CatCard({ cat }: CatCardProps) {
     if (hasRichContent) return 'min-h-[320px]';
     if (hasMinimalContent) return 'min-h-[180px]';
     return 'min-h-[240px]';
+  };
+
+  // Calcola la classe per il line clamp
+  const getLineClampClass = () => {
+    if (hasRichContent) return getRichContentLineClamp();
+    if (hasMinimalContent) return getMinimalContentLineClamp();
+    return getStandardLineClamp();
   };
 
   // Cache geocoding in memoria (valida per la sessione)
@@ -114,13 +135,13 @@ export default function CatCard({ cat }: CatCardProps) {
               alt={cat.title}
               width={400}
               height={hasRichContent ? 220 : 180}
-              className={`w-full object-cover transition-transform duration-300 group-hover:scale-110 ${getImageHeight(!!hasRichContent)}`}
+              className={`w-full object-cover transition-transform duration-300 group-hover:scale-110 ${hasRichContent ? getRichContentImageHeight() : getStandardImageHeight()}`}
               loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
         ) : (
-          <div className={`bg-gradient-to-br from-gray-100 to-gray-200 w-full flex items-center justify-center text-gray-400 ${getPlaceholderHeight(hasMinimalContent)}`}>
+          <div className={`bg-gradient-to-br from-gray-100 to-gray-200 w-full flex items-center justify-center text-gray-400 ${hasMinimalContent ? getMinimalPlaceholderHeight() : getStandardPlaceholderHeight()}`}>
             <div className="text-center">
               <div className="text-3xl mb-1">🐱</div>
               <div className="text-xs">Nessuna immagine</div>
@@ -141,7 +162,7 @@ export default function CatCard({ cat }: CatCardProps) {
         </h3>
         
         {cat.description && (
-          <p className={`text-sm mb-3 flex-grow leading-relaxed ${getLineClamp(!!hasRichContent, hasMinimalContent)}`} style={{ color: "var(--color-text-secondary)" }}>
+          <p className={`text-sm mb-3 flex-grow leading-relaxed ${getLineClampClass()}`} style={{ color: "var(--color-text-secondary)" }}>
             {truncateDescription(cat.description, cat.title)}
           </p>
         )}
