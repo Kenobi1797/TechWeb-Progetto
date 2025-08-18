@@ -17,12 +17,42 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
   const [dragActive, setDragActive] = useState(false);
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const validateImageFile = (file: File): string | null => {
+    // Controlla la dimensione (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      return "L'immagine deve essere inferiore a 5MB";
+    }
+    
+    // Controlla il tipo di file
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      return "Formato non supportato. Usa JPG, PNG o WebP";
+    }
+    
+    return null;
+  };
 
   const handleFile = (file: File | null) => {
+    if (!file) {
+      setImage(null);
+      setPreview(null);
+      setError(null);
+      return;
+    }
+
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setError(null);
     setImage(file);
-    setPreview(file ? URL.createObjectURL(file) : null);
+    setPreview(URL.createObjectURL(file));
   };
-  const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
@@ -49,27 +79,48 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!image) {
-      alert("Seleziona un'immagine.");
+    
+    // Validazioni
+    if (!title.trim()) {
+      setError("Il titolo è obbligatorio");
       return;
     }
-    const form = new FormData();
-    form.append("title", title);
-    form.append("description", description);
-    if (image) form.append("image", image);
-    if (position) {
-      form.append("lat", String(position.lat));
-      form.append("lng", String(position.lng));
+    
+    if (!description.trim()) {
+      setError("La descrizione è obbligatoria");
+      return;
     }
+    
+    if (!image) {
+      setError("Seleziona un'immagine");
+      return;
+    }
+    
+    if (!position) {
+      setError("Seleziona una posizione sulla mappa");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    const form = new FormData();
+    form.append("title", title.trim());
+    form.append("description", description.trim());
+    form.append("image", image);
+    form.append("lat", String(position.lat));
+    form.append("lng", String(position.lng));
+    
     try {
       await onSubmit(form);
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'response' in err) {
         // @ts-expect-error: err potrebbe avere la proprietà response solo in caso di errore API
-        setError(err?.response?.data?.errors?.[0]?.msg || "Errore di upload");
+        setError(err?.response?.data?.error || "Errore durante l'upload");
       } else {
-        setError("Errore di upload");
+        setError("Errore durante l'upload");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -162,38 +213,81 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
         />
       )}
       <div>
-        <span className="label-text mb-1 block">Posizione sulla mappa</span>
+        <div className="flex items-center justify-between mb-2">
+          <span className="label-text">Posizione sulla mappa</span>
+          <button
+            type="button"
+            onClick={() => {
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                  (pos) => {
+                    setPosition({
+                      lat: pos.coords.latitude,
+                      lng: pos.coords.longitude
+                    });
+                  },
+                  () => {
+                    setError("Impossibile ottenere la posizione attuale");
+                  }
+                );
+              } else {
+                setError("Geolocalizzazione non supportata dal browser");
+              }
+            }}
+            className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors"
+          >
+            📍 Usa posizione attuale
+          </button>
+        </div>
+        {!position && (
+          <p className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded mb-2">
+            ⚠️ Clicca sulla mappa per selezionare la posizione dell&apos;avvistamento
+          </p>
+        )}
         <CatLocationPicker value={position} onChange={setPosition} />
-        <input
-          type="text"
-          name="latitude"
-          required
-          readOnly
-          value={position ? position.lat.toFixed(6) : ""}
-          placeholder="Latitudine"
-          className="input input-bordered w-full mb-2"
-          style={{ background: "#f9fafb" }}
-        />
-        <input
-          type="text"
-          name="longitude"
-          required
-          readOnly
-          value={position ? position.lng.toFixed(6) : ""}
-          placeholder="Longitudine"
-          className="input input-bordered w-full mb-2"
-          style={{ background: "#f9fafb" }}
-        />
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <input
+            type="text"
+            name="latitude"
+            required
+            readOnly
+            value={position ? position.lat.toFixed(6) : ""}
+            placeholder="Latitudine"
+            className="input input-bordered text-sm"
+            style={{ background: "#f9fafb" }}
+          />
+          <input
+            type="text"
+            name="longitude"
+            required
+            readOnly
+            value={position ? position.lng.toFixed(6) : ""}
+            placeholder="Longitudine"
+            className="input input-bordered text-sm"
+            style={{ background: "#f9fafb" }}
+          />
+        </div>
       </div>
       <button
         type="submit"
-        className="btn btn-primary w-full mt-2"
+        disabled={isSubmitting || !title.trim() || !description.trim() || !image || !position}
+        className="btn btn-primary w-full mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
-          background: "var(--color-primary)",
+          background: isSubmitting ? "var(--color-secondary)" : "var(--color-primary)",
           color: "#fff",
         }}
       >
-        Invia avvistamento
+        {isSubmitting ? (
+          <span className="flex items-center gap-2">
+            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle>
+              <path fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path>
+            </svg>
+            Invio in corso...
+          </span>
+        ) : (
+          "Invia avvistamento"
+        )}
       </button>
     </form>
   );

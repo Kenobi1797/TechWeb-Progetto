@@ -11,33 +11,64 @@ export const createCat = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { title, description, latitude, longitude } = req.body;
-  if (!title || !latitude || !longitude) {
-    res.status(400).json({ error: 'Titolo, latitudine e longitudine sono obbligatori' });
+  const { title, description, lat, lng } = req.body;
+  
+  // Validazioni di base
+  if (!title?.trim()) {
+    res.status(400).json({ error: 'Il titolo è obbligatorio' });
     return;
   }
+  
+  if (!description?.trim()) {
+    res.status(400).json({ error: 'La descrizione è obbligatoria' });
+    return;
+  }
+  
+  if (!lat || !lng) {
+    res.status(400).json({ error: 'Latitudine e longitudine sono obbligatorie' });
+    return;
+  }
+  
+  // Validazione coordinate
+  const latitude = parseFloat(lat);
+  const longitude = parseFloat(lng);
+  
+  if (isNaN(latitude) || latitude < -90 || latitude > 90) {
+    res.status(400).json({ error: 'Latitudine non valida (deve essere tra -90 e 90)' });
+    return;
+  }
+  
+  if (isNaN(longitude) || longitude < -180 || longitude > 180) {
+    res.status(400).json({ error: 'Longitudine non valida (deve essere tra -180 e 180)' });
+    return;
+  }
+  
   if (!req.user) {
     res.status(401).json({ error: 'Utente non autenticato' });
     return;
   }
+  
+  if (!req.file) {
+    res.status(400).json({ error: 'Immagine obbligatoria' });
+    return;
+  }
 
   // Validazione markdown se la descrizione è presente
-  if (description) {
-    const validation = validateMarkdown(description);
+  if (description.trim()) {
+    const validation = validateMarkdown(description.trim());
     if (!validation.valid) {
       res.status(400).json({ error: validation.error });
       return;
     }
   }
 
-  const image_url = req.file?.filename
-    ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
-    : null;
+  const image_url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+  
   try {
     const result = await pool.query(
       `INSERT INTO cats (user_id, title, description, image_url, latitude, longitude)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [req.user.userId, title, description, image_url, latitude, longitude]
+      [req.user.userId, title.trim(), description.trim(), image_url, latitude, longitude]
     );
     res.status(201).json(result.rows[0]);
     return;

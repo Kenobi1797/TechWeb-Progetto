@@ -8,6 +8,7 @@ export default function UploadPage() {
   const checkedAuth = useRef(false);
   const [isAuth, setIsAuth] = useState<null | boolean>(null);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (checkedAuth.current) return;
@@ -23,19 +24,32 @@ export default function UploadPage() {
   }, [router]);
 
   const handleSubmit = async (form: FormData) => {
+    setError("");
+    setSuccess(false);
+    
     const token = localStorage.getItem("token");
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}/cats`,
-      {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: form,
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}/cats`,
+        {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: form,
+        }
+      );
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        setSuccess(true);
+        setTimeout(() => {
+          router.push("/");
+        }, 2000);
+      } else {
+        setError(data.error || "Errore durante l'upload");
       }
-    );
-    if (res.ok) {
-      router.push("/");
-    } else {
-      setError("Errore durante l'upload");
+    } catch {
+      setError("Errore di connessione al server");
     }
   };
 
@@ -59,6 +73,13 @@ export default function UploadPage() {
       <h1 className="text-xl sm:text-3xl font-bold mb-6" style={{ color: "var(--color-primary)" }}>
         Nuovo avvistamento
       </h1>
+      
+      {success && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
+          <strong>Successo!</strong> Il tuo avvistamento è stato inviato. Reindirizzamento in corso...
+        </div>
+      )}
+      
       <UploadForm onSubmit={handleSubmit} />
       {error && <div className="error-message text-red-500 mt-4">{error}</div>}
     </div>

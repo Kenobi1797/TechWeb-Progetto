@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "../utils/fixLeafletIcon";
@@ -16,12 +16,65 @@ function PickerMarker({ position }: { readonly position?: LatLngExpression | nul
 }
 
 function MapPicker({ position, onChange }: MapPickerProps) {
+  const map = useMap();
+  
   useMapEvents({
     click(e) {
       onChange({ lat: e.latlng.lat, lng: e.latlng.lng });
     },
   });
+
+  // Centra la mappa quando viene impostata una nuova posizione
+  useEffect(() => {
+    if (position && Array.isArray(position) && position.length === 2) {
+      map.setView(position, map.getZoom());
+    }
+  }, [position, map]);
+
   return <PickerMarker position={position} />;
+}
+
+function GeoLocateButton({ onChange }: Readonly<{ onChange: (pos: { lat: number; lng: number }) => void }>) {
+  const map = useMap();
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleLocate = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocalizzazione non supportata dal browser");
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        map.setView([latitude, longitude], 15);
+        onChange({ lat: latitude, lng: longitude });
+        setIsLocating(false);
+      },
+      () => {
+        alert("Impossibile ottenere la posizione");
+        setIsLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  };
+
+  return (
+    <button
+      className="absolute bottom-2 right-2 z-[1000] bg-white border border-gray-300 rounded px-3 py-1 shadow hover:bg-gray-100 transition disabled:opacity-50"
+      onClick={handleLocate}
+      disabled={isLocating}
+      title="Centra sulla tua posizione"
+      style={{ cursor: isLocating ? "wait" : "pointer" }}
+    >
+      {isLocating ? "⏳" : "📍"}
+    </button>
+  );
 }
 
 export default function CatLocationPicker({ value, onChange }: Readonly<{
@@ -69,6 +122,7 @@ export default function CatLocationPicker({ value, onChange }: Readonly<{
         >
           <TileLayer url={tileUrl} />
           <MapPicker position={value ? [value.lat, value.lng] : undefined} onChange={onChange} />
+          <GeoLocateButton onChange={onChange} />
         </MapContainer>
       )}
     </div>

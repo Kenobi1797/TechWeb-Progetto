@@ -35,6 +35,31 @@ app.get('/maptiler-key', (req, res) => {
   res.json({ key: process.env.NODE_ENV === 'production' ? undefined : process.env.MAPTILER_KEY ?? "" });
 });
 
+// Middleware per gestire errori di multer e altri errori
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  // Errori di multer
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ error: 'File troppo grande (max 5MB)' });
+  }
+  
+  if (err.code === 'LIMIT_FILE_COUNT') {
+    return res.status(400).json({ error: 'Troppi file caricati' });
+  }
+  
+  if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+    return res.status(400).json({ error: 'Campo file non atteso' });
+  }
+  
+  // Altri errori multer
+  if (err.message?.includes('Formato file non supportato')) {
+    return res.status(400).json({ error: err.message });
+  }
+  
+  // Errori generici
+  console.error('Errore del server:', err);
+  res.status(500).json({ error: 'Errore interno del server' });
+});
+
 const PORT = process.env.PORT ?? 5000;
 
 initDb()
