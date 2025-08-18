@@ -15,13 +15,63 @@ interface CatCardProps {
   readonly cat: Cat;
 }
 
+// Funzioni helper per il rendering
+function getImageHeight(hasRichContent: boolean) {
+  return hasRichContent ? 'h-48 sm:h-52' : 'h-40 sm:h-44';
+}
+
+function getPlaceholderHeight(hasMinimalContent: boolean) {
+  return hasMinimalContent ? 'h-24' : 'h-32';
+}
+
+function getTitleSize(titleLength: number) {
+  return titleLength > 30 ? 'text-base sm:text-lg' : 'text-lg sm:text-xl';
+}
+
+function getLineClamp(hasRichContent: boolean, hasMinimalContent: boolean) {
+  if (hasRichContent) return 'line-clamp-4';
+  if (hasMinimalContent) return 'line-clamp-2';
+  return 'line-clamp-3';
+}
+
+function formatLocation(location: string | null, cat: Cat) {
+  if (typeof cat.latitude === "number" && typeof cat.longitude === "number" && location === null) {
+    return "📍 Caricamento...";
+  }
+  if (location) {
+    return `📍 ${location.length > 20 ? location.substring(0, 20) + '...' : location}`;
+  }
+  if (typeof cat.latitude === "number" && typeof cat.longitude === "number") {
+    return `📍 ${cat.latitude.toFixed(2)}, ${cat.longitude.toFixed(2)}`;
+  }
+  return "📍 Non disponibile";
+}
+
 export default function CatCard({ cat }: CatCardProps) {
-  const truncateDescription = (text: string | null, maxLength: number = 80) => {
-    if (!text) return null;
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
+  // Funzione dinamica per il troncamento basata sulla lunghezza del titolo
+  const getDescriptionMaxLength = (title: string) => {
+    if (title.length > 40) return 60;  // Titolo lungo = descrizione più corta
+    if (title.length > 20) return 100; // Titolo medio = descrizione media
+    return 140; // Titolo corto = descrizione più lunga
   };
 
+  const truncateDescription = (text: string | null, title: string) => {
+    if (!text) return null;
+    const maxLength = getDescriptionMaxLength(title);
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
+  };
+
+  // Determina se la card ha contenuto ricco (immagine + descrizione lunga)
+  const hasRichContent = cat.imageUrl && cat.description && cat.description.length > 50;
+  const hasMinimalContent = !cat.imageUrl && (!cat.description || cat.description.length < 30);
+
+  // Calcola l'altezza minima dinamicamente
+  const getCardHeight = () => {
+    if (hasRichContent) return 'min-h-[320px]';
+    if (hasMinimalContent) return 'min-h-[180px]';
+    return 'min-h-[240px]';
+  };
 
   // Cache geocoding in memoria (valida per la sessione)
   const [location, setLocation] = useState<string | null>(null);
@@ -49,29 +99,35 @@ export default function CatCard({ cat }: CatCardProps) {
 
   return (
     <article
-      className="cat-card group rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border flex flex-col overflow-hidden w-full h-full transform hover:scale-105 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+      className={`cat-card group rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border flex flex-col overflow-hidden w-full transform hover:scale-105 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500 ${getCardHeight()}`}
       style={{
         background: "var(--color-surface)",
         borderColor: "var(--color-border)",
         color: "var(--color-text-primary)",
       }}
     >
-      <div className="relative overflow-hidden">
+      <div className={`relative overflow-hidden ${cat.imageUrl ? 'flex-shrink-0' : ''}`}>
         {cat.imageUrl ? (
-          <Image
-            src={cat.imageUrl}
-            alt={cat.title}
-            width={300}
-            height={200}
-            className="rounded-lg object-cover"
-            loading="lazy"
-          />
+          <div className="relative group">
+            <Image
+              src={cat.imageUrl}
+              alt={cat.title}
+              width={400}
+              height={hasRichContent ? 220 : 180}
+              className={`w-full object-cover transition-transform duration-300 group-hover:scale-110 ${getImageHeight(!!hasRichContent)}`}
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          </div>
         ) : (
-          <div className="bg-gray-200 rounded-lg w-full h-48 flex items-center justify-center text-gray-400">
-            Nessuna immagine
+          <div className={`bg-gradient-to-br from-gray-100 to-gray-200 w-full flex items-center justify-center text-gray-400 ${getPlaceholderHeight(hasMinimalContent)}`}>
+            <div className="text-center">
+              <div className="text-3xl mb-1">🐱</div>
+              <div className="text-xs">Nessuna immagine</div>
+            </div>
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+        <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full shadow-lg">
           {new Date(cat.createdAt).toLocaleDateString('it-IT', { 
             day: 'numeric', 
             month: 'short' 
@@ -79,38 +135,26 @@ export default function CatCard({ cat }: CatCardProps) {
         </div>
       </div>
       
-      <div className="p-3 sm:p-4 flex flex-col flex-1">
-        <h3 className="font-bold text-lg sm:text-xl mb-2 leading-tight" style={{ color: "var(--color-primary)" }}>
+      <div className={`p-3 sm:p-4 flex flex-col flex-grow ${hasMinimalContent ? 'justify-center' : ''}`}>
+        <h3 className={`font-bold mb-2 leading-tight ${getTitleSize(cat.title.length)}`} style={{ color: "var(--color-primary)" }}>
           {cat.title}
         </h3>
         
         {cat.description && (
-          <p className="text-sm mb-3 flex-1" style={{ color: "var(--color-text-secondary)" }}>
-            {truncateDescription(cat.description)}
+          <p className={`text-sm mb-3 flex-grow leading-relaxed ${getLineClamp(!!hasRichContent, hasMinimalContent)}`} style={{ color: "var(--color-text-secondary)" }}>
+            {truncateDescription(cat.description, cat.title)}
           </p>
         )}
         
-        <div className="flex items-center justify-between mt-auto pt-2 border-t" style={{ borderColor: "var(--color-border)" }}>
-          <span className="text-xs opacity-75" style={{ color: "var(--color-text-secondary)" }}>
-            {(() => {
-              // Se la geocodifica è in corso (location === null), mostra placeholder
-              if (typeof cat.latitude === "number" && typeof cat.longitude === "number" && location === null) {
-                return "📍 Caricamento luogo...";
-              }
-              // Se la geocodifica ha successo
-              if (location) {
-                return `📍 ${location}`;
-              }
-              // Se la geocodifica fallisce (location === "" o altro valore falsy)
-              if (typeof cat.latitude === "number" && typeof cat.longitude === "number") {
-                return `📍 Lat: ${cat.latitude.toFixed(3)}, Lon: ${cat.longitude.toFixed(3)}`;
-              }
-              return "Coordinate non disponibili";
-            })()}
+        <div className={`flex items-center justify-between mt-auto pt-3 border-t ${
+          hasMinimalContent ? 'pt-2' : 'pt-3'
+        }`} style={{ borderColor: "var(--color-border)" }}>
+          <span className="text-xs opacity-75 flex-1 mr-2" style={{ color: "var(--color-text-secondary)" }}>
+            {formatLocation(location, cat)}
           </span>
           <Link
             href={`/cats/${cat.id}`}
-            className="inline-flex items-center gap-1 font-semibold text-sm px-3 py-1 rounded-full transition-all hover:bg-blue-50 focus:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="inline-flex items-center gap-1 font-semibold text-sm px-3 py-1.5 rounded-full transition-all hover:bg-blue-50 focus:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0"
             style={{ color: "var(--color-secondary)" }}
             aria-label={`Visualizza dettagli di ${cat.title}`}
           >
