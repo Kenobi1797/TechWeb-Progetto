@@ -30,6 +30,16 @@ type CatWithCommentsApiResponse = CatApiResponse & {
   comments?: CommentApiResponse[];
 };
 
+type AuthResponse = {
+  message: string;
+  token: string;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+  };
+};
+
 export const API_URL = "http://localhost:5000";
 
 // Utility per gestire errori fetch
@@ -81,8 +91,8 @@ function mapCommentApiResponse(c: CommentApiResponse): Comment {
 
 // --- AUTH ---
 
-export async function registerUser(username: string, email: string, password: string) {
-  return handleFetch(
+export async function registerUser(username: string, email: string, password: string): Promise<AuthResponse> {
+  return handleFetch<AuthResponse>(
     fetch(`${API_URL}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -92,14 +102,14 @@ export async function registerUser(username: string, email: string, password: st
   );
 }
 
-export async function loginUser(email: string, password: string) {
-  return handleFetch(
+export async function loginUser(email: string, password: string): Promise<AuthResponse> {
+  return handleFetch<AuthResponse>(
     fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     }),
-    "Credenziali non valide"
+    "Credenziali non corrette"
   );
 }
 

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { loginUser } from "../../utils/ServerConnect";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -8,25 +9,31 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
-    const res = await fetch(`${apiUrl}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    if (res.ok) {
-      const { token } = await res.json();
-      if (typeof window !== "undefined" && token) {
-        localStorage.setItem("token", token);
+    setIsLoading(true);
+    
+    try {
+      const response = await loginUser(email, password);
+      if (response?.token) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("token", response.token);
+        }
+        router.push("/");
+      } else {
+        setError("Credenziali non corrette");
       }
-      router.push("/dashboard");
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Credenziali non valide");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Errore durante il login");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -108,13 +115,14 @@ export default function LoginPage() {
         )}
         <button
           type="submit"
-          className="rounded-lg py-2.5 w-full font-bold transition bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          disabled={isLoading}
+          className="rounded-lg py-2.5 w-full font-bold transition bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
-            background: "var(--color-primary)",
+            background: isLoading ? "var(--color-secondary)" : "var(--color-primary)",
             color: "#fff",
           }}
         >
-          Accedi
+          {isLoading ? "Accesso in corso..." : "Accedi"}
         </button>
         <p className="mt-5 text-xs sm:text-sm text-center" style={{ color: "var(--color-text-secondary)" }}>
           Non hai un account?{" "}
