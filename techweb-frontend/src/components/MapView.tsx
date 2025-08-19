@@ -9,8 +9,8 @@ const ZoomControl = dynamic(() => import("react-leaflet").then(mod => mod.ZoomCo
 import { LayersControl, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useMemo, useState } from "react";
-import { fetchMaptilerKey } from "../utils/ServerConnect";
+import { useMemo } from "react";
+import { useDataCache } from "../utils/DataContext";
 
 import MapMarkerPopup from "./MapMarkerPopup";
 
@@ -57,9 +57,7 @@ interface MapViewProps {
 }
 
 export default function MapView({ markers }: MapViewProps) {
-
-  const [maptilerKey, setMaptilerKey] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { maptilerKey } = useDataCache();
   
   // Lingua utente
   const userLang = useMemo(() => {
@@ -68,18 +66,6 @@ export default function MapView({ markers }: MapViewProps) {
       return lang.split("-")[0];
     }
     return "en";
-  }, []);
-
-  useEffect(() => {
-    setIsLoading(true);
-    fetchMaptilerKey()
-      .then((key) => {
-        setMaptilerKey(key);
-        setIsLoading(false);
-      })
-      .catch(() => {
-        setIsLoading(false);
-      });
   }, []);
 
   const tileUrl = maptilerKey
@@ -109,12 +95,12 @@ export default function MapView({ markers }: MapViewProps) {
         zIndex: 0
       }}
     >
-  {(!maptilerKey || isLoading) && (
+  {!maptilerKey && (
     <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
-      {isLoading ? "Caricamento mappa..." : "Inizializzazione..."}
+      Inizializzazione mappa...
     </div>
   )}
-  {maptilerKey && !isLoading && (
+  {maptilerKey && (
         <MapContainer
           center={defaultPos}
           zoom={13}

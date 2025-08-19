@@ -71,9 +71,15 @@ const PORT = process.env.PORT ?? 5000;
 
 initDb()
   .then(() => {
-    startCronJobs();
+    // Avvia cron jobs solo in production
+    if (process.env.NODE_ENV === 'production') {
+      startCronJobs();
+    }
     app.listen(Number(PORT), () => {
       console.log(`Server listening on port ${PORT}`);
+      if (process.env.NODE_ENV === 'production') {
+        console.log('Cron jobs attivati');
+      }
     });
   })
   .catch((err: unknown) => {

@@ -30,7 +30,6 @@ interface CacheContext {
   
   // Utilità
   getCatsWithFilter: (filter?: (cat: Cat) => boolean) => Cat[];
-  getTotalCats: () => number;
 }
 
 const DataContext = createContext<CacheContext | null>(null);
@@ -133,8 +132,6 @@ export function DataProvider({ children }: Readonly<DataProviderProps>) {
     return filter ? cache.cats.filter(filter) : cache.cats;
   }, [cache.cats]);
 
-  const getTotalCats = useCallback(() => cache.cats.length, [cache.cats.length]);
-
   // Inizializzazione e setup auto-refresh
   useEffect(() => {
     let mounted = true;
@@ -213,8 +210,7 @@ export function DataProvider({ children }: Readonly<DataProviderProps>) {
     setLocation,
     
     // Utilità
-    getCatsWithFilter,
-    getTotalCats
+    getCatsWithFilter
   }), [
     cache.cats,
     cache.maptilerKey,
@@ -225,8 +221,7 @@ export function DataProvider({ children }: Readonly<DataProviderProps>) {
     refreshCats,
     fetchCatDetails,
     setLocation,
-    getCatsWithFilter,
-    getTotalCats
+    getCatsWithFilter
   ]);
 
   return (
@@ -280,35 +275,4 @@ export function useCatDetails(id: string) {
     loading: loading && !cachedCat,
     error
   };
-}
-
-export function useGeoLocation(lat?: number, lng?: number) {
-  const { getLocation, setLocation } = useDataCache();
-  const [loading, setLoading] = useState(false);
-  
-  const location = lat && lng ? getLocation(lat, lng) : null;
-  
-  const fetchLocation = useCallback(async (latitude: number, longitude: number) => {
-    if (getLocation(latitude, longitude)) return; // Già in cache
-    
-    setLoading(true);
-    try {
-      const { fetchLocationFromCoordsServer } = await import('./ServerConnect');
-      const loc = await fetchLocationFromCoordsServer(latitude, longitude);
-      setLocation(latitude, longitude, loc);
-    } catch (err) {
-      console.error('Errore geocoding:', err);
-      setLocation(latitude, longitude, null);
-    } finally {
-      setLoading(false);
-    }
-  }, [getLocation, setLocation]);
-  
-  useEffect(() => {
-    if (lat && lng && !location && !loading) {
-      fetchLocation(lat, lng);
-    }
-  }, [lat, lng, location, loading, fetchLocation]);
-  
-  return { location, loading };
 }
