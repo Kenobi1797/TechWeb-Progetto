@@ -16,10 +16,17 @@ app.use(cors());
 app.use(express.json());
 app.use(compression());
 
-// Log delle richieste solo in ambiente di sviluppo
+// Log delle richieste solo per endpoint importanti
 if (process.env.NODE_ENV === 'development') {
   app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log(`${req.method} ${req.url}`);
+    // Log solo per richieste POST, PUT, DELETE e non per endpoint frequenti
+    const skipUrls = ['/maptiler-key', '/geocode'];
+    const shouldLog = !req.method.startsWith('GET') || 
+                     !skipUrls.some(url => req.url.startsWith(url));
+    
+    if (shouldLog) {
+      console.log(`${req.method} ${req.url}`);
+    }
     next();
   });
 }

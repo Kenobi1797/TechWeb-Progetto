@@ -1,25 +1,20 @@
 "use client";
 import React, { useState } from "react";
-import useSWR from "swr";
-
 import CatGrid from "../../components/CatGrid";
-import { fetchCats } from "../../utils/ServerConnect";
+import { useCats } from "../../contexts/DataContext";
 
 export default function CatsPage() {
-
+  const { cats, loading, error } = useCats();
   const [page, setPage] = useState<number>(1);
   const pageSize = 20;
-  const { data: cats, error, isLoading } = useSWR(["cats", page], () => fetchCats(page, pageSize), { refreshInterval: 30000 });
 
-  if (isLoading) return <div className="text-center py-10">Caricamento...</div>;
+  if (loading) return <div className="text-center py-10">Caricamento...</div>;
   if (error) return <div className="text-center py-10">Errore nel caricamento degli avvistamenti.</div>;
-  if (!cats) return null;
+  if (!cats || cats.length === 0) return <div className="text-center py-10">Nessun gatto trovato.</div>;
 
-  // Supponiamo che il backend restituisca solo la pagina richiesta, quindi non serve slice
-  const pagedCats = cats;
-  // Se vuoi mostrare il totale delle pagine, serve un endpoint che restituisca il totale
-  // Per ora lo nascondiamo, ma lasciamo la logica di navigazione
-  const totalPages = cats.length === pageSize ? page + 1 : page;
+  // Paginazione locale sui dati cache
+  const totalPages = Math.ceil(cats.length / pageSize);
+  const pagedCats = cats.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <main className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">

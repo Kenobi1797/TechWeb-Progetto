@@ -1,39 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Cat } from "../utils/types";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import CatGrid from "../components/CatGrid";
-import { fetchCats } from "../utils/ServerConnect";
+import { useCats } from "../contexts/DataContext";
 
 const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 
 export default function HomePage() {
-
-  const [cats, setCats] = useState<Cat[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { cats, loading, error } = useCats();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const pageSize = 20;
-
-  // Funzione per aggiornare la lista
-  const updateCats = () => {
-    setLoading(true);
-    fetchCats()
-      .then(setCats)
-      .catch(() => {
-        setCats([]);
-        setError("Errore nel caricamento degli avvistamenti.");
-      })
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    updateCats();
-    const interval = setInterval(updateCats, 30000); // ogni 30s
-    return () => clearInterval(interval);
-  }, []);
 
   if (loading) return <div className="text-center py-10">Caricamento...</div>;
   if (error) return <div className="text-center py-10">{error}</div>;

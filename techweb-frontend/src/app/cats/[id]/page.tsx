@@ -3,43 +3,24 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { fetchCatById, fetchLocationFromCoordsServer } from "@/utils/ServerConnect";
-import { Cat, Comment } from "@/utils/types";
+import { fetchLocationFromCoordsServer } from "@/utils/ServerConnect";
 import MarkdownViewer from "@/components/MarkdownViewer";
+import { useCatDetails } from "@/contexts/DataContext";
 
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 
-type CatWithDetails = Cat & { 
-  comments: Comment[]; 
-  descriptionHtml?: string;
-};
-
 export default function CatDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [cat, setCat] = useState<CatWithDetails | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { cat, loading, error } = useCatDetails(id);
   const [location, setLocation] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) return;
-    setLoading(true);
-    const fetchData = async () => {
-      try {
-        const data = await fetchCatById(id);
-        setCat(data);
-        if (data && typeof data.latitude === "number" && typeof data.longitude === "number") {
-          const loc = await fetchLocationFromCoordsServer(data.latitude, data.longitude);
-          setLocation(loc);
-        }
-      } catch {
-        setError("Errore nel caricamento dell'avvistamento");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [id]);
+    if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number") {
+      fetchLocationFromCoordsServer(cat.latitude, cat.longitude)
+        .then(setLocation)
+        .catch(() => setLocation(null));
+    }
+  }, [cat]);
 
   // Calcola il valore del luogo in modo sicuro
 let luogoValue = "Non disponibili";
@@ -85,18 +66,11 @@ if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number"
       {/* Descrizione */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Descrizione</h2>
-        {cat.descriptionHtml && (
-          <div
-            className="prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: cat.descriptionHtml }}
-          />
-        )}
-        {!cat.descriptionHtml && cat.description && (
+        {cat.description ? (
           <MarkdownViewer className="prose prose-sm max-w-none">
             {cat.description}
           </MarkdownViewer>
-        )}
-        {!cat.descriptionHtml && !cat.description && (
+        ) : (
           <p className="text-gray-500 italic">Nessuna descrizione disponibile</p>
         )}
       </div>
@@ -128,8 +102,8 @@ if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number"
         </p>
       </div>
       <div className="mt-8">
-        <h2 className="text-lg font-semibold mb-4">Commenti ({cat.comments.length})</h2>
-        {cat.comments.length === 0 ? (
+        <h2 className="text-lg font-semibold mb-4">Commenti ({cat.comments?.length || 0})</h2>
+        {!cat.comments || cat.comments.length === 0 ? (
           <div className="text-gray-400 italic bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-xl shadow">
             Nessun commento ancora. Sii il primo a commentare questo avvistamento!
           </div>

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import pool from '../config/db';
 import { validateMarkdown, parseMarkdown } from '../utils/markdown';
+import { validateAndParseCoordinates } from '../utils/coordinates';
 
 interface AuthRequest extends Request {
   user?: { userId: number };
@@ -30,18 +31,13 @@ export const createCat = async (
   }
   
   // Validazione coordinate
-  const latitude = parseFloat(lat);
-  const longitude = parseFloat(lng);
-  
-  if (isNaN(latitude) || latitude < -90 || latitude > 90) {
-    res.status(400).json({ error: 'Latitudine non valida (deve essere tra -90 e 90)' });
+  const coordinateValidation = validateAndParseCoordinates(lat, lng);
+  if (!coordinateValidation.valid) {
+    res.status(400).json({ error: coordinateValidation.error });
     return;
   }
   
-  if (isNaN(longitude) || longitude < -180 || longitude > 180) {
-    res.status(400).json({ error: 'Longitudine non valida (deve essere tra -180 e 180)' });
-    return;
-  }
+  const { latitude, longitude } = coordinateValidation;
   
   if (!req.user) {
     res.status(401).json({ error: 'Utente non autenticato' });
@@ -77,51 +73,120 @@ export const createCat = async (
   }
 };
 
+interface QueryParams {
+  from?: string;
+  to?: string;
+  lat?: string;
+  lon?: string;
+  radius?: string;
+  page?: string;
+  limit?: string;
+}
+
+interface QueryBuilder {
+  query: string;
+  values: unknown[];
+}
+
+function addDistanceCalculation(
+  baseQuery: string, 
+  lat: string, 
+  lon: string, 
+  values: unknown[]
+): { query: string; coordValid: boolean } {
+  const coordValidation = validateAndParseCoordinates(lat, lon);
+  if (!coordValidation.valid) {
+    return { query: baseQuery, coordValid: false };
+  }
+
+  const idx = values.length + 1;
+  const distanceQuery = `SELECT id, title, latitude, longitude, image_url, created_at,
+    (6371 * acos(
+      cos(radians($${idx})) * cos(radians(latitude)) *
+      cos(radians(longitude) - radians($${idx + 1})) +
+      sin(radians($${idx})) * sin(radians(latitude))
+    )) AS distance`;
+  
+  values.push(coordValidation.latitude, coordValidation.longitude);
+  return { query: distanceQuery, coordValid: true };
+}
+
+function addRadiusFilter(
+  conditions: string[], 
+  radius: string, 
+  values: unknown[]
+): void {
+  const radiusKm = parseFloat(radius);
+  if (isNaN(radiusKm) || radiusKm <= 0) return;
+
+  const latIdx = values.length - 1;
+  const lngIdx = values.length;
+  const radiusIdx = values.length + 1;
+
+  conditions.push(`
+    (6371 * acos(
+      cos(radians($${latIdx})) * cos(radians(latitude)) *
+      cos(radians(longitude) - radians($${lngIdx})) +
+      sin(radians($${latIdx})) * sin(radians(latitude))
+    )) <= $${radiusIdx}
+  `);
+  values.push(radiusKm);
+}
+
+function buildCatsQuery(params: QueryParams): QueryBuilder {
+  const { from, to, lat, lon, radius, page = '1', limit = '20' } = params;
+  
+  const pageNum = Math.max(1, parseInt(page) || 1);
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 20));
+  const offset = (pageNum - 1) * limitNum;
+
+  let baseQuery = 'SELECT id, title, latitude, longitude, image_url, created_at';
+  const values: unknown[] = [];
+  const conditions: string[] = [];
+  let hasDistance = false;
+
+  // Gestione coordinate
+  if (lat && lon) {
+    const result = addDistanceCalculation(baseQuery, lat, lon, values);
+    baseQuery = result.query;
+    hasDistance = result.coordValid;
+    
+    if (hasDistance && radius) {
+      addRadiusFilter(conditions, radius, values);
+    }
+  }
+
+  // Filtro data
+  if (from && to) {
+    const idx = values.length + 1;
+    conditions.push(`created_at BETWEEN $${idx} AND $${idx + 1}`);
+    values.push(from, to);
+  }
+
+  // Costruzione query finale
+  let query = baseQuery + ' FROM cats';
+  if (conditions.length) {
+    query += ' WHERE ' + conditions.join(' AND ');
+  }
+  
+  query += hasDistance ? ' ORDER BY distance ASC, created_at DESC' : ' ORDER BY created_at DESC';
+  
+  const limitIdx = values.length + 1;
+  query += ` LIMIT $${limitIdx} OFFSET $${limitIdx + 1}`;
+  values.push(limitNum, offset);
+
+  return { query, values };
+}
+
 export const getAllCats = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { from, to, lat, lon, radius, page = 1, limit = 20 } = req.query;
-
-  let selectFields = `
-    id, title, latitude, longitude, image_url, created_at
-  `;
-  let baseQuery = `SELECT ${selectFields}`;
-  let values: unknown[] = [];
-  let conditions: string[] = [];
-  let idx = 1;
-
-  if (lat && lon) {
-    baseQuery = `SELECT ${selectFields},
-      (6371 * acos(
-        cos(radians($${idx++})) * cos(radians(latitude)) *
-        cos(radians(longitude) - radians($${idx++})) +
-        sin(radians(${
-          idx - 2
-        })) * sin(radians(latitude))
-      )) AS distance`;
-    values.push(lat, lon);
-  }
-
-  if (from && to) {
-    conditions.push(`created_at BETWEEN $${idx++} AND $${idx++}`);
-    values.push(from, to);
-  }
-
-  let query = baseQuery + ' FROM cats';
-  if (conditions.length) query += ' WHERE ' + conditions.join(' AND ');
-  query += ' ORDER BY created_at DESC';
-  query += ` LIMIT $${values.length + 1} OFFSET $${values.length + 2}`;
-  values.push(Number(limit), (Number(page) - 1) * Number(limit));
-
   try {
+    const { query, values } = buildCatsQuery(req.query as QueryParams);
     const result = await pool.query(query, values);
     let cats: Array<Record<string, unknown>> = result.rows;
-
-    if (radius && lat && lon) {
-      cats = cats.filter((r: Record<string, unknown>) => typeof r.distance === 'number' && r.distance <= parseFloat(radius as string));
-    }
 
     cats = cats.map(({ distance, ...rest }: { distance?: number }) => rest);
 

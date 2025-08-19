@@ -1,20 +1,15 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Cat } from "../../utils/types";
 import dynamic from "next/dynamic";
-import { fetchCats } from "../../utils/ServerConnect";
+import { useCats } from "../../contexts/DataContext";
 
 // Import dinamico per evitare errori SSR con leaflet
 const MapView = dynamic(() => import("../../components/MapView"), { ssr: false });
 
 export default function MapPage() {
-  const [cats, setCats] = useState<Cat[]>([]);
+  const { cats, loading, error } = useCats();
 
-  useEffect(() => {
-    fetchCats()
-      .then(setCats)
-      .catch(() => setCats([]));
-  }, []);
+  if (loading) return <div className="text-center py-10">Caricamento...</div>;
+  if (error) return <div className="text-center py-10">Errore nel caricamento degli avvistamenti.</div>;
 
   return (
     <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
