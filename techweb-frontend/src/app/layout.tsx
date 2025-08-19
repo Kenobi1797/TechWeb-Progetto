@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { DataProvider } from "../contexts/DataContext";
+import { DataProvider } from "../utils/DataContext";
 
 export const metadata: Metadata = {
   title: "Home | Streetcats",

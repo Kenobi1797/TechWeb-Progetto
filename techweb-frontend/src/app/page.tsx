@@ -3,7 +3,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import CatGrid from "../components/CatGrid";
-import { useCats } from "../contexts/DataContext";
+import { useCats } from "../utils/DataContext";
 
 const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 

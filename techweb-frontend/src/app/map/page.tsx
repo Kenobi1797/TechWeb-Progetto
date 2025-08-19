@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useCats } from "../../contexts/DataContext";
+import { useCats } from "../../utils/DataContext";
 
 // Import dinamico per evitare errori SSR con leaflet
 const MapView = dynamic(() => import("../../components/MapView"), { ssr: false });

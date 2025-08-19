@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
-import { Cat, Comment } from '../utils/types';
-import { fetchCats, fetchCatById, fetchMaptilerKey } from '../utils/ServerConnect';
+import { Cat, Comment } from './types';
+import { fetchCats, fetchCatById, fetchMaptilerKey } from './ServerConnect';
 
 interface CacheData {
   cats: Cat[];
@@ -293,7 +293,7 @@ export function useGeoLocation(lat?: number, lng?: number) {
     
     setLoading(true);
     try {
-      const { fetchLocationFromCoordsServer } = await import('../utils/ServerConnect');
+      const { fetchLocationFromCoordsServer } = await import('./ServerConnect');
       const loc = await fetchLocationFromCoordsServer(latitude, longitude);
       setLocation(latitude, longitude, loc);
     } catch (err) {

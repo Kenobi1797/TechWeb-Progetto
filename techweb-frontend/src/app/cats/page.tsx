@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import CatGrid from "../../components/CatGrid";
-import { useCats } from "../../contexts/DataContext";
+import { useCats } from "../../utils/DataContext";
 
 export default function CatsPage() {
   const { cats, loading, error } = useCats();
