@@ -167,11 +167,15 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
     try {
       await onSubmit(form);
     } catch (err: unknown) {
-      if (typeof err === 'object' && err !== null && 'response' in err) {
+      // Gestione più precisa degli errori
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (typeof err === 'object' && err !== null && 'response' in err) {
         // @ts-expect-error: err potrebbe avere la proprietà response solo in caso di errore API
-        setError(err?.response?.data?.error || "Errore durante l'upload");
+        const errorMessage = err?.response?.data?.error || "Errore durante l'upload";
+        setError(errorMessage);
       } else {
-        setError("Errore durante l'upload");
+        setError("Errore imprevisto durante l'upload");
       }
     } finally {
       setIsSubmitting(false);

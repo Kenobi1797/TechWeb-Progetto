@@ -35,6 +35,11 @@ export default function UploadPage() {
         }
       );
       
+      // Se il server non risponde, gestiamo come errore di connessione
+      if (!res) {
+        throw new Error("NETWORK_ERROR");
+      }
+      
       const data = await res.json();
       
       if (res.ok) {
@@ -48,21 +53,33 @@ export default function UploadPage() {
           router.push("/");
         }, 2000);
       } else {
+        // Errore dal server ma connessione OK - mostra l'errore specifico
+        const errorMessage = data.error || "Errore durante l'upload";
         addToast({
           type: "error",
-          message: data.error || "Errore durante l'upload",
+          message: errorMessage,
           duration: 6000
         });
-        throw new Error(data.error || "Errore durante l'upload");
+        throw new Error(errorMessage);
       }
     } catch (err) {
-      if (!String(err).includes("Errore durante l'upload")) {
+      // Solo per errori di rete reali
+      if (err instanceof TypeError && err.message.includes("fetch")) {
         addToast({
           type: "error",
-          message: "⚠️ Errore di connessione al server. Riprova più tardi.",
+          message: "⚠️ Errore di connessione al server. Verifica la tua connessione e riprova.",
           duration: 6000
         });
+        throw new Error("Errore di connessione al server");
+      } else if (String(err).includes("NETWORK_ERROR")) {
+        addToast({
+          type: "error", 
+          message: "⚠️ Server non raggiungibile. Riprova più tardi.",
+          duration: 6000
+        });
+        throw new Error("Server non raggiungibile");
       }
+      // Per altri errori, rilancia l'errore originale senza toast aggiuntivi
       throw err;
     }
   };
