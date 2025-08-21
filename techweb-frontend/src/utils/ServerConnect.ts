@@ -113,6 +113,42 @@ export async function loginUser(email: string, password: string): Promise<AuthRe
   );
 }
 
+export async function logoutUser(): Promise<{ message: string }> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  
+  // Rimuovi il token dal localStorage
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("token");
+  }
+  
+  // Chiama l'endpoint logout se il token esiste
+  if (token) {
+    return handleFetch<{ message: string }>(
+      fetch(`${API_URL}/auth/logout`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+      }),
+      "Errore durante il logout"
+    );
+  }
+  
+  return Promise.resolve({ message: "Logout effettuato" });
+}
+
+export function isAuthenticated(): boolean {
+  if (typeof window === "undefined") return false;
+  const token = localStorage.getItem("token");
+  return token !== null;
+}
+
+export function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
+
 // --- GATTI ---
 
 export async function fetchCats(page = 1, limit = 20): Promise<Cat[]> {

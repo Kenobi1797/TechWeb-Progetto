@@ -59,3 +59,9 @@ export const login = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Errore durante il login', details: (error as { message?: string }).message });
   }
 };
+
+export const logout = async (req: Request, res: Response) => {
+  // Con JWT stateless, il logout lato server è principalmente simbolico
+  // Il token viene invalidato lato client rimuovendolo dal localStorage
+  res.json({ message: 'Logout effettuato con successo' });
+};

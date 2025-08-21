@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { loginUser } from "../../utils/ServerConnect";
+import { useAuth } from "../../utils/useAuth";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const { updateAuthState } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -22,7 +22,10 @@ export default function LoginPage() {
         if (typeof window !== "undefined") {
           localStorage.setItem("token", response.token);
         }
-        router.push("/");
+        // Aggiorna lo stato di autenticazione
+        updateAuthState();
+        // Reindirizza alla homepage
+        window.location.href = "/";
       } else {
         setError("Credenziali non corrette");
       }
