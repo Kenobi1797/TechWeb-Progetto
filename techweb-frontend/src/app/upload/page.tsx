@@ -2,13 +2,13 @@
 import UploadForm from "../../components/UploadForm";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useToast } from "../../utils/toast";
 
 export default function UploadPage() {
   const router = useRouter();
+  const { addToast } = useToast();
   const checkedAuth = useRef(false);
   const [isAuth, setIsAuth] = useState<null | boolean>(null);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (checkedAuth.current) return;
@@ -24,9 +24,6 @@ export default function UploadPage() {
   }, [router]);
 
   const handleSubmit = async (form: FormData) => {
-    setError("");
-    setSuccess(false);
-    
     const token = localStorage.getItem("token");
     try {
       const res = await fetch(
@@ -41,15 +38,32 @@ export default function UploadPage() {
       const data = await res.json();
       
       if (res.ok) {
-        setSuccess(true);
+        addToast({
+          type: "success",
+          message: "🎉 Avvistamento inviato con successo! Reindirizzamento in corso...",
+          duration: 3000
+        });
+        
         setTimeout(() => {
           router.push("/");
         }, 2000);
       } else {
-        setError(data.error || "Errore durante l'upload");
+        addToast({
+          type: "error",
+          message: data.error || "Errore durante l'upload",
+          duration: 6000
+        });
+        throw new Error(data.error || "Errore durante l'upload");
       }
-    } catch {
-      setError("Errore di connessione al server");
+    } catch (err) {
+      if (!String(err).includes("Errore durante l'upload")) {
+        addToast({
+          type: "error",
+          message: "⚠️ Errore di connessione al server. Riprova più tardi.",
+          duration: 6000
+        });
+      }
+      throw err;
     }
   };
 
@@ -57,31 +71,42 @@ export default function UploadPage() {
     return (
       <div className="container mx-auto py-12 px-4 text-center">
         <h1 className="text-2xl font-bold mb-4" style={{ color: "var(--color-primary)" }}>
-          Devi essere autenticato per inserire un nuovo avvistamento
+          🔒 Accesso richiesto
         </h1>
-        <a href="/login" className="btn">Vai al login</a>
+        <p className="text-gray-600 mb-6">
+          Devi essere autenticato per inserire un nuovo avvistamento
+        </p>
+        <a href="/login" className="btn btn-primary">Vai al login</a>
       </div>
     );
   }
 
   if (isAuth === null) {
-    return null; // oppure uno spinner
+    return (
+      <div className="container mx-auto py-12 px-4 text-center">
+        <div className="flex items-center justify-center gap-3">
+          <svg className="animate-spin h-6 w-6 text-primary" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle>
+            <path fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path>
+          </svg>
+          <span>Verifica autenticazione...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
-      <h1 className="text-xl sm:text-3xl font-bold mb-6" style={{ color: "var(--color-primary)" }}>
-        Nuovo avvistamento
-      </h1>
-      
-      {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
-          <strong>Successo!</strong> Il tuo avvistamento è stato inviato. Reindirizzamento in corso...
-        </div>
-      )}
+      <div className="text-center mb-6">
+        <h1 className="text-xl sm:text-3xl font-bold mb-2" style={{ color: "var(--color-primary)" }}>
+          📸 Nuovo avvistamento
+        </h1>
+        <p className="text-gray-600 text-sm sm:text-base">
+          Condividi il tuo avvistamento di un gatto randagio con la community
+        </p>
+      </div>
       
       <UploadForm onSubmit={handleSubmit} />
-      {error && <div className="error-message text-red-500 mt-4">{error}</div>}
     </div>
   );
 }

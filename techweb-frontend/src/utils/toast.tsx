@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo, createContext, useContext } from "react";
+import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from "react";
 
 export interface Toast {
   id: string;
@@ -9,7 +9,6 @@ export interface Toast {
 }
 
 interface ToastContextType {
-  toasts: Toast[];
   addToast: (toast: Omit<Toast, "id">) => void;
   removeToast: (id: string) => void;
 }
@@ -19,26 +18,30 @@ const ToastContext = createContext<ToastContextType | null>(null);
 export function ToastProvider({ children }: { readonly children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = useMemo(() => (toast: Omit<Toast, "id">) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    const newToast = { ...toast, id };
-    setToasts(prev => [...prev, newToast]);
-
-    // Auto-remove dopo duration (default 5s)
-    setTimeout(() => {
-      setToasts(prevToasts => prevToasts.filter(t => t.id !== id));
-    }, toast.duration || 5000);
-  }, []);
-
-  const removeToast = useMemo(() => (id: string) => {
+  const removeToastById = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   }, []);
 
+  const addToast = useCallback((toast: Omit<Toast, "id">) => {
+    const id = Date.now().toString() + Math.random().toString(36).substring(2);
+    const newToast = { ...toast, id };
+    
+    setToasts(prev => [...prev, newToast]);
+
+    // Auto-remove dopo duration
+    setTimeout(() => {
+      removeToastById(id);
+    }, toast.duration || 5000);
+  }, [removeToastById]);
+
+  const removeToast = useCallback((id: string) => {
+    removeToastById(id);
+  }, [removeToastById]);
+
   const contextValue = useMemo(() => ({
-    toasts,
     addToast,
     removeToast
-  }), [toasts, addToast, removeToast]);
+  }), [addToast, removeToast]);
 
   return (
     <ToastContext.Provider value={contextValue}>

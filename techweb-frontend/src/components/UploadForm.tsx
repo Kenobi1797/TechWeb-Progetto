@@ -2,6 +2,7 @@ import { useState, ChangeEvent, FormEvent } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import MarkdownViewer from "./MarkdownViewer";
+import { useToast } from "../utils/toast";
 
 const CatLocationPicker = dynamic(() => import("./MapPicker"), { ssr: false });
 
@@ -10,6 +11,7 @@ interface UploadFormProps {
 }
 
 export default function UploadForm({ onSubmit }: UploadFormProps) {
+  const { addToast } = useToast();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
@@ -19,6 +21,8 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
   const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [address, setAddress] = useState("");
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
   const validateImageFile = (file: File): string | null => {
     // Controlla la dimensione (max 5MB)
@@ -52,6 +56,13 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
     setError(null);
     setImage(file);
     setPreview(URL.createObjectURL(file));
+    
+    // Notifica di successo
+    addToast({
+      type: "success",
+      message: `✅ Immagine caricata (${Math.round(file.size/1024)}KB)`,
+      duration: 3000
+    });
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -73,6 +84,50 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
     setDragActive(false);
     if (e.dataTransfer.files?.[0]) {
       handleFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleAddressGeocoding = async () => {
+    if (!address.trim()) {
+      setError("Inserisci un indirizzo da cercare");
+      return;
+    }
+
+    setIsGeocoding(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}/geocode?address=${encodeURIComponent(address.trim())}`
+      );
+      
+      if (!response.ok) {
+        throw new Error("Errore durante la geocodifica");
+      }
+
+      const data = await response.json();
+      
+      if (data.lat && data.lng) {
+        setPosition({ lat: data.lat, lng: data.lng });
+        addToast({
+          type: "success",
+          message: `📍 Posizione trovata: ${data.display_name || address}`,
+          duration: 4000
+        });
+      } else {
+        throw new Error("Indirizzo non trovato");
+      }
+    } catch (err) {
+      console.error("Errore durante il geocoding:", err);
+      const errorMessage = err instanceof Error ? err.message : "Errore sconosciuto";
+      setError(`Impossibile trovare l'indirizzo: ${errorMessage}. Prova con un indirizzo più specifico o usa la mappa.`);
+      addToast({
+        type: "error",
+        message: "🚫 Indirizzo non trovato",
+        duration: 4000
+      });
+    } finally {
+      setIsGeocoding(false);
     }
   };
 
@@ -174,8 +229,14 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
         onChange={e => setTitle(e.target.value)}
         required
         className="input input-bordered w-full focus:ring-2 focus:ring-primary"
+        style={{
+          backgroundColor: "#ffffff",
+          color: "#2d3748",
+          borderColor: "#d1d5db"
+        }}
         aria-required="true"
         aria-label="Titolo"
+        placeholder="es. Gatto grigio trovato nel parco"
       />
       <label htmlFor="description" className="block label-text">Descrizione</label>
       <div className="flex items-center justify-between mb-1">
@@ -206,7 +267,14 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
           onChange={e => setDescription(e.target.value)}
           required
           rows={4}
-          className="textarea textarea-bordered w-full font-mono bg-yellow-50 dark:bg-gray-900/40 border-yellow-200 dark:border-yellow-700 focus:ring-2 focus:ring-primary"
+          className="textarea textarea-bordered w-full font-mono focus:ring-2 focus:ring-primary"
+          style={{
+            backgroundColor: "#fefefe",
+            color: "#2d3748",
+            borderColor: "#d1d5db",
+            fontSize: "14px",
+            lineHeight: "1.5"
+          }}
           placeholder="Puoi usare **grassetto**, *corsivo*, [link](url), elenchi, ecc.&#10;&#10;Esempio:&#10;## Gatto trovato!&#10;Questo **bellissimo** gatto *sembrava* perso..."
           aria-required="true"
           aria-label="Descrizione"
@@ -239,12 +307,76 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
             📍 Usa posizione attuale
           </button>
         </div>
-        {!position && (
-          <p className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded mb-2">
-            ⚠️ Clicca sulla mappa per selezionare la posizione dell&apos;avvistamento
+        
+        {/* Sezione per inserimento indirizzo */}
+        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <label htmlFor="address" className="block text-sm font-medium mb-2">
+            🗺️ Inserisci un indirizzo (opzionale)
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="address"
+              type="text"
+              value={address}
+              onChange={e => setAddress(e.target.value)}
+              placeholder="es. Via Roma 123, Milano, Italia"
+              className="input input-bordered flex-1 text-sm"
+              style={{
+                backgroundColor: "#ffffff",
+                color: "#2d3748",
+                borderColor: "#d1d5db"
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleAddressGeocoding}
+              disabled={isGeocoding || !address.trim()}
+              className="btn btn-sm bg-green-500 hover:bg-green-600 text-white border-0 disabled:opacity-50"
+            >
+              {isGeocoding ? (
+                <span className="flex items-center gap-1">
+                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle>
+                    <path fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path>
+                  </svg>
+                  ...
+                </span>
+              ) : (
+                "Cerca"
+              )}
+            </button>
+          </div>
+          <p className="text-xs text-gray-600 mt-1">
+            Inserisci un indirizzo completo per trovare automaticamente le coordinate
           </p>
+        </div>
+
+        {!position && (
+          <div className="text-sm bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-3 rounded-lg mb-2">
+            <div className="flex items-start gap-2">
+              <span className="text-amber-600 text-lg">💡</span>
+              <div>
+                <p className="text-amber-700 font-medium mb-1">Come selezionare la posizione:</p>
+                <ul className="text-amber-600 text-xs space-y-1">
+                  <li>• <strong>Inserisci un indirizzo</strong> nel campo sopra e clicca &quot;Cerca&quot;</li>
+                  <li>• <strong>Clicca sulla mappa</strong> per scegliere manualmente la posizione</li>
+                  <li>• <strong>Usa il tuo GPS</strong> con il pulsante &quot;📍 Usa posizione attuale&quot;</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         )}
         <CatLocationPicker value={position} onChange={setPosition} />
+        {position && (
+          <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
+            <p className="text-sm text-green-700 dark:text-green-300 flex items-center gap-2">
+              ✅ <strong>Posizione selezionata!</strong>
+              <span className="text-xs opacity-75">
+                ({position.lat.toFixed(4)}, {position.lng.toFixed(4)})
+              </span>
+            </p>
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-2 mt-2">
           <input
             type="text"
@@ -254,7 +386,12 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
             value={position ? position.lat.toFixed(6) : ""}
             placeholder="Latitudine"
             className="input input-bordered text-sm"
-            style={{ background: "#f9fafb" }}
+            style={{ 
+              backgroundColor: "#f8f9fa",
+              color: "#495057",
+              borderColor: "#dee2e6",
+              fontFamily: "monospace"
+            }}
           />
           <input
             type="text"
@@ -264,7 +401,12 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
             value={position ? position.lng.toFixed(6) : ""}
             placeholder="Longitudine"
             className="input input-bordered text-sm"
-            style={{ background: "#f9fafb" }}
+            style={{ 
+              backgroundColor: "#f8f9fa",
+              color: "#495057",
+              borderColor: "#dee2e6",
+              fontFamily: "monospace"
+            }}
           />
         </div>
       </div>

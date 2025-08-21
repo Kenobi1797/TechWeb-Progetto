@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { DataProvider } from "../utils/DataContext";
+import { ToastProvider } from "../utils/toast";
 
 export const metadata: Metadata = {
   title: "Home | Streetcats",
@@ -20,11 +21,13 @@ export default function RootLayout({
         className="antialiased min-h-screen flex flex-col"
         style={{ background: "var(--color-background)", color: "var(--color-text-primary)" }}
       >
-        <DataProvider>
-          <Header />
-          <main className="min-h-[80vh] flex-1 px-1 sm:px-0">{children}</main>
-          <Footer />
-        </DataProvider>
+        <ToastProvider>
+          <DataProvider>
+            <Header />
+            <main className="min-h-[80vh] flex-1 px-1 sm:px-0">{children}</main>
+            <Footer />
+          </DataProvider>
+        </ToastProvider>
       </body>
     </html>
   );
