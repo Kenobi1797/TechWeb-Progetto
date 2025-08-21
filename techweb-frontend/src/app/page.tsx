@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import CatGrid from "../components/CatGrid";
+import SearchBar from "../components/SearchBar";
+import LoadingSpinner from "../components/LoadingSpinner";
+import { CatGridSkeleton } from "../components/CatCardSkeleton";
 import { useCats } from "../utils/DataContext";
 
 const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
@@ -10,23 +13,28 @@ const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 export default function HomePage() {
   const { cats, loading, error } = useCats();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [filteredCats, setFilteredCats] = useState(cats);
   const pageSize = 20;
 
-  if (loading) return <div className="text-center py-10">Caricamento...</div>;
+  // Aggiorna i risultati filtrati quando i gatti cambiano
+  useEffect(() => {
+    setFilteredCats(cats);
+  }, [cats]);
+
+  if (loading) return (
+    <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
+      <h1 className="text-2xl sm:text-4xl font-bold mb-6" style={{ color: "var(--color-primary)" }}>
+        Avvistamenti di gatti
+      </h1>
+      <LoadingSpinner size="lg" text="Caricamento avvistamenti..." />
+      <CatGridSkeleton count={6} />
+    </div>
+  );
   if (error) return <div className="text-center py-10">{error}</div>;
 
-  // Paginazione
-  const totalPages = Math.ceil(cats.length / pageSize);
-  const pagedCats = cats.slice((page - 1) * pageSize, page * pageSize);
-
-  // SEARCH
-  const filteredCats = search
-    ? cats.filter(cat =>
-        cat.title?.toLowerCase().includes(search.toLowerCase()) ||
-        cat.description?.toLowerCase().includes(search.toLowerCase())
-      )
-    : pagedCats;
+  // Paginazione sui risultati filtrati
+  const totalPages = Math.ceil(filteredCats.length / pageSize);
+  const pagedCats = filteredCats.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
@@ -36,15 +44,13 @@ export default function HomePage() {
       <p className="mb-6 text-sm sm:text-lg max-w-2xl" style={{ color: "var(--color-text-secondary)" }}>
         Esplora gli ultimi avvistamenti di gatti randagi nella tua città. Clicca su una card per vedere i dettagli e aiutare la community!
       </p>
-      <div className="mb-4">
-        <input
-          type="search"
-          placeholder="Cerca..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="border p-2 rounded w-full sm:w-1/2"
-        />
-      </div>
+      
+      <SearchBar 
+        cats={cats} 
+        onResults={setFilteredCats}
+        placeholder="Cerca gatti per titolo o descrizione..."
+      />
+      
       <div className="search-results mb-8">
         {filteredCats.length > 0 ? (
           <MapView
@@ -59,10 +65,11 @@ export default function HomePage() {
             }))}
           />
         ) : (
-          <div className="text-center py-10">Nessun dato disponibile per la mappa.</div>
+          <div className="text-center py-10">Nessun avvistamento trovato.</div>
         )}
       </div>
-      <CatGrid cats={filteredCats} />
+      
+      <CatGrid cats={pagedCats} />
       <div className="flex flex-col items-center gap-4 mt-8">
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-4">

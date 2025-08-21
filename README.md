@@ -1,7 +1,18 @@
 # Streetcats 🐾
 
-Benvenuto su **Streetcats**, l'applicazione web per segnalare e visualizzare gli avvistamenti di gatti randagi nella tua città!
+Benvenuto su **Streetcats**, l'applicazione web moderna per segnalare e visualizzare gli avvistamenti di gatti randagi nella tua città!
 Con Streetcats puoi contribuire a una comunità attenta agli animali, condividere foto, commentare e scoprire dove si trovano i mici più curiosi del quartiere.
+
+## ✨ Caratteristiche Principali
+
+- 🗺️ **Mappa interattiva** con clustering intelligente dei marker
+- 📷 **Upload foto** con supporto drag & drop
+- 🔍 **Ricerca avanzata** per titolo e descrizione
+- 💬 **Sistema commenti** per utenti autenticati  
+- 📝 **Supporto Markdown** nelle descrizioni
+- 📱 **Design responsive** ottimizzato per mobile
+- 🔐 **Autenticazione sicura** con JWT
+- ⚡ **Loading ottimizzato** con skeleton screens
 
 ---
 

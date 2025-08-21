@@ -9,12 +9,46 @@ const ZoomControl = dynamic(() => import("react-leaflet").then(mod => mod.ZoomCo
 import { LayersControl, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import { useMemo } from "react";
 import { useDataCache } from "../utils/DataContext";
 
 import MapMarkerPopup from "./MapMarkerPopup";
 
 const GeoLocateButton = dynamic(() => import("./GeoLocateButton"), { ssr: false });
+
+// Funzione per raggruppare marker vicini
+function clusterNearbyMarkers(markers: readonly MarkerData[], maxDistance = 0.001) {
+  const clusters: (MarkerData & { count?: number })[] = [];
+  const processed = new Set<number>();
+
+  markers.forEach((marker, index) => {
+    if (processed.has(index)) return;
+
+    const cluster = { ...marker, count: 1 };
+    processed.add(index);
+
+    // Trova marker vicini
+    markers.forEach((otherMarker, otherIndex) => {
+      if (processed.has(otherIndex) || index === otherIndex) return;
+
+      const distance = Math.sqrt(
+        Math.pow(marker.lat - otherMarker.lat, 2) + 
+        Math.pow(marker.lng - otherMarker.lng, 2)
+      );
+
+      if (distance < maxDistance) {
+        cluster.count = (cluster.count || 1) + 1;
+        processed.add(otherIndex);
+      }
+    });
+
+    clusters.push(cluster);
+  });
+
+  return clusters;
+}
 
 // Componente per il pulsante che inquadra tutti i marker
 function FitAllMarkersButton({ markers }: { readonly markers: readonly MarkerData[] }) {
@@ -58,6 +92,11 @@ interface MapViewProps {
 
 export default function MapView({ markers }: MapViewProps) {
   const { maptilerKey } = useDataCache();
+  
+  // Clustering dei marker
+  const clusteredMarkers = useMemo(() => {
+    return clusterNearbyMarkers(markers);
+  }, [markers]);
   
   // Lingua utente
   const userLang = useMemo(() => {
@@ -147,34 +186,42 @@ export default function MapView({ markers }: MapViewProps) {
           </LayersControl>
           <GeoLocateButton />
           <FitAllMarkersButton markers={markers} />
-          {markers.map((m, i, arr) => {
-            // Offset casuale se marker troppo vicini
+          {clusteredMarkers.map((m, i) => {
+            // Offset casuale se marker troppo vicini (mantenuto per ulteriore dispersione)
             let lat = m.lat;
             let lng = m.lng;
             const threshold = 0.00015; // ~15m
-            const isNear = arr.some((other, j) =>
-              i !== j && Math.abs(other.lat - m.lat) < threshold && Math.abs(other.lng - m.lng) < threshold
-            );
-            if (isNear) {
-              lat += (Math.random() - 0.5) * threshold;
-              lng += (Math.random() - 0.5) * threshold;
+            if ((m.count || 1) > 1) {
+              lat += (Math.random() - 0.5) * threshold * 0.5;
+              lng += (Math.random() - 0.5) * threshold * 0.5;
             }
-            // Icona personalizzata: blu se c'è immagine, rossa se manca
+            
+            // Icona personalizzata: diversi colori per cluster
+            const getIconColor = () => {
+              if ((m.count || 1) > 3) return "green"; // Cluster grandi
+              if ((m.count || 1) > 1) return "orange"; // Cluster medi
+              return m.imageUrl ? "blue" : "red"; // Singoli marker
+            };
+            
+            const iconColor = getIconColor();
             const customIcon = new L.Icon({
-              iconUrl: m.imageUrl
-                ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png"
-                : "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+              iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${iconColor}.png`,
               shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
               iconSize: [25, 41],
               iconAnchor: [12, 41],
               popupAnchor: [1, -34],
               shadowSize: [41, 41],
             });
+            
+            const markerTitle = (m.count || 1) > 1 
+              ? `${m.count} avvistamenti in questa zona`
+              : (m.title ?? "Avvistamento");
+              
             return (
               <Marker
                 key={`${m.lat}-${m.lng}-${m.title ?? ""}-${i}`}
                 position={[lat, lng]}
-                aria-label={m.title ?? "Avvistamento"}
+                aria-label={markerTitle}
                 icon={customIcon}
               >
                 <Popup 
@@ -185,16 +232,31 @@ export default function MapView({ markers }: MapViewProps) {
                   keepInView={true}
                   closeOnEscapeKey={true}
                 >
-                  <MapMarkerPopup cat={{
-                    id: m.id ?? 0,
-                    userId: 0,
-                    title: m.title ?? "Avvistamento",
-                    description: m.description ?? "",
-                    imageUrl: m.imageUrl ?? null,
-                    latitude: m.lat,
-                    longitude: m.lng,
-                    createdAt: m.createdAt ?? "",
-                  }} />
+                  {(m.count || 1) > 1 ? (
+                    <div className="p-3">
+                      <h3 className="font-bold text-lg mb-2" style={{ color: "var(--color-primary)" }}>
+                        🐱 {m.count} avvistamenti in questa zona
+                      </h3>
+                      <p className="text-sm mb-3">
+                        Ci sono {m.count} gatti avvistati in questa area. 
+                        Usa lo zoom per vedere i dettagli individuali.
+                      </p>
+                      <div className="text-xs text-gray-600">
+                        📍 {m.lat.toFixed(4)}, {m.lng.toFixed(4)}
+                      </div>
+                    </div>
+                  ) : (
+                    <MapMarkerPopup cat={{
+                      id: m.id ?? 0,
+                      userId: 0,
+                      title: m.title ?? "Avvistamento",
+                      description: m.description ?? "",
+                      imageUrl: m.imageUrl ?? null,
+                      latitude: m.lat,
+                      longitude: m.lng,
+                      createdAt: m.createdAt ?? "",
+                    }} />
+                  )}
                 </Popup>
               </Marker>
             );
