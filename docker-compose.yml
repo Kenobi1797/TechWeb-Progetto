@@ -25,7 +25,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://techweb-backend:5000
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
     depends_on:
       - techweb-backend
     restart: unless-stopped

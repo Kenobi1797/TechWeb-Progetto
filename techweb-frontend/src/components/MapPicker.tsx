@@ -20,7 +20,10 @@ function MapPicker({ position, onChange }: MapPickerProps) {
   
   useMapEvents({
     click(e) {
-      onChange({ lat: e.latlng.lat, lng: e.latlng.lng });
+      // Limita le coordinate a massimo 6 decimali
+      const lat = parseFloat(e.latlng.lat.toFixed(6));
+      const lng = parseFloat(e.latlng.lng.toFixed(6));
+      onChange({ lat, lng });
     },
   });
 
@@ -48,8 +51,11 @@ function GeoLocateButton({ onChange }: Readonly<{ onChange: (pos: { lat: number;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        map.setView([latitude, longitude], 15);
-        onChange({ lat: latitude, lng: longitude });
+        // Limita le coordinate a massimo 6 decimali
+        const lat = parseFloat(latitude.toFixed(6));
+        const lng = parseFloat(longitude.toFixed(6));
+        map.setView([lat, lng], 15);
+        onChange({ lat, lng });
         setIsLocating(false);
       },
       () => {

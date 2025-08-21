@@ -278,9 +278,10 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
               if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                   (pos) => {
+                    // Limita le coordinate a massimo 6 decimali
                     setPosition({
-                      lat: pos.coords.latitude,
-                      lng: pos.coords.longitude
+                      lat: parseFloat(pos.coords.latitude.toFixed(6)),
+                      lng: parseFloat(pos.coords.longitude.toFixed(6))
                     });
                   },
                   () => {
