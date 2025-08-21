@@ -55,7 +55,7 @@ function ToastContainer({ toasts, onRemove }: { readonly toasts: Toast[]; readon
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div className="fixed top-20 right-4 z-[9999] space-y-2" style={{ top: "5rem" }}>
       {toasts.map(toast => (
         <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
@@ -78,14 +78,14 @@ function ToastItem({ toast, onRemove }: { readonly toast: Toast; readonly onRemo
   const getToastStyles = () => {
     switch (toast.type) {
       case "success":
-        return "bg-green-500 text-white";
+        return "bg-gradient-to-r from-green-500 to-green-600 text-white border-l-green-700";
       case "error":
-        return "bg-red-500 text-white";
+        return "bg-gradient-to-r from-red-500 to-red-600 text-white border-l-red-700";
       case "warning":
-        return "bg-yellow-500 text-black";
+        return "bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 border-l-yellow-600";
       case "info":
       default:
-        return "bg-blue-500 text-white";
+        return "bg-gradient-to-r from-blue-500 to-blue-600 text-white border-l-blue-700";
     }
   };
 
@@ -107,19 +107,24 @@ function ToastItem({ toast, onRemove }: { readonly toast: Toast; readonly onRemo
     <div
       className={`
         ${getToastStyles()}
-        min-w-[300px] max-w-md p-4 rounded-lg shadow-lg
-        transform transition-all duration-150 ease-in-out
-        ${isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}
+        min-w-[320px] max-w-md p-4 rounded-lg shadow-xl border-l-4
+        transform transition-all duration-200 ease-in-out
+        ${isVisible ? "translate-x-0 opacity-100 scale-100" : "translate-x-full opacity-0 scale-95"}
+        backdrop-blur-sm
       `}
+      style={{
+        boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1)"
+      }}
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <span className="text-lg">{getIcon()}</span>
-          <span className="font-medium">{toast.message}</span>
+        <div className="flex items-center space-x-3">
+          <span className="text-lg font-bold">{getIcon()}</span>
+          <span className="font-medium text-sm leading-relaxed">{toast.message}</span>
         </div>
         <button
           onClick={handleRemove}
-          className="ml-4 text-xl opacity-70 hover:opacity-100 transition-opacity"
+          className="ml-4 text-xl opacity-70 hover:opacity-100 transition-opacity hover:scale-110 transform"
+          aria-label="Chiudi notifica"
         >
           ×
         </button>

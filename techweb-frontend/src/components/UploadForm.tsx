@@ -1,7 +1,6 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import MarkdownViewer from "./MarkdownViewer";
 import { useToast } from "../utils/toast";
 
 const CatLocationPicker = dynamic(() => import("./MapPicker"), { ssr: false });
@@ -18,7 +17,7 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
-  const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [address, setAddress] = useState("");
@@ -239,47 +238,33 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
         placeholder="es. Gatto grigio trovato nel parco"
       />
       <label htmlFor="description" className="block label-text">Descrizione</label>
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-2">
         <span className="label-text flex items-center gap-2">
-          <span>Descrizione</span>
+          <span>Descrizione dell&apos;avvistamento</span>
           <span className="text-xs text-blue-700 bg-blue-100 dark:bg-blue-900/60 dark:text-blue-200 px-2 py-0.5 rounded font-mono border border-blue-200 dark:border-blue-800">
-            Markdown
+            Markdown supportato
           </span>
         </span>
-        <button
-          type="button"
-          onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
-          className="text-xs text-blue-600 hover:text-blue-800 underline"
-        >
-          {showMarkdownPreview ? "Modifica" : "Anteprima"}
-        </button>
       </div>
-      {showMarkdownPreview ? (
-        <div className="border border-gray-300 rounded p-3 min-h-[5rem] bg-white">
-          <MarkdownViewer className="prose prose-sm max-w-none">
-            {description || "*Nessuna descrizione*"}
-          </MarkdownViewer>
-        </div>
-      ) : (
-        <textarea
-          id="description"
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          required
-          rows={4}
-          className="textarea textarea-bordered w-full font-mono focus:ring-2 focus:ring-primary"
-          style={{
-            backgroundColor: "#fefefe",
-            color: "#2d3748",
-            borderColor: "#d1d5db",
-            fontSize: "14px",
-            lineHeight: "1.5"
-          }}
-          placeholder="Puoi usare **grassetto**, *corsivo*, [link](url), elenchi, ecc.&#10;&#10;Esempio:&#10;## Gatto trovato!&#10;Questo **bellissimo** gatto *sembrava* perso..."
-          aria-required="true"
-          aria-label="Descrizione"
-        />
-      )}
+      <textarea
+        id="description"
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        required
+        rows={5}
+        className="textarea textarea-bordered w-full font-mono focus:ring-2 focus:ring-primary resize-vertical"
+        style={{
+          backgroundColor: "#fefefe",
+          color: "#2d3748",
+          borderColor: "#d1d5db",
+          fontSize: "14px",
+          lineHeight: "1.6",
+          minHeight: "120px"
+        }}
+        placeholder="Descrivi l'avvistamento del gatto...&#10;&#10;Puoi usare:&#10;• **grassetto** e *corsivo*&#10;• [link](https://esempio.com)&#10;• Elenchi e molto altro&#10;&#10;Esempio: Ho trovato questo **bellissimo** gatto grigio vicino al parco..."
+        aria-required="true"
+        aria-label="Descrizione dell'avvistamento"
+      />
       <div>
         <div className="flex items-center justify-between mb-2">
           <span className="label-text">Posizione sulla mappa</span>

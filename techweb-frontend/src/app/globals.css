@@ -255,6 +255,20 @@ footer {
     font-size: 16px;
     min-height: 44px;
   }
+  
+  /* Toast mobile adjustments */
+  .fixed.top-20.right-4 {
+    top: 4rem !important;
+    right: 1rem !important;
+    left: 1rem !important;
+    max-width: calc(100vw - 2rem);
+  }
+  
+  .fixed.top-20.right-4 > div {
+    min-width: unset !important;
+    max-width: 100% !important;
+    width: 100%;
+  }
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
