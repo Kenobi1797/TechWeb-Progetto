@@ -241,14 +241,13 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
         aria-label="Titolo"
         placeholder="es. Gatto grigio trovato nel parco"
       />
-      <label htmlFor="description" className="block label-text">Descrizione</label>
       <div className="flex items-center justify-between mb-2">
-        <span className="label-text flex items-center gap-2">
+        <label htmlFor="description" className="label-text flex items-center gap-2">
           <span>Descrizione dell&apos;avvistamento</span>
           <span className="text-xs text-blue-700 bg-blue-100 dark:bg-blue-900/60 dark:text-blue-200 px-2 py-0.5 rounded font-mono border border-blue-200 dark:border-blue-800">
             Markdown supportato
           </span>
-        </span>
+        </label>
       </div>
       <textarea
         id="description"
