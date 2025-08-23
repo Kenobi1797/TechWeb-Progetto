@@ -23,15 +23,24 @@ export default function UploadPage() {
     }
   }, [router]);
 
-  const handleSubmit = async (form: FormData) => {
+  const handleSubmit = async (payload: {
+    title: string;
+    description: string;
+    lat: number;
+    lng: number;
+    imageData: string | null;
+  }) => {
     const token = localStorage.getItem("token");
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}/cats`,
         {
           method: "POST",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          body: form,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify(payload),
         }
       );
       

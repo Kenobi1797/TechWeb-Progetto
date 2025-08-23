@@ -44,9 +44,23 @@ export const createCat = async (
     return;
   }
   
-  if (!req.file) {
-    res.status(400).json({ error: 'Immagine obbligatoria' });
-    return;
+  // Validazione immagine (ora opzionale per permettere avvistamenti senza foto)
+  let imageUrl = null;
+  if (req.body.imageData) {
+    // Validazione Base64
+    if (!req.body.imageData.startsWith('data:image/')) {
+      res.status(400).json({ error: 'Formato immagine non valido' });
+      return;
+    }
+    
+    // Verifica dimensione Base64 (circa 1.37x la dimensione originale)
+    const sizeInBytes = (req.body.imageData.length * 3) / 4;
+    if (sizeInBytes > 5 * 1024 * 1024) { // 5MB
+      res.status(400).json({ error: 'Immagine troppo grande (max 5MB)' });
+      return;
+    }
+    
+    imageUrl = req.body.imageData;
   }
 
   // Validazione markdown se la descrizione è presente
@@ -57,14 +71,12 @@ export const createCat = async (
       return;
     }
   }
-
-  const image_url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
   
   try {
     const result = await pool.query(
       `INSERT INTO cats (user_id, title, description, image_url, latitude, longitude)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [req.user.userId, title.trim(), description.trim(), image_url, latitude, longitude]
+      [req.user.userId, title.trim(), description.trim(), imageUrl, latitude, longitude]
     );
     res.status(201).json(result.rows[0]);
     return;

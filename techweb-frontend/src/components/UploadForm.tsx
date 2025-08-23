@@ -6,7 +6,13 @@ import { useToast } from "../utils/toast";
 const CatLocationPicker = dynamic(() => import("./MapPicker"), { ssr: false });
 
 interface UploadFormProps {
-  readonly onSubmit: (form: FormData) => Promise<void> | void;
+  readonly onSubmit: (payload: {
+    title: string;
+    description: string;
+    lat: number;
+    lng: number;
+    imageData: string | null;
+  }) => Promise<void> | void;
 }
 
 export default function UploadForm({ onSubmit }: UploadFormProps) {
@@ -145,11 +151,7 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
       return;
     }
     
-    if (!image) {
-      setError("Seleziona un'immagine");
-      return;
-    }
-    
+    // Immagine ora opzionale
     if (!position) {
       setError("Seleziona una posizione sulla mappa");
       return;
@@ -157,15 +159,28 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
 
     setIsSubmitting(true);
     
-    const form = new FormData();
-    form.append("title", title.trim());
-    form.append("description", description.trim());
-    form.append("image", image);
-    form.append("lat", String(position.lat));
-    form.append("lng", String(position.lng));
+    // Converti l'immagine in Base64 se presente
+    let imageData = null;
+    if (image) {
+      try {
+        imageData = await fileToBase64(image);
+      } catch {
+        setError("Errore nella conversione dell'immagine");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+    
+    const payload = {
+      title: title.trim(),
+      description: description.trim(),
+      lat: position.lat,
+      lng: position.lng,
+      imageData: imageData
+    };
     
     try {
-      await onSubmit(form);
+      await onSubmit(payload);
     } catch (err: unknown) {
       // Gestione più precisa degli errori
       if (err instanceof Error) {
@@ -180,6 +195,16 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Funzione helper per convertire file in Base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Errore nella lettura del file'));
+    });
   };
 
   return (

@@ -77,8 +77,9 @@ export default function CatCard({ cat }: CatCardProps) {
   };
 
   // Determina se la card ha contenuto ricco (immagine + descrizione lunga)
-  const hasRichContent = cat.imageUrl && cat.description && cat.description.length > 50;
-  const hasMinimalContent = !cat.imageUrl && (!cat.description || cat.description.length < 30);
+  const hasImage = cat.imageUrl;
+  const hasRichContent = hasImage && cat.description && cat.description.length > 50;
+  const hasMinimalContent = !hasImage && (!cat.description || cat.description.length < 30);
 
   // Calcola l'altezza minima dinamicamente
   const getCardHeight = () => {
@@ -134,11 +135,11 @@ export default function CatCard({ cat }: CatCardProps) {
         color: "var(--color-text-primary)",
       }}
     >
-      <div className={`relative overflow-hidden ${cat.imageUrl ? 'flex-shrink-0' : ''}`}>
-        {cat.imageUrl ? (
+      <div className={`relative overflow-hidden ${hasImage ? 'flex-shrink-0' : ''}`}>
+        {hasImage ? (
           <div className="relative group">
             <Image
-              src={cat.imageUrl}
+              src={cat.imageUrl || ''}
               alt={cat.title}
               width={400}
               height={hasRichContent ? 220 : 180}

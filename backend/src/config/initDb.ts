@@ -1,6 +1,7 @@
 import pool from './db';
 
 async function initDb(): Promise<void> {
+  // Crea le tabelle base
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
