@@ -18,29 +18,35 @@ export default function MapPage() {
       </h1>
       
       {/* Spiegazione del sistema di colori */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-        <h2 className="font-semibold text-sm mb-3 text-gray-800">Come interpretare la mappa:</h2>
+      <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200 shadow-sm">
+        <h2 className="font-bold text-sm mb-3 text-gray-800 flex items-center gap-2">
+          <span>🎨</span>
+          <span>Legenda colori della mappa:</span>
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-            <span>5+ gatti (Hotspot felino)</span>
+          <div className="flex items-center gap-2 bg-white rounded-lg p-2 shadow-sm border border-purple-100">
+            <div className="w-4 h-4 rounded-full bg-purple-500 shadow-sm"></div>
+            <span className="font-medium">5+ gatti <span className="text-purple-600">(Hotspot)</span></span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            <span>3-4 gatti (Zona frequentata)</span>
+          <div className="flex items-center gap-2 bg-white rounded-lg p-2 shadow-sm border border-green-100">
+            <div className="w-4 h-4 rounded-full bg-green-500 shadow-sm"></div>
+            <span className="font-medium">3-4 gatti <span className="text-green-600">(Frequentata)</span></span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-            <span>2 gatti (Piccolo gruppo)</span>
+          <div className="flex items-center gap-2 bg-white rounded-lg p-2 shadow-sm border border-orange-100">
+            <div className="w-4 h-4 rounded-full bg-orange-500 shadow-sm"></div>
+            <span className="font-medium">2 gatti <span className="text-orange-600">(Gruppo)</span></span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-            <span>1 gatto con foto</span>
+          <div className="flex items-center gap-2 bg-white rounded-lg p-2 shadow-sm border border-blue-100">
+            <div className="w-4 h-4 rounded-full bg-blue-500 shadow-sm"></div>
+            <span className="font-medium">1 gatto <span className="text-blue-600">(con foto)</span></span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <span>1 gatto senza foto</span>
+          <div className="flex items-center gap-2 bg-white rounded-lg p-2 shadow-sm border border-red-100">
+            <div className="w-4 h-4 rounded-full bg-red-500 shadow-sm"></div>
+            <span className="font-medium">1 gatto <span className="text-red-600">(senza foto)</span></span>
           </div>
+        </div>
+        <div className="mt-3 text-xs text-gray-600 text-center">
+          💡 <span className="font-medium">Tip:</span> Usa i controlli sulla destra per navigare facilmente nella mappa
         </div>
       </div>
       

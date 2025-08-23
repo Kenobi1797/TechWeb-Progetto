@@ -11,7 +11,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useDataCache } from "../utils/DataContext";
 
 import MapMarkerPopup from "./MapMarkerPopup";
@@ -52,20 +52,42 @@ function clusterNearbyMarkers(markers: readonly MarkerData[], maxDistance = 0.00
 
 // Componente per il pannello di controlli della mappa
 function MapControlPanel({ markers }: { readonly markers: readonly MarkerData[] }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   return (
-    <div className="absolute bottom-4 left-4 z-[1000] flex flex-col gap-2 animate-in slide-in-from-left-4 duration-500">
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-lg border border-gray-200 min-w-[120px] hover:shadow-xl transition-shadow duration-300">
-        <div className="text-xs text-gray-600 mb-2 font-medium text-center">Controlli mappa</div>
+    <div className="absolute top-1/2 right-4 transform -translate-y-1/2 z-[1000] flex flex-col gap-2 animate-in slide-in-from-right-4 duration-500">
+      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow duration-300">
         
-        {/* Contatore marker */}
-        <div className="text-xs text-center mb-3 px-2 py-1 bg-gray-100 rounded-lg">
-          <div className="font-semibold text-gray-800">{markers.length}</div>
-          <div className="text-gray-600">avvistamenti</div>
+        {/* Header con pulsante collasso */}
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-3 py-2 border-b border-gray-200">
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="w-full flex items-center justify-between text-xs text-gray-700 font-semibold hover:text-gray-900 transition-colors"
+          >
+            <div className="flex items-center gap-1">
+              <span>🗺️</span>
+              <span>Controlli</span>
+            </div>
+            <span className={`transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`}>
+              ⌄
+            </span>
+          </button>
         </div>
-        
-        <div className="flex flex-col gap-2">
-          <GeoLocateButton />
-          <FitAllMarkersButton markers={markers} />
+
+        {/* Contenuto collassabile */}
+        <div className={`transition-all duration-300 ease-in-out ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'}`}>
+          <div className="p-3">
+            {/* Contatore marker con icona */}
+            <div className="text-xs text-center mb-3 px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100">
+              <div className="font-bold text-blue-800 text-sm">{markers.length}</div>
+              <div className="text-blue-600 font-medium">🐱 avvistamenti</div>
+            </div>
+            
+            <div className="flex flex-col gap-2 min-w-[130px]">
+              <GeoLocateButton />
+              <FitAllMarkersButton markers={markers} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -87,12 +109,13 @@ function FitAllMarkersButton({ markers }: { readonly markers: readonly MarkerDat
 
   return (
     <button
-      className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all duration-200 flex items-center justify-center w-10 h-10 group"
+      className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 rounded-lg p-3 shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center w-full gap-2 group"
       onClick={handleFitAll}
-      title="🔍 Mostra tutti i gatti"
+      title="🔍 Mostra tutti i gatti sulla mappa"
       style={{ cursor: "pointer" }}
     >
       <span className="text-lg group-hover:scale-110 transition-transform duration-200">🗺️</span>
+      <span className="text-xs font-medium">Centra tutto</span>
     </button>
   );
 }
@@ -176,8 +199,8 @@ export default function MapView({ markers }: MapViewProps) {
           preferCanvas={true}
           key={`map-${maptilerKey}`}
         >
-          <ZoomControl position="topleft" />
-          <LayersControl position="topright">
+                    <ZoomControl position="bottomleft" />
+          <LayersControl position="topleft">
             <LayersControl.BaseLayer checked name="Strade">
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
