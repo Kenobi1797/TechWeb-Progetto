@@ -55,7 +55,7 @@ function MapControlPanel({ markers }: { readonly markers: readonly MarkerData[] 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="absolute top-1/2 right-4 transform -translate-y-1/2 z-[1000] flex flex-col gap-2 animate-in slide-in-from-right-4 duration-500">
+    <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2 animate-in slide-in-from-right-4 duration-500">
       <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow duration-300">
         
         {/* Header con pulsante collasso */}
