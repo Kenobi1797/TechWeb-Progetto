@@ -53,7 +53,7 @@ function clusterNearbyMarkers(markers: readonly MarkerData[], maxDistance = 0.00
 // Componente per il pannello di controlli della mappa
 function MapControlPanel({ markers }: { readonly markers: readonly MarkerData[] }) {
   return (
-    <div className="absolute bottom-4 right-4 z-[1000] flex flex-col gap-2 animate-in slide-in-from-right-4 duration-500">
+    <div className="absolute bottom-4 left-4 z-[1000] flex flex-col gap-2 animate-in slide-in-from-left-4 duration-500">
       <div className="bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-lg border border-gray-200 min-w-[120px] hover:shadow-xl transition-shadow duration-300">
         <div className="text-xs text-gray-600 mb-2 font-medium text-center">Controlli mappa</div>
         
