@@ -34,12 +34,12 @@ export default function Header() {
         </span>
       </div>
       <nav className="flex gap-4 items-center">
-        <Link href="/" tabIndex={0} aria-label="Home" className="font-medium" prefetch={true}>🏠 Home</Link>
-        <Link href="/cats" tabIndex={0} aria-label="Vai alla pagina Gatti" className="font-medium" prefetch={true}>🐾 Gatti</Link>
-        <Link href="/map" tabIndex={0} aria-label="Vai alla mappa" className="font-medium" prefetch={true}>🗺️ Mappa</Link>
+        <Link href="/" tabIndex={0} aria-label="Home" className="btn btn-secondary btn-small font-medium hover:scale-105 transition-transform" prefetch={true}>🏠 Home</Link>
+        <Link href="/cats" tabIndex={0} aria-label="Vai alla pagina Gatti" className="btn btn-secondary btn-small font-medium hover:scale-105 transition-transform" prefetch={true}>🐾 Gatti</Link>
+        <Link href="/map" tabIndex={0} aria-label="Vai alla mappa" className="btn btn-secondary btn-small font-medium hover:scale-105 transition-transform" prefetch={true}>🗺️ Mappa</Link>
         <Link 
           href="/upload" 
-          className="px-4 py-1 rounded-lg font-bold transition-all bg-[var(--color-accent)] text-[var(--color-primary)] shadow hover:bg-yellow-300 focus:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-white/50 border border-yellow-300"
+          className="btn btn-primary font-bold"
         >
           ＋ Nuovo
         </Link>
@@ -47,16 +47,14 @@ export default function Header() {
           <button
             onClick={handleLogout}
             disabled={isLoading}
-            className="px-3 py-1 rounded-lg transition-all hover:bg-white/10 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50 font-medium disabled:opacity-50"
-            style={{ color: "var(--color-secondary)" }}
+            className="btn btn-danger btn-small font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "⏳ Logout..." : "🚪 Logout"}
           </button>
         ) : (
           <Link 
             href="/login" 
-            className="px-3 py-1 rounded-lg transition-all hover:bg-white/10 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50 font-medium"
-            style={{ color: "var(--color-secondary)" }}
+            className="btn btn-success btn-small font-medium"
           >
             👤 Login
           </Link>
