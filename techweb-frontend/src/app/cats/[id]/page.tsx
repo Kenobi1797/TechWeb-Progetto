@@ -16,9 +16,14 @@ export default function CatDetailPage() {
 
   useEffect(() => {
     if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number") {
-      fetchLocationFromCoordsServer(cat.latitude, cat.longitude)
-        .then(setLocation)
-        .catch(() => setLocation(null));
+      // Ritarda il geocoding per la pagina di dettaglio
+      const timeoutId = setTimeout(() => {
+        fetchLocationFromCoordsServer(cat.latitude, cat.longitude)
+          .then(setLocation)
+          .catch(() => setLocation(null));
+      }, 500); // Ritardo di 500ms
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [cat]);
 

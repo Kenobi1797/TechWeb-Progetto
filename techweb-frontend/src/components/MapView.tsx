@@ -50,6 +50,28 @@ function clusterNearbyMarkers(markers: readonly MarkerData[], maxDistance = 0.00
   return clusters;
 }
 
+// Componente per il pannello di controlli della mappa
+function MapControlPanel({ markers }: { readonly markers: readonly MarkerData[] }) {
+  return (
+    <div className="absolute bottom-4 right-4 z-[1000] flex flex-col gap-2 animate-in slide-in-from-right-4 duration-500">
+      <div className="bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-lg border border-gray-200 min-w-[120px] hover:shadow-xl transition-shadow duration-300">
+        <div className="text-xs text-gray-600 mb-2 font-medium text-center">Controlli mappa</div>
+        
+        {/* Contatore marker */}
+        <div className="text-xs text-center mb-3 px-2 py-1 bg-gray-100 rounded-lg">
+          <div className="font-semibold text-gray-800">{markers.length}</div>
+          <div className="text-gray-600">avvistamenti</div>
+        </div>
+        
+        <div className="flex flex-col gap-2">
+          <GeoLocateButton />
+          <FitAllMarkersButton markers={markers} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Componente per il pulsante che inquadra tutti i marker
 function FitAllMarkersButton({ markers }: { readonly markers: readonly MarkerData[] }) {
   const map = useMap();
@@ -65,12 +87,12 @@ function FitAllMarkersButton({ markers }: { readonly markers: readonly MarkerDat
 
   return (
     <button
-      className="absolute top-2 right-2 z-[1000] bg-white border border-gray-300 rounded px-3 py-1 shadow hover:bg-gray-100 transition"
+      className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all duration-200 flex items-center justify-center w-10 h-10 group"
       onClick={handleFitAll}
-      title="Inquadra tutti i marker"
+      title="🔍 Mostra tutti i gatti"
       style={{ cursor: "pointer" }}
     >
-      🗺️
+      <span className="text-lg group-hover:scale-110 transition-transform duration-200">🗺️</span>
     </button>
   );
 }
@@ -155,7 +177,7 @@ export default function MapView({ markers }: MapViewProps) {
           key={`map-${maptilerKey}`}
         >
           <ZoomControl position="topleft" />
-          <LayersControl position="topleft">
+          <LayersControl position="topright">
             <LayersControl.BaseLayer checked name="Strade">
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
@@ -184,8 +206,7 @@ export default function MapView({ markers }: MapViewProps) {
               />
             </LayersControl.BaseLayer>
           </LayersControl>
-          <GeoLocateButton />
-          <FitAllMarkersButton markers={markers} />
+          <MapControlPanel markers={markers} />
           {clusteredMarkers.map((m, i) => {
             // Offset casuale se marker troppo vicini (mantenuto per ulteriore dispersione)
             let lat = m.lat;
@@ -196,26 +217,48 @@ export default function MapView({ markers }: MapViewProps) {
               lng += (Math.random() - 0.5) * threshold * 0.5;
             }
             
-            // Icona personalizzata: diversi colori per cluster
+            // Icona personalizzata: sistema più sensato e organizzato
             const getIconColor = () => {
-              if ((m.count || 1) > 3) return "green"; // Cluster grandi
-              if ((m.count || 1) > 1) return "orange"; // Cluster medi
-              return m.imageUrl ? "blue" : "red"; // Singoli marker
+              // Cluster con molti avvistamenti
+              if ((m.count || 1) >= 5) return "violet"; // Cluster molto grandi (5+ gatti)
+              if ((m.count || 1) >= 3) return "green";  // Cluster grandi (3-4 gatti)
+              if ((m.count || 1) >= 2) return "orange"; // Cluster medi (2 gatti)
+              
+              // Avvistamenti singoli con foto
+              if (m.imageUrl) return "blue"; // Gatti con foto
+              
+              // Avvistamenti singoli senza foto
+              return "red"; // Gatti senza foto
+            };
+
+            const getIconSize = (): [number, number] => {
+              // Icone più grandi per cluster più importanti
+              if ((m.count || 1) >= 5) return [35, 55]; // Cluster molto grandi
+              if ((m.count || 1) >= 3) return [30, 48]; // Cluster grandi  
+              if ((m.count || 1) >= 2) return [28, 45]; // Cluster medi
+              return [25, 41]; // Avvistamenti singoli
+            };
+
+            const getTooltipText = () => {
+              if ((m.count || 1) >= 5) return `🐾 ${m.count} gatti in questa zona! (Hotspot felino)`;
+              if ((m.count || 1) >= 3) return `🐱 ${m.count} gatti avvistati qui`;
+              if ((m.count || 1) >= 2) return `🐈 ${m.count} gatti in questa area`;
+              if (m.imageUrl) return `📸 ${m.title || "Avvistamento"} (con foto)`;
+              return `📍 ${m.title || "Avvistamento"}`;
             };
             
             const iconColor = getIconColor();
+            const iconSize = getIconSize();
             const customIcon = new L.Icon({
               iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${iconColor}.png`,
               shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-              popupAnchor: [1, -34],
+              iconSize: iconSize,
+              iconAnchor: [iconSize[0] / 2, iconSize[1]],
+              popupAnchor: [1, -iconSize[1] + 10],
               shadowSize: [41, 41],
             });
             
-            const markerTitle = (m.count || 1) > 1 
-              ? `${m.count} avvistamenti in questa zona`
-              : (m.title ?? "Avvistamento");
+            const markerTitle = getTooltipText();
               
             return (
               <Marker
@@ -233,16 +276,31 @@ export default function MapView({ markers }: MapViewProps) {
                   closeOnEscapeKey={true}
                 >
                   {(m.count || 1) > 1 ? (
-                    <div className="p-3">
-                      <h3 className="font-bold text-lg mb-2" style={{ color: "var(--color-primary)" }}>
-                        🐱 {m.count} avvistamenti in questa zona
+                    <div className="p-4">
+                      <h3 className="font-bold text-xl mb-3" style={{ color: "var(--color-primary)" }}>
+                        {(m.count || 1) >= 5 ? "�" : "�🐱"} {m.count} avvistamenti in questa zona
                       </h3>
-                      <p className="text-sm mb-3">
-                        Ci sono {m.count} gatti avvistati in questa area. 
-                        Usa lo zoom per vedere i dettagli individuali.
-                      </p>
-                      <div className="text-xs text-gray-600">
-                        📍 {m.lat.toFixed(4)}, {m.lng.toFixed(4)}
+                      <div className="mb-3">
+                        {(m.count || 1) >= 5 && (
+                          <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm mb-2 inline-block">
+                            ⭐ Hotspot felino!
+                          </div>
+                        )}
+                        <p className="text-sm text-gray-700">
+                          {(() => {
+                            if ((m.count || 1) >= 5) {
+                              return "Questa è una zona ad alta concentrazione di gatti! Probabilmente c'è una colonia felina.";
+                            } else if ((m.count || 1) >= 3) {
+                              return "Zona con diversi avvistamenti. Potrebbe essere un'area frequentata dai gatti.";
+                            } else {
+                              return "Ci sono alcuni gatti avvistati in questa area.";
+                            }
+                          })()}
+                        </p>
+                      </div>
+                      <div className="text-xs text-gray-600 flex items-center gap-2">
+                        <span>📍 {m.lat.toFixed(4)}, {m.lng.toFixed(4)}</span>
+                        <span className="ml-auto">🔍 Usa lo zoom per vedere i dettagli</span>
                       </div>
                     </div>
                   ) : (

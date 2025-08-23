@@ -103,18 +103,25 @@ export default function CatCard({ cat }: CatCardProps) {
         setLocation(window._geoCache[key] ?? null);
         return;
       }
-      fetchLocationFromCoordsServer(cat.latitude, cat.longitude)
-        .then(loc => {
-          setLocation(loc);
-          if (!loc) {
-            console.warn(`Geocoding fallito per coordinate: ${cat.latitude}, ${cat.longitude}`);
-          }
-          window._geoCache ??= {};
-          window._geoCache[key] = loc;
-        })
-        .catch(err => {
-          console.error("Errore geocoding:", err);
-        });
+      
+      // Ritarda il geocoding per evitare troppe richieste simultanee
+      const timeoutId = setTimeout(() => {
+        fetchLocationFromCoordsServer(cat.latitude, cat.longitude)
+          .then(loc => {
+            setLocation(loc);
+            if (!loc) {
+              console.warn(`Geocoding fallito per coordinate: ${cat.latitude}, ${cat.longitude}`);
+            }
+            window._geoCache ??= {};
+            window._geoCache[key] = loc;
+          })
+          .catch(err => {
+            console.error("Errore geocoding:", err);
+            setLocation(null);
+          });
+      }, Math.random() * 2000); // Ritardo casuale fino a 2 secondi
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [cat.latitude, cat.longitude]);
 
