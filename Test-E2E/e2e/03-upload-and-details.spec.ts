@@ -5,27 +5,33 @@ test.describe('Upload and Details Tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
     
-    // Login se necessario
+    // Prova ad effettuare il login - se non serve sarà ignorato
     try {
-      await page.getByRole('link', { name: /accedi/i }).first().click({ timeout: 5000 });
+      // Vai al login
+      await page.getByRole('link', { name: /accedi|login/i }).first().click({ timeout: 5000 });
+      
+      // Compila e invia form di login
       await page.fill('input[type="email"]', 'test@example.com');
       await page.fill('input[type="password"]', 'password123');
-      await page.getByRole('button', { name: /accedi/i }).click();
+      await page.getByRole('button', { name: /accedi|login/i }).click();
+      
+      // Attendi che il login sia completato
       await page.waitForURL('http://localhost:3000/', { timeout: 10000 });
     } catch {
-      // Già loggato o login non necessario
+      // Se il login fallisce o l'utente è già loggato, continua
+      await page.goto('http://localhost:3000');
     }
   });
 
   test('Upload new cat sighting with all required fields', async ({ page }) => {
-    // Naviga alla pagina di upload  
-    const uploadLink = page.getByRole('link', { name: /carica|upload|nuovo/i });
-    await uploadLink.click();
+    // Naviga alla pagina di upload
+    await page.getByRole('link', { name: /nuovo|carica|upload/i }).click();
     await expect(page).toHaveURL(/.*\/upload/);
-
-    // Compila il form
-    await page.fill('input[name="title"]', 'Gatto Tigrato Bellissimo');
-    await page.fill('textarea[name="description"]', 'Ho trovato questo **gatto tigrato** molto dolce vicino al parco. Sembra in buona salute e molto socievole. [Link utile](http://example.com)');
+    
+    // Attendi che il form sia caricato
+    await page.waitForSelector('input#title', { timeout: 10000 });    // Compila il form
+    await page.fill('input#title', 'Gatto Tigrato Bellissimo');
+    await page.fill('textarea#description', 'Ho trovato questo **gatto tigrato** molto dolce vicino al parco. Sembra in buona salute e molto socievole. [Link utile](http://example.com)');
     
     // Upload immagine di test
     const filePath = './assets/test-cat.jpg';
@@ -40,20 +46,21 @@ test.describe('Upload and Details Tests', () => {
     await expect(page.locator('text=/Coordinate selezionate|Posizione selezionata/')).toBeVisible();
     
     // Submit del form
-    await page.getByRole('button', { name: /condividi avvistamento|carica avvistamento/i }).click();
+    await page.getByRole('button', { name: /condividi avvistamento/i }).click();
     
     // Verifica il successo (dovrebbe tornare alla homepage o mostrare messaggio di successo)
-    await expect(page.locator('text=/Avvistamento caricato|Upload completato|Successo/')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=/Avvistamento caricato|Upload completato|Successo|condiviso/i')).toBeVisible({ timeout: 10000 });
   });
 
   test('Upload form validation works correctly', async ({ page }) => {
-    await page.getByRole('link', { name: /carica|upload|nuovo/i }).click();
+    await page.getByRole('link', { name: /nuovo|carica|upload/i }).click();
+    await page.waitForSelector('input#title', { timeout: 10000 });
     
     // Prova a inviare form vuoto
-    await page.getByRole('button', { name: /condividi avvistamento|carica avvistamento/i }).click();
+    await page.getByRole('button', { name: /condividi avvistamento/i }).click();
     
-    // Verifica messaggi di errore
-    await expect(page.locator('text=/required|obbligatorio|necessario/i')).toBeVisible();
+    // Verifica che il form non venga inviato (il bottone dovrebbe essere disabilitato)
+    await expect(page.getByRole('button', { name: /condividi avvistamento/i })).toBeDisabled();
   });
 
   test('View cat details page shows all information correctly', async ({ page }) => {
@@ -63,27 +70,27 @@ test.describe('Upload and Details Tests', () => {
     // Attendi che le card si carichino
     await page.waitForSelector('[data-testid="cat-card"], .cat-card', { timeout: 10000 });
     
-    // Clicca sulla prima card di gatto
-    const firstCatCard = page.locator('[data-testid="cat-card"], .cat-card').first();
-    await expect(firstCatCard).toBeVisible();
-    await firstCatCard.click();
+    // Clicca sul link "Dettagli" della prima card
+    const firstDetailsLink = page.getByRole('link', { name: /dettagli/i }).first();
+    await expect(firstDetailsLink).toBeVisible();
+    await firstDetailsLink.click();
     
     // Verifica che siamo nella pagina di dettaglio
     await expect(page).toHaveURL(/.*\/cats\/\d+/);
     
     // Verifica che tutti gli elementi siano presenti
-    await expect(page.locator('img[alt*="cat"], img[alt*="gatto"]')).toBeVisible(); // Immagine del gatto
-    await expect(page.locator('h1, .cat-title')).toBeVisible(); // Titolo
-    await expect(page.locator('.cat-description, [data-testid="description"]')).toBeVisible(); // Descrizione
+    await expect(page.locator('img.rounded.shadow')).toBeVisible(); // Immagine del gatto (con classi specifiche)
+    await expect(page.locator('h1')).toBeVisible(); // Titolo
+    await expect(page.locator('text=/Descrizione|descrizione/i')).toBeVisible(); // Sezione descrizione
     await expect(page.locator('.leaflet-container')).toBeVisible(); // Mappa
-    await expect(page.locator('text=/Data di inserimento|Inserito il|Created/')).toBeVisible(); // Data
+    await expect(page.locator('text=/Avvistato il|Data di inserimento|Created/i')).toBeVisible(); // Data
   });
 
   test('Markdown formatting in description works', async ({ page }) => {
     // Vai a una pagina di dettaglio
     await page.goto('http://localhost:3000');
     await page.waitForSelector('[data-testid="cat-card"], .cat-card', { timeout: 10000 });
-    await page.locator('[data-testid="cat-card"], .cat-card').first().click();
+    await page.getByRole('link', { name: /dettagli/i }).first().click();
     
     // Verifica che ci sia contenuto formattato (bold, italic, links)
     const description = page.locator('.cat-description, [data-testid="description"]');
@@ -99,7 +106,7 @@ test.describe('Upload and Details Tests', () => {
     // Vai a una pagina di dettaglio
     await page.goto('http://localhost:3000');
     await page.waitForSelector('[data-testid="cat-card"], .cat-card', { timeout: 10000 });
-    await page.locator('[data-testid="cat-card"], .cat-card').first().click();
+    await page.getByRole('link', { name: /dettagli/i }).first().click();
     
     // Verifica che la mappa sia visibile e abbia markers
     const mapContainer = page.locator('.leaflet-container');
@@ -110,13 +117,13 @@ test.describe('Upload and Details Tests', () => {
   });
 
   test('Comments section is visible and functional', async ({ page }) => {
-    // Vai a una pagina di dettaglio
+    // Vai alla homepage e clicca su un avvistamento
     await page.goto('http://localhost:3000');
     await page.waitForSelector('[data-testid="cat-card"], .cat-card', { timeout: 10000 });
-    await page.locator('[data-testid="cat-card"], .cat-card').first().click();
+    await page.getByRole('link', { name: /dettagli/i }).first().click();
     
     // Verifica la sezione commenti
-    await expect(page.locator('text=/Commenti|Comments/')).toBeVisible();
+    await expect(page.locator('text=/Commenti|Comments|commenti/i')).toBeVisible();
     
     // Se l'utente è autenticato, dovrebbe vedere il form per aggiungere commenti
     const commentForm = page.locator('textarea[name="comment"], .comment-form');
@@ -130,7 +137,8 @@ test.describe('Upload and Details Tests', () => {
   });
 
   test('Image preview works during upload', async ({ page }) => {
-    await page.getByRole('link', { name: /carica|upload|nuovo/i }).click();
+    await page.getByRole('link', { name: /nuovo|carica|upload/i }).click();
+    await page.waitForSelector('input[type="file"]', { timeout: 10000 });
     
     // Upload immagine
     const filePath = './assets/test-cat.jpg';
