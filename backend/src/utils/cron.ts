@@ -17,12 +17,25 @@ function getRandomCoordsInCity(): { latitude: number; longitude: number; city: s
 const CAT_API = 'https://api.thecatapi.com/v1/images/search?limit=1';
 
 export function startCronJobs() {
-  // Ogni 10 minuti crea 2 nuovi avvistamenti in città reali
-  cron.schedule('*/10 * * * *', async () => {
+  console.log(`Avvio cron jobs in modalità: ${process.env.NODE_ENV || 'development'}`);
+  
+  // Frequenza differente per development vs production
+  const interval = process.env.NODE_ENV === 'production' ? '*/10 * * * *' : '*/2 * * * *'; // Ogni 2 minuti in dev, ogni 10 in prod
+  
+  console.log(`Cron per avvistamenti programmato: ${interval}`);
+  
+  // Crea nuovi avvistamenti con la frequenza specificata
+  cron.schedule(interval, async () => {
     try {
       const users = await getAllUsers();
-      if (!users.length) return;
-      for (let j = 0; j < 2; j++) {
+      if (!users.length) {
+        console.log('Cron: Nessun utente trovato per la creazione di avvistamenti');
+        return;
+      }
+      
+      const numCats = process.env.NODE_ENV === 'production' ? 2 : 1; // Più avvistamenti in prod
+      
+      for (let j = 0; j < numCats; j++) {
         const systemUser = faker.helpers.arrayElement(users);
         const res = await fetch(CAT_API, {
           headers: { 'x-api-key': process.env.CATAPI_KEY ?? '' }
@@ -30,6 +43,7 @@ export function startCronJobs() {
         const data = await res.json();
         const imageUrl: string | null = data?.[0]?.url ?? null;
         if (!imageUrl || imageUrl.toLowerCase().endsWith('.gif')) {
+          console.log('Cron: Immagine non valida, salto questo avvistamento');
           continue;
         }
         const { latitude, longitude, city } = getRandomCoordsInCity();

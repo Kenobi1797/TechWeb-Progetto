@@ -7,6 +7,7 @@ import SearchBar from "../components/SearchBar";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { CatGridSkeleton } from "../components/CatCardSkeleton";
 import { useCats } from "../utils/DataContext";
+import { Cat } from "../utils/types";
 
 const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 
@@ -19,7 +20,13 @@ export default function HomePage() {
   // Aggiorna i risultati filtrati quando i gatti cambiano
   useEffect(() => {
     setFilteredCats(cats);
+    setPage(1); // Reset pagina quando cambiano i dati
   }, [cats]);
+
+  const handleSearchResults = (results: Cat[]) => {
+    setFilteredCats(results);
+    setPage(1); // Reset pagina quando cambia la ricerca
+  };
 
   if (loading) return (
     <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
@@ -47,7 +54,7 @@ export default function HomePage() {
       
       <SearchBar 
         cats={cats} 
-        onResults={setFilteredCats}
+        onResults={handleSearchResults}
         placeholder="Cerca gatti per titolo o descrizione..."
       />
       
