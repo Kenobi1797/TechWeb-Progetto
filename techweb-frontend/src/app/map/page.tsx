@@ -17,36 +17,47 @@ export default function MapPage() {
         Mappa degli avvistamenti
       </h1>
       
-      {/* Spiegazione del sistema di colori */}
-      <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200 shadow-sm">
-        <h2 className="font-bold text-sm mb-3 text-gray-800 flex items-center gap-2">
+      {/* Legenda migliorata */}
+      <div className="card mb-6">
+        <h2 className="font-bold text-sm mb-4 flex items-center gap-2" style={{ color: "var(--color-primary)" }}>
           <span>🎨</span>
-          <span>Legenda colori della mappa:</span>
+          <span>Legenda della mappa</span>
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
-          <div className="flex items-center gap-2 bg-white rounded-lg p-2 shadow-sm border border-purple-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+          <div className="flex items-center gap-3 p-3 rounded-lg border" style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}>
             <div className="w-4 h-4 rounded-full bg-purple-500 shadow-sm"></div>
-            <span className="font-medium">5+ gatti <span className="text-purple-600">(Hotspot)</span></span>
+            <div>
+              <div className="font-medium" style={{ color: "var(--color-text-primary)" }}>5+ gatti</div>
+              <div className="text-xs" style={{ color: "var(--color-text-secondary)" }}>Zona molto frequentata</div>
+            </div>
           </div>
-          <div className="flex items-center gap-2 bg-white rounded-lg p-2 shadow-sm border border-green-100">
+          <div className="flex items-center gap-3 p-3 rounded-lg border" style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}>
             <div className="w-4 h-4 rounded-full bg-green-500 shadow-sm"></div>
-            <span className="font-medium">3-4 gatti <span className="text-green-600">(Frequentata)</span></span>
+            <div>
+              <div className="font-medium" style={{ color: "var(--color-text-primary)" }}>3-4 gatti</div>
+              <div className="text-xs" style={{ color: "var(--color-text-secondary)" }}>Zona frequentata</div>
+            </div>
           </div>
-          <div className="flex items-center gap-2 bg-white rounded-lg p-2 shadow-sm border border-orange-100">
+          <div className="flex items-center gap-3 p-3 rounded-lg border" style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}>
             <div className="w-4 h-4 rounded-full bg-orange-500 shadow-sm"></div>
-            <span className="font-medium">2 gatti <span className="text-orange-600">(Gruppo)</span></span>
+            <div>
+              <div className="font-medium" style={{ color: "var(--color-text-primary)" }}>2 gatti</div>
+              <div className="text-xs" style={{ color: "var(--color-text-secondary)" }}>Piccolo gruppo</div>
+            </div>
           </div>
-          <div className="flex items-center gap-2 bg-white rounded-lg p-2 shadow-sm border border-blue-100">
+          <div className="flex items-center gap-3 p-3 rounded-lg border" style={{ background: "var(--color-surface)", borderColor: "var(--color-border)" }}>
             <div className="w-4 h-4 rounded-full bg-blue-500 shadow-sm"></div>
-            <span className="font-medium">1 gatto <span className="text-blue-600">(con foto)</span></span>
-          </div>
-          <div className="flex items-center gap-2 bg-white rounded-lg p-2 shadow-sm border border-red-100">
-            <div className="w-4 h-4 rounded-full bg-red-500 shadow-sm"></div>
-            <span className="font-medium">1 gatto <span className="text-red-600">(senza foto)</span></span>
+            <div>
+              <div className="font-medium" style={{ color: "var(--color-text-primary)" }}>1 gatto</div>
+              <div className="text-xs" style={{ color: "var(--color-text-secondary)" }}>Avvistamento singolo</div>
+            </div>
           </div>
         </div>
-        <div className="mt-3 text-xs text-gray-600 text-center">
-          💡 <span className="font-medium">Tip:</span> Usa i controlli sulla destra per navigare facilmente nella mappa
+        <div className="mt-4 p-3 rounded-lg" style={{ background: "rgba(108, 155, 207, 0.1)", borderColor: "rgba(108, 155, 207, 0.3)", border: "1px solid" }}>
+          <div className="text-sm flex items-center gap-2" style={{ color: "var(--color-text-secondary)" }}>
+            <span>💡</span>
+            <span><strong>Suggerimento:</strong> Clicca sui marker per vedere i dettagli degli avvistamenti</span>
+          </div>
         </div>
       </div>
       

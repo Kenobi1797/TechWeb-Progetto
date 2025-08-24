@@ -284,7 +284,7 @@ export default function MapView({ markers }: MapViewProps) {
             };
 
             const getTooltipText = () => {
-              if ((m.count || 1) >= 5) return `🐾 ${m.count} gatti in questa zona! (Hotspot felino)`;
+              if ((m.count || 1) >= 5) return `🐾 ${m.count} gatti in questa zona!`;
               if ((m.count || 1) >= 3) return `🐱 ${m.count} gatti avvistati qui`;
               if ((m.count || 1) >= 2) return `🐈 ${m.count} gatti in questa area`;
               if (m.imageUrl) return `📸 ${m.title || "Avvistamento"} (con foto)`;
@@ -327,7 +327,7 @@ export default function MapView({ markers }: MapViewProps) {
                       <div className="mb-3">
                         {(m.count || 1) >= 5 && (
                           <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm mb-2 inline-block">
-                            ⭐ Hotspot felino!
+                            ⭐ Zona molto frequentata!
                           </div>
                         )}
                         <p className="text-sm text-gray-700">

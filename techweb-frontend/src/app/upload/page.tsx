@@ -154,22 +154,6 @@ export default function UploadPage() {
           </p>
         </div>
         
-        {/* Cards con stile glassmorphism */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 max-w-2xl mx-auto">
-          <div className="card text-center">
-            <div className="text-2xl mb-1">🐱</div>
-            <div className="text-sm" style={{ color: "var(--color-text-secondary)" }}>Aiuta i gatti</div>
-          </div>
-          <div className="card text-center">
-            <div className="text-2xl mb-1">🌍</div>
-            <div className="text-sm" style={{ color: "var(--color-text-secondary)" }}>Community globale</div>
-          </div>
-          <div className="card text-center">
-            <div className="text-2xl mb-1">❤️</div>
-            <div className="text-sm" style={{ color: "var(--color-text-secondary)" }}>Facile e veloce</div>
-          </div>
-        </div>
-        
         <UploadFormNew onSubmit={handleSubmit} />
       </div>
     </div>

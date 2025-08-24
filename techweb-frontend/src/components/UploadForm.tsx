@@ -230,12 +230,7 @@ export default function UploadFormNew({ onSubmit }: UploadFormProps) {
 
         {/* Sezione Informazioni */}
         <div className="space-y-6">
-          <div className="flex items-center gap-3 font-medium" style={{ color: "var(--color-secondary)" }}>
-            <span className="text-xl">📝</span>
-            <span>Informazioni dell&apos;avvistamento</span>
-          </div>
-
-          <div className="space-y-4 pl-8">
+          <div className="space-y-4">
             <div>
               <label htmlFor="title" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
                 Titolo dell&apos;avvistamento *
