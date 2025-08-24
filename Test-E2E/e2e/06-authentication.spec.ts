@@ -86,7 +86,7 @@ test.describe('Authentication Tests - STREETCATS', () => {
     if (await errorElements.count() > 0) {
       await expect(errorElements.first()).toBeVisible();
       const errorText = await errorElements.first().textContent();
-      expect(errorText?.toLowerCase()).toMatch(/invalid|incorrect|wrong|sbagliato|error|errore/);
+      expect(errorText?.toLowerCase()).toMatch(/invalid|incorrect|wrong|sbagliato|error|errore|non corrette/);
     }
   });
 

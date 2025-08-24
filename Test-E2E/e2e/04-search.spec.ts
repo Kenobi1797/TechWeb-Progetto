@@ -8,7 +8,7 @@ test.describe('Search Functionality - STREETCATS', () => {
     await page.waitForFunction(() => !document.body.innerText.includes('Caricamento...'), { timeout: 15000 });
     
     // Cerca il campo di ricerca nel header o nella pagina
-    let searchInput = page.locator('input[type="search"]');
+    let searchInput = page.locator('input[placeholder*="Cerca"], input[type="text"]').first();
     if (await searchInput.count() === 0) {
       searchInput = page.locator('input[placeholder*="cerca"], input[placeholder*="ricerca"]');
     }

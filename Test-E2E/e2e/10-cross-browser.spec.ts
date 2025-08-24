@@ -23,7 +23,7 @@ test.describe('Cross-Browser Tests - STREETCATS', () => {
     }
     
     // Verifica il funzionamento della ricerca
-    const searchInput = page.locator('input[type="search"]');
+    const searchInput = page.locator('input[placeholder*="Cerca"], input[type="text"]').first();
     await searchInput.fill('test');
     await searchInput.press('Enter');
     

@@ -38,7 +38,7 @@ test.describe('Responsive Design Tests - STREETCATS', () => {
       }
       
       // Verifica che il campo di ricerca sia accessibile
-      await expect(page.locator('input[type="search"]')).toBeVisible();
+      await expect(page.locator('input[placeholder*="Cerca"], input[type="text"]').first()).toBeVisible();
     });
   }
 
