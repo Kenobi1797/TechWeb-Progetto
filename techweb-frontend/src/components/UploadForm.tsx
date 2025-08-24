@@ -15,7 +15,7 @@ interface UploadFormProps {
   }) => Promise<void> | void;
 }
 
-export default function UploadForm({ onSubmit }: UploadFormProps) {
+export default function UploadFormNew({ onSubmit }: UploadFormProps) {
   const { addToast } = useToast();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -30,12 +30,10 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
   const [isGeocoding, setIsGeocoding] = useState(false);
 
   const validateImageFile = (file: File): string | null => {
-    // Controlla la dimensione (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       return "L'immagine deve essere inferiore a 5MB";
     }
     
-    // Controlla il tipo di file
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       return "Formato non supportato. Usa JPG, PNG o WebP";
@@ -62,7 +60,6 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
     setImage(file);
     setPreview(URL.createObjectURL(file));
     
-    // Notifica di successo
     addToast({
       type: "success",
       message: `✅ Immagine caricata (${Math.round(file.size/1024)}KB)`,
@@ -76,14 +73,14 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
     }
   };
 
-  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrag = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
     else if (e.type === "dragleave") setDragActive(false);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -140,7 +137,6 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
     e.preventDefault();
     setError(null);
     
-    // Validazioni
     if (!title.trim()) {
       setError("Il titolo è obbligatorio");
       return;
@@ -151,7 +147,6 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
       return;
     }
     
-    // Immagine ora opzionale
     if (!position) {
       setError("Seleziona una posizione sulla mappa");
       return;
@@ -159,7 +154,6 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
 
     setIsSubmitting(true);
     
-    // Converti l'immagine in Base64 se presente
     let imageData = null;
     if (image) {
       try {
@@ -182,7 +176,6 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
     try {
       await onSubmit(payload);
     } catch (err: unknown) {
-      // Gestione più precisa degli errori
       if (err instanceof Error) {
         setError(err.message);
       } else if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -197,7 +190,6 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
     }
   };
 
-  // Funzione helper per convertire file in Base64
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -208,243 +200,357 @@ export default function UploadForm({ onSubmit }: UploadFormProps) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full max-w-lg mx-auto p-3 sm:p-6 bg-base-100 shadow-md rounded-lg space-y-4"
-      style={{ background: "var(--color-background)" }}
-    >
-      {error && <div className="error-message text-red-500 mb-3 text-sm text-center" role="alert">{error}</div>}
-      <h2 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: "var(--color-primary)" }}>
-        Nuovo avvistamento 🐱
-      </h2>
-      <label
-        className={`border-2 border-dashed rounded-lg p-4 sm:p-6 text-center cursor-pointer transition-colors
-          ${dragActive ? "border-accent bg-accent/10" : "border-secondary hover:bg-secondary/10"}`}
-        htmlFor="fileInput"
-        onDragEnter={(e) => { handleDrag(e as unknown as React.DragEvent<HTMLDivElement>); }}
-        onDragOver={(e) => { handleDrag(e as unknown as React.DragEvent<HTMLDivElement>); }}
-        onDragLeave={(e) => { handleDrag(e as unknown as React.DragEvent<HTMLDivElement>); }}
-        onDrop={(e) => { handleDrop(e as unknown as React.DragEvent<HTMLDivElement>); }}
-        style={{ display: "block" }}
-      >
-        {preview ? (
-          <Image
-            src={preview}
-            alt="Anteprima"
-            width={320}
-            height={192}
-            className="mx-auto max-h-40 sm:max-h-48 object-contain rounded"
-            style={{ width: "auto", height: "auto", maxHeight: "12rem" }}
-          />
-        ) : (
-          <p className="text-xs sm:text-sm text-gray-500">
-            Trascina qui o clicca per selezionare un&apos;immagine (max 5 MB)
-          </p>
-        )}
-        <input
-          type="file"
-          id="fileInput"
-          accept="image/*"
-          className="hidden"
-          onChange={handleInputChange}
-        />
-      </label>
-      <label htmlFor="title" className="block label-text">Titolo</label>
-      <input
-        id="title"
-        type="text"
-        value={title}
-        onChange={e => setTitle(e.target.value)}
-        required
-        className="input input-bordered w-full focus:ring-2 focus:ring-primary"
-        style={{
-          backgroundColor: "#ffffff",
-          color: "#2d3748",
-          borderColor: "#d1d5db"
-        }}
-        aria-required="true"
-        aria-label="Titolo"
-        placeholder="es. Gatto grigio trovato nel parco"
-      />
-      <div className="flex items-center justify-between mb-2">
-        <label htmlFor="description" className="label-text flex items-center gap-2">
-          <span>Descrizione dell&apos;avvistamento</span>
-          <span className="text-xs text-blue-700 bg-blue-100 dark:bg-blue-900/60 dark:text-blue-200 px-2 py-0.5 rounded font-mono border border-blue-200 dark:border-blue-800">
-            Markdown supportato
-          </span>
-        </label>
-      </div>
-      <textarea
-        id="description"
-        value={description}
-        onChange={e => setDescription(e.target.value)}
-        required
-        rows={5}
-        className="textarea textarea-bordered w-full font-mono focus:ring-2 focus:ring-primary resize-vertical"
-        style={{
-          backgroundColor: "#fefefe",
-          color: "#2d3748",
-          borderColor: "#d1d5db",
-          fontSize: "14px",
-          lineHeight: "1.6",
-          minHeight: "120px"
-        }}
-        placeholder="Descrivi l'avvistamento del gatto...&#10;&#10;Puoi usare:&#10;• **grassetto** e *corsivo*&#10;• [link](https://esempio.com)&#10;• Elenchi e molto altro&#10;&#10;Esempio: Ho trovato questo **bellissimo** gatto grigio vicino al parco..."
-        aria-required="true"
-        aria-label="Descrizione dell'avvistamento"
-      />
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <span className="label-text">Posizione sulla mappa</span>
-          <button
-            type="button"
-            onClick={() => {
-              if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                  (pos) => {
-                    // Limita le coordinate a massimo 6 decimali
-                    setPosition({
-                      lat: parseFloat(pos.coords.latitude.toFixed(6)),
-                      lng: parseFloat(pos.coords.longitude.toFixed(6))
-                    });
-                  },
-                  () => {
-                    setError("Impossibile ottenere la posizione attuale");
-                  }
-                );
-              } else {
-                setError("Geolocalizzazione non supportata dal browser");
-              }
-            }}
-            className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors"
-          >
-            📍 Usa posizione attuale
-          </button>
-        </div>
-        
-        {/* Sezione per inserimento indirizzo */}
-        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <label htmlFor="address" className="block text-sm font-medium mb-2">
-            🗺️ Inserisci un indirizzo (opzionale)
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="address"
-              type="text"
-              value={address}
-              onChange={e => setAddress(e.target.value)}
-              placeholder="es. Via Roma 123, Milano, Italia"
-              className="input input-bordered flex-1 text-sm"
-              style={{
-                backgroundColor: "#ffffff",
-                color: "#2d3748",
-                borderColor: "#d1d5db"
-              }}
-            />
-            <button
-              type="button"
-              onClick={handleAddressGeocoding}
-              disabled={isGeocoding || !address.trim()}
-              className="btn btn-sm bg-green-500 hover:bg-green-600 text-white border-0 disabled:opacity-50"
-            >
-              {isGeocoding ? (
-                <span className="flex items-center gap-1">
-                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle>
-                    <path fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path>
-                  </svg>
-                  ...
-                </span>
-              ) : (
-                "Cerca"
-              )}
-            </button>
+    <div className="w-full max-w-2xl mx-auto">
+      {error && (
+        <div 
+          className="rounded-lg p-4 mb-6 flex items-start gap-3 border" 
+          role="alert"
+          style={{ 
+            background: "rgba(239, 68, 68, 0.1)",
+            borderColor: "rgba(239, 68, 68, 0.3)",
+            color: "var(--color-text-primary)"
+          }}
+        >
+          <span className="text-lg">⚠️</span>
+          <div>
+            <div className="font-medium">Errore</div>
+            <div className="text-sm opacity-80">{error}</div>
           </div>
-          <p className="text-xs text-gray-600 mt-1">
-            Inserisci un indirizzo completo per trovare automaticamente le coordinate
-          </p>
+        </div>
+      )}
+
+      <form
+        onSubmit={handleSubmit}
+        className="card space-y-8"
+      >
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--color-primary)" }}>🐱 Nuovo avvistamento</h2>
+          <p style={{ color: "var(--color-text-secondary)" }}>Compila tutti i campi per condividere il tuo avvistamento</p>
         </div>
 
-        {!position && (
-          <div className="text-sm bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-3 rounded-lg mb-2">
-            <div className="flex items-start gap-2">
-              <span className="text-amber-600 text-lg">💡</span>
-              <div>
-                <p className="text-amber-700 font-medium mb-1">Come selezionare la posizione:</p>
-                <ul className="text-amber-600 text-xs space-y-1">
-                  <li>• <strong>Inserisci un indirizzo</strong> nel campo sopra e clicca &quot;Cerca&quot;</li>
-                  <li>• <strong>Clicca sulla mappa</strong> per scegliere manualmente la posizione</li>
-                  <li>• <strong>Usa il tuo GPS</strong> con il pulsante &quot;📍 Usa posizione attuale&quot;</li>
-                </ul>
+        {/* Sezione Informazioni */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 font-medium" style={{ color: "var(--color-secondary)" }}>
+            <span className="text-xl">📝</span>
+            <span>Informazioni dell&apos;avvistamento</span>
+          </div>
+
+          <div className="space-y-4 pl-8">
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
+                Titolo dell&apos;avvistamento *
+              </label>
+              <input
+                id="title"
+                type="text"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                required
+                className="w-full px-4 py-3 border rounded-lg transition-colors"
+                style={{ 
+                  borderRadius: "var(--radius)",
+                  borderColor: "var(--color-border)",
+                  background: "var(--color-surface)"
+                }}
+                placeholder="es. Gatto grigio trovato nel parco"
+                aria-required="true"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="description" className="block text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>
+                  Descrizione dettagliata *
+                </label>
+                <span 
+                  className="text-xs px-2 py-1 rounded-full border"
+                  style={{ 
+                    color: "var(--color-secondary)",
+                    background: "rgba(108, 155, 207, 0.1)",
+                    borderColor: "rgba(108, 155, 207, 0.3)"
+                  }}
+                >
+                  Markdown supportato
+                </span>
+              </div>
+              <textarea
+                id="description"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                required
+                rows={5}
+                className="w-full px-4 py-3 border rounded-lg font-mono text-sm resize-vertical transition-colors"
+                style={{ 
+                  borderRadius: "var(--radius)",
+                  borderColor: "var(--color-border)",
+                  background: "var(--color-surface)"
+                }}
+                placeholder="Descrivi l'avvistamento in dettaglio...&#10;&#10;Puoi usare:&#10;• **grassetto** e *corsivo*&#10;• [link](https://esempio.com)&#10;• Elenchi e molto altro&#10;&#10;Esempio: Ho trovato questo **bellissimo** gatto grigio vicino al parco..."
+                aria-required="true"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Sezione Foto */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 font-medium" style={{ color: "var(--color-accent)" }}>
+            <span className="text-xl">📸</span>
+            <span>Foto del gatto (opzionale)</span>
+          </div>
+
+          <div className="pl-8">
+            {/* Area di upload con stile del sito */}
+            <label
+              className="block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300"
+              htmlFor="fileInput"
+              onDragEnter={handleDrag}
+              onDragOver={handleDrag}
+              onDragLeave={handleDrag}
+              onDrop={handleDrop}
+              style={{ 
+                borderRadius: "var(--radius)",
+                borderColor: (() => {
+                  if (preview) return "var(--color-accent)";
+                  if (dragActive) return "var(--color-secondary)";
+                  return "var(--color-border)";
+                })(),
+                background: (() => {
+                  if (preview) return "rgba(255, 209, 102, 0.1)";
+                  if (dragActive) return "rgba(108, 155, 207, 0.1)";
+                  return "var(--color-surface)";
+                })()
+              }}
+            >
+              {preview ? (
+                <div className="space-y-4">
+                  <Image
+                    src={preview}
+                    alt="Anteprima"
+                    width={400}
+                    height={300}
+                    className="mx-auto max-h-48 object-contain rounded-lg"
+                    style={{ 
+                      width: "auto", 
+                      height: "auto", 
+                      maxHeight: "12rem",
+                      borderRadius: "var(--radius)"
+                    }}
+                  />
+                  <div className="font-medium" style={{ color: "var(--color-accent)" }}>✅ Foto caricata con successo!</div>
+                  <button
+                    type="button"
+                    onClick={() => handleFile(null)}
+                    className="text-sm underline transition-colors"
+                    style={{ color: "#ef4444" }}
+                  >
+                    Rimuovi foto
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="text-6xl opacity-60">📸</div>
+                  <div>
+                    <p className="text-lg font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
+                      Trascina qui la foto o clicca per selezionare
+                    </p>
+                    <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                      Formati supportati: JPG, PNG, WebP (max 5 MB)
+                    </p>
+                  </div>
+                </div>
+              )}
+              <input
+                type="file"
+                id="fileInput"
+                accept="image/*"
+                className="hidden"
+                onChange={handleInputChange}
+              />
+            </label>
+
+            <div 
+              className="mt-4 rounded-lg p-4 border"
+              style={{ 
+                background: "rgba(108, 155, 207, 0.1)",
+                borderColor: "rgba(108, 155, 207, 0.3)"
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <span style={{ color: "var(--color-secondary)" }} className="text-lg">💡</span>
+                <div>
+                  <div className="font-medium mb-1" style={{ color: "var(--color-primary)" }}>Suggerimento</div>
+                  <div className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                    Una foto chiara del gatto aiuta altri utenti a riconoscerlo. Se non hai una foto, puoi continuare ugualmente!
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        )}
-        <CatLocationPicker value={position} onChange={setPosition} />
-        {position && (
-          <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
-            <p className="text-sm text-green-700 dark:text-green-300 flex items-center gap-2">
-              ✅ <strong>Posizione selezionata!</strong>
-              <span className="text-xs opacity-75">
-                ({position.lat.toFixed(4)}, {position.lng.toFixed(4)})
-              </span>
-            </p>
-          </div>
-        )}
-        <div className="grid grid-cols-2 gap-2 mt-2">
-          <input
-            type="text"
-            name="latitude"
-            required
-            readOnly
-            value={position ? position.lat.toFixed(6) : ""}
-            placeholder="Latitudine"
-            className="input input-bordered text-sm"
-            style={{ 
-              backgroundColor: "#f8f9fa",
-              color: "#495057",
-              borderColor: "#dee2e6",
-              fontFamily: "monospace"
-            }}
-          />
-          <input
-            type="text"
-            name="longitude"
-            required
-            readOnly
-            value={position ? position.lng.toFixed(6) : ""}
-            placeholder="Longitudine"
-            className="input input-bordered text-sm"
-            style={{ 
-              backgroundColor: "#f8f9fa",
-              color: "#495057",
-              borderColor: "#dee2e6",
-              fontFamily: "monospace"
-            }}
-          />
         </div>
-      </div>
-      <button
-        type="submit"
-        disabled={isSubmitting || !title.trim() || !description.trim() || !image || !position}
-        className="btn btn-primary w-full mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{
-          background: isSubmitting ? "var(--color-secondary)" : "var(--color-primary)",
-          color: "#fff",
-        }}
-      >
-        {isSubmitting ? (
-          <span className="flex items-center gap-2">
-            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle>
-              <path fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path>
-            </svg>
-            Invio in corso...
-          </span>
-        ) : (
-          "Invia avvistamento"
-        )}
-      </button>
-    </form>
+
+        {/* Sezione Posizione */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 font-medium" style={{ color: "var(--color-primary)" }}>
+            <span className="text-xl">📍</span>
+            <span>Posizione dell&apos;avvistamento</span>
+          </div>
+
+          <div className="space-y-4 pl-8">
+            <div className="flex items-center justify-between">
+              <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>Seleziona sulla mappa *</span>
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                      (pos) => {
+                        setPosition({
+                          lat: parseFloat(pos.coords.latitude.toFixed(6)),
+                          lng: parseFloat(pos.coords.longitude.toFixed(6))
+                        });
+                        addToast({
+                          type: "success",
+                          message: "📍 Posizione attuale acquisita!",
+                          duration: 3000
+                        });
+                      },
+                      () => {
+                        setError("Impossibile ottenere la posizione attuale");
+                      }
+                    );
+                  } else {
+                    setError("Geolocalizzazione non supportata dal browser");
+                  }
+                }}
+                className="btn btn-secondary btn-small"
+              >
+                <span>📍</span> Usa posizione attuale
+              </button>
+            </div>
+
+            {/* Sezione per inserimento indirizzo */}
+            <div 
+              className="rounded-lg p-4 border"
+              style={{ 
+                background: "var(--color-surface)",
+                borderColor: "var(--color-border)"
+              }}
+            >
+              <label htmlFor="address" className="block text-sm font-medium mb-3" style={{ color: "var(--color-text-primary)" }}>
+                🗺️ Oppure inserisci un indirizzo
+              </label>
+              <div className="flex gap-3">
+                <input
+                  id="address"
+                  type="text"
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                  placeholder="es. Via Roma 123, Milano, Italia"
+                  className="flex-1 px-3 py-2 border rounded-lg transition-colors"
+                  style={{ 
+                    borderRadius: "var(--radius)",
+                    borderColor: "var(--color-border)",
+                    background: "var(--color-surface)"
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddressGeocoding}
+                  disabled={isGeocoding || !address.trim()}
+                  className="btn btn-success btn-small disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGeocoding ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle>
+                        <path fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path>
+                      </svg>
+                      Cerco...
+                    </span>
+                  ) : (
+                    "Cerca"
+                  )}
+                </button>
+              </div>
+              <p className="text-xs mt-2" style={{ color: "var(--color-text-secondary)" }}>
+                Inserisci un indirizzo completo per trovare automaticamente le coordinate
+              </p>
+            </div>
+
+            {!position && (
+              <div 
+                className="rounded-lg p-4 border"
+                style={{ 
+                  background: "rgba(255, 209, 102, 0.1)",
+                  borderColor: "rgba(255, 209, 102, 0.3)"
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <span style={{ color: "var(--color-accent)" }} className="text-lg">💡</span>
+                  <div>
+                    <p className="font-medium mb-2" style={{ color: "var(--color-primary)" }}>Come selezionare la posizione:</p>
+                    <ul className="text-sm space-y-1" style={{ color: "var(--color-text-secondary)" }}>
+                      <li>• <strong>Inserisci un indirizzo</strong> nel campo sopra e clicca &quot;Cerca&quot;</li>
+                      <li>• <strong>Clicca sulla mappa</strong> per scegliere manualmente la posizione</li>
+                      <li>• <strong>Usa il tuo GPS</strong> con il pulsante &quot;📍 Usa posizione attuale&quot;</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <CatLocationPicker value={position} onChange={setPosition} />
+
+            {position && (
+              <div 
+                className="rounded-lg p-4 border"
+                style={{ 
+                  background: "rgba(46, 213, 115, 0.1)",
+                  borderColor: "rgba(46, 213, 115, 0.3)"
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">✅</span>
+                  <div>
+                    <p className="font-medium" style={{ color: "var(--color-primary)" }}>Posizione selezionata!</p>
+                    <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                      Coordinate: {position.lat.toFixed(4)}, {position.lng.toFixed(4)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="pt-6" style={{ borderTop: "1.5px solid var(--color-border)" }}>
+          <button
+            type="submit"
+            disabled={isSubmitting || !title.trim() || !description.trim() || !position}
+            className="btn btn-primary w-full py-4 px-6 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle>
+                  <path fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path>
+                </svg>
+                Invio in corso...
+              </>
+            ) : (
+              <>
+                <span className="mr-2">🚀</span> Condividi avvistamento
+              </>
+            )}
+          </button>
+          
+          <p className="text-xs mt-3 text-center" style={{ color: "var(--color-text-secondary)" }}>
+            * Campi obbligatori. I tuoi dati saranno condivisi pubblicamente per aiutare la community.
+          </p>
+        </div>
+      </form>
+    </div>
   );
 }
