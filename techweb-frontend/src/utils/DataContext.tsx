@@ -52,6 +52,7 @@ export function DataProvider({ children }: Readonly<DataProviderProps>) {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasInitialized, setHasInitialized] = useState(false); // Flag per tracciare inizializzazione
 
   // Cache key per geolocalizzazione
   const getLocationKey = (lat: number, lng: number) => `${lat.toFixed(6)},${lng.toFixed(6)}`;
@@ -148,12 +149,13 @@ export function DataProvider({ children }: Readonly<DataProviderProps>) {
           }
         }
 
-        // Carica cats se cache scaduta
+        // Carica cats se cache scaduta O se non ancora inizializzato
         const now = Date.now();
         const cacheAge = now - cache.lastFetchTime;
         
-        if (cache.cats.length === 0 || cacheAge > CACHE_DURATION) {
+        if (!hasInitialized || cacheAge > CACHE_DURATION) {
           await refreshCats();
+          setHasInitialized(true);
         } else {
           setLoading(false);
         }
@@ -179,7 +181,7 @@ export function DataProvider({ children }: Readonly<DataProviderProps>) {
       mounted = false;
       clearInterval(interval);
     };
-  }, [refreshCats, cache.maptilerKey, cache.cats.length, cache.lastFetchTime]);
+  }, [refreshCats, cache.maptilerKey, cache.lastFetchTime, hasInitialized]);
 
   // Cleanup URLs quando componente unmounts
   useEffect(() => {
