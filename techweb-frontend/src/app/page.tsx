@@ -52,20 +52,29 @@ export default function HomePage() {
       />
       
       <div className="search-results mb-8">
-        {filteredCats.length > 0 ? (
-          <MapView
-            markers={filteredCats.map((cat) => ({
-              lat: cat.latitude,
-              lng: cat.longitude,
-              title: cat.title,
-              imageUrl: cat.imageUrl ?? "",
-              id: cat.id,
-              createdAt: cat.createdAt,
-              description: cat.description ?? ""
-            }))}
-          />
-        ) : (
-          <div className="text-center py-10">Nessun avvistamento trovato.</div>
+        <MapView
+          markers={filteredCats.map((cat) => ({
+            lat: cat.latitude,
+            lng: cat.longitude,
+            title: cat.title,
+            imageUrl: cat.imageUrl ?? "",
+            id: cat.id,
+            createdAt: cat.createdAt,
+            description: cat.description ?? ""
+          }))}
+        />
+        {filteredCats.length === 0 && (
+          <div className="text-center py-6 mt-4">
+            <div className="inline-flex flex-col items-center gap-3 p-6 rounded-lg" style={{ background: "var(--color-surface)" }}>
+              <div className="text-4xl opacity-60">🗺️</div>
+              <p className="font-semibold text-lg" style={{ color: "var(--color-text)" }}>
+                Al momento non ci sono avvistamenti
+              </p>
+              <p className="text-sm opacity-75" style={{ color: "var(--color-text-secondary)" }}>
+                La mappa è pronta per mostrare nuovi avvistamenti nella tua zona
+              </p>
+            </div>
+          </div>
         )}
       </div>
       

@@ -78,9 +78,21 @@ function MapControlPanel({ markers }: { readonly markers: readonly MarkerData[] 
         <div className={`transition-all duration-300 ease-in-out ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'}`}>
           <div className="p-3">
             {/* Contatore marker con icona */}
-            <div className="text-xs text-center mb-3 px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100">
-              <div className="font-bold text-blue-800 text-sm">{markers.length}</div>
-              <div className="text-blue-600 font-medium">🐱 avvistamenti</div>
+            <div className={`text-xs text-center mb-3 px-3 py-2 rounded-lg border ${
+              markers.length > 0 
+                ? "bg-gradient-to-r from-blue-50 to-purple-50 border-blue-100"
+                : "bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200"
+            }`}>
+              <div className={`font-bold text-sm ${
+                markers.length > 0 ? "text-blue-800" : "text-gray-600"
+              }`}>
+                {markers.length}
+              </div>
+              <div className={`font-medium ${
+                markers.length > 0 ? "text-blue-600" : "text-gray-500"
+              }`}>
+                {markers.length > 0 ? "🐱 avvistamenti" : "🐱 nessun avvistamento"}
+              </div>
             </div>
             
             <div className="flex flex-col gap-2 min-w-[130px]">
@@ -97,9 +109,10 @@ function MapControlPanel({ markers }: { readonly markers: readonly MarkerData[] 
 // Componente per il pulsante che inquadra tutti i marker
 function FitAllMarkersButton({ markers }: { readonly markers: readonly MarkerData[] }) {
   const map = useMap();
+  const hasMarkers = markers.length > 0;
 
   const handleFitAll = () => {
-    if (markers.length === 0) return;
+    if (!hasMarkers) return;
     
     const group = L.featureGroup(
       markers.map(m => L.marker([m.lat, m.lng]))
@@ -109,13 +122,21 @@ function FitAllMarkersButton({ markers }: { readonly markers: readonly MarkerDat
 
   return (
     <button
-      className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 rounded-lg p-3 shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center w-full gap-2 group"
+      className={`${
+        hasMarkers 
+          ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md hover:shadow-lg cursor-pointer" 
+          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+      } border-0 rounded-lg p-3 transition-all duration-200 flex items-center justify-center w-full gap-2 group`}
       onClick={handleFitAll}
-      title="🔍 Mostra tutti i gatti sulla mappa"
-      style={{ cursor: "pointer" }}
+      disabled={!hasMarkers}
+      title={hasMarkers ? "🔍 Mostra tutti i gatti sulla mappa" : "Nessun avvistamento da centrare"}
     >
-      <span className="text-lg group-hover:scale-110 transition-transform duration-200">🗺️</span>
-      <span className="text-xs font-medium">Centra tutto</span>
+      <span className={`text-lg ${hasMarkers ? "group-hover:scale-110" : ""} transition-transform duration-200`}>
+        {hasMarkers ? "🗺️" : "🚫"}
+      </span>
+      <span className="text-xs font-medium">
+        {hasMarkers ? "Centra tutto" : "Nessun marker"}
+      </span>
     </button>
   );
 }

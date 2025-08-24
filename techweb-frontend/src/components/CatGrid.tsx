@@ -18,11 +18,11 @@ export default function CatGrid({ cats }: CatGridProps) {
   }
   if (cats.length === 0) {
     return (
-      <div className="text-center mt-16 text-base sm:text-lg" style={{ color: "var(--color-text-secondary)" }}>
+      <div className="text-center mt-8 text-base sm:text-lg" style={{ color: "var(--color-text-secondary)" }}>
         <div className="inline-flex flex-col items-center gap-4 p-8 rounded-lg" style={{ background: "var(--color-surface)" }}>
           <div className="text-6xl opacity-50">🐱</div>
-          <p className="font-semibold">Nessun avvistamento trovato</p>
-          <p className="text-sm opacity-75">Sii il primo a condividere un avvistamento!</p>
+          <p className="font-semibold">Al momento non ci sono avvistamenti da mostrare</p>
+          <p className="text-sm opacity-75">Sii il primo a condividere un avvistamento nella tua zona!</p>
         </div>
       </div>
     );
