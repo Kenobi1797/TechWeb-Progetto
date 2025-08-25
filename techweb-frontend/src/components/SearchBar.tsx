@@ -94,21 +94,15 @@ export default function SearchBar({ cats, onResults, resultCount }: SearchBarPro
     <div className="relative w-full max-w-4xl mx-auto mb-6">
       <div className="flex flex-col gap-4">
         {/* Pannello filtri sempre visibile */}
-        <div 
-          className="p-6 rounded-lg border bg-white shadow-sm"
-          style={{ 
-            borderColor: "var(--color-border)",
-            background: "var(--color-surface)"
-          }}
-        >
+        <div className="card">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
+            <h3 className="text-lg font-semibold" style={{ color: "var(--color-primary)" }}>
               🔍 Filtri di ricerca
             </h3>
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="text-sm px-3 py-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+                className="btn btn-small btn-secondary"
               >
                 Cancella filtri
               </button>
@@ -117,19 +111,14 @@ export default function SearchBar({ cats, onResults, resultCount }: SearchBarPro
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="sortBy" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text)" }}>
+              <label htmlFor="sortBy" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
                 Ordina per:
               </label>
               <select
                 id="sortBy"
                 value={filters.sortBy}
                 onChange={(e) => handleFilterChange({ sortBy: e.target.value as 'date' | 'title' | 'location' })}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                style={{ 
-                  borderColor: "var(--color-border)",
-                  background: "var(--color-surface)",
-                  color: "var(--color-text)"
-                }}
+                className="w-full"
               >
                 <option value="date">📅 Data (più recenti)</option>
                 <option value="title">🔤 Titolo (A-Z)</option>
@@ -138,19 +127,14 @@ export default function SearchBar({ cats, onResults, resultCount }: SearchBarPro
             </div>
             
             <div>
-              <label htmlFor="dateRange" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text)" }}>
+              <label htmlFor="dateRange" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
                 Periodo:
               </label>
               <select
                 id="dateRange"
                 value={filters.dateRange}
                 onChange={(e) => handleFilterChange({ dateRange: e.target.value as 'all' | 'today' | 'week' | 'month' })}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                style={{ 
-                  borderColor: "var(--color-border)",
-                  background: "var(--color-surface)",
-                  color: "var(--color-text)"
-                }}
+                className="w-full"
               >
                 <option value="all">🕒 Tutti i periodi</option>
                 <option value="today">📆 Oggi</option>
@@ -160,19 +144,14 @@ export default function SearchBar({ cats, onResults, resultCount }: SearchBarPro
             </div>
             
             <div>
-              <label htmlFor="status" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text)" }}>
+              <label htmlFor="status" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
                 Stato:
               </label>
               <select
                 id="status"
                 value={filters.status}
                 onChange={(e) => handleFilterChange({ status: e.target.value as 'all' | 'active' | 'adopted' | 'moved' })}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                style={{ 
-                  borderColor: "var(--color-border)",
-                  background: "var(--color-surface)",
-                  color: "var(--color-text)"
-                }}
+                className="w-full"
               >
                 <option value="all">📊 Tutti gli stati</option>
                 <option value="active">🐾 Attivo</option>
@@ -185,23 +164,19 @@ export default function SearchBar({ cats, onResults, resultCount }: SearchBarPro
 
         {/* Indicatore risultati */}
         {(hasActiveFilters || resultCount !== undefined) && (
-          <div 
-            className="px-4 py-3 rounded-lg border"
-            style={{ 
-              background: "rgba(108, 155, 207, 0.1)",
-              borderColor: "rgba(108, 155, 207, 0.3)",
-              color: "var(--color-text-secondary)"
-            }}
-          >
+          <div className="card border-2" style={{ borderColor: "var(--color-secondary)" }}>
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <span>🎯</span>
-                <span>
+                <span style={{ color: "var(--color-text-primary)" }}>
                   {hasActiveFilters ? 'Filtri applicati' : 'Tutti gli avvistamenti'}
                 </span>
               </span>
               {resultCount !== undefined && (
-                <span className="text-sm px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-medium">
+                <span className="text-sm px-3 py-1 rounded-full font-medium" style={{ 
+                  background: "var(--color-accent)", 
+                  color: "var(--color-primary)" 
+                }}>
                   {resultCount} risultat{resultCount !== 1 ? 'i' : 'o'}
                 </span>
               )}
@@ -211,7 +186,10 @@ export default function SearchBar({ cats, onResults, resultCount }: SearchBarPro
             {hasActiveFilters && (
               <div className="mt-3 flex flex-wrap gap-2">
                 {filters.dateRange !== 'all' && (
-                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-md">
+                  <span className="text-xs px-2 py-1 rounded-md" style={{ 
+                    background: "var(--color-surface)", 
+                    color: "var(--color-text-secondary)" 
+                  }}>
                     📅 {(() => {
                       switch (filters.dateRange) {
                         case 'today': return 'Oggi';
@@ -223,7 +201,10 @@ export default function SearchBar({ cats, onResults, resultCount }: SearchBarPro
                   </span>
                 )}
                 {filters.status !== 'all' && (
-                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-md">
+                  <span className="text-xs px-2 py-1 rounded-md" style={{ 
+                    background: "var(--color-surface)", 
+                    color: "var(--color-text-secondary)" 
+                  }}>
                     📊 {(() => {
                       switch (filters.status) {
                         case 'active': return '🐾 Attivo';
@@ -235,7 +216,10 @@ export default function SearchBar({ cats, onResults, resultCount }: SearchBarPro
                   </span>
                 )}
                 {filters.sortBy !== 'date' && (
-                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-md">
+                  <span className="text-xs px-2 py-1 rounded-md" style={{ 
+                    background: "var(--color-surface)", 
+                    color: "var(--color-text-secondary)" 
+                  }}>
                     ↕️ {filters.sortBy === 'title' ? 'Per titolo' : 'Per posizione'}
                   </span>
                 )}

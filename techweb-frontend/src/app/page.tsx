@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import CatGrid from "../components/CatGrid";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -51,15 +52,18 @@ export default function HomePage() {
           }))}
         />
         {cats.length === 0 && (
-          <div className="text-center py-6 mt-4">
-            <div className="inline-flex flex-col items-center gap-3 p-6 rounded-lg" style={{ background: "var(--color-surface)" }}>
-              <div className="text-4xl opacity-60">🗺️</div>
-              <p className="font-semibold text-lg" style={{ color: "var(--color-text)" }}>
-                Al momento non ci sono avvistamenti
+          <div className="text-center py-8 mt-6">
+            <div className="card inline-flex flex-col items-center gap-4 p-8 max-w-md mx-auto">
+              <div className="text-6xl opacity-60">🗺️</div>
+              <h3 className="font-bold text-xl" style={{ color: "var(--color-primary)" }}>
+                Nessun avvistamento disponibile
+              </h3>
+              <p className="text-sm opacity-80" style={{ color: "var(--color-text-secondary)" }}>
+                La mappa è pronta per mostrare nuovi avvistamenti nella tua zona. Sii il primo a condividere un avvistamento!
               </p>
-              <p className="text-sm opacity-75" style={{ color: "var(--color-text-secondary)" }}>
-                La mappa è pronta per mostrare nuovi avvistamenti nella tua zona
-              </p>
+              <Link href="/upload" className="btn btn-primary mt-2">
+                ＋ Segnala avvistamento
+              </Link>
             </div>
           </div>
         )}
@@ -68,21 +72,28 @@ export default function HomePage() {
       <CatGrid cats={pagedCats} />
       <div className="flex flex-col items-center gap-4 mt-8">
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-4">
+          <div className="card flex justify-center items-center gap-4 py-4">
             <button
-              className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-semibold disabled:opacity-50"
+              className="btn btn-secondary btn-small disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
+              aria-label="Pagina precedente"
             >
-              Indietro
+              ← Indietro
             </button>
-            <span className="font-bold">Pagina {page} di {totalPages}</span>
+            <span className="font-bold px-4 py-2 rounded-lg" style={{ 
+              background: "var(--color-accent)", 
+              color: "var(--color-primary)" 
+            }}>
+              Pagina {page} di {totalPages}
+            </span>
             <button
-              className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-semibold disabled:opacity-50"
+              className="btn btn-secondary btn-small disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
+              aria-label="Pagina successiva"
             >
-              Avanti
+              Avanti →
             </button>
           </div>
         )}

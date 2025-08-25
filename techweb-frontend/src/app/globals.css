@@ -185,7 +185,7 @@ button:focus, .btn:focus {
   min-height: 52px;
 }
 
-/* Card glassmorphism */
+/* Card glassmorphism migliorata */
 .card {
   background: var(--color-glass);
   border-radius: var(--radius);
@@ -195,11 +195,30 @@ button:focus, .btn:focus {
   backdrop-filter: blur(8px) saturate(1.2);
   border: 1.5px solid var(--color-border);
   transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
+  position: relative;
+  overflow: hidden;
 }
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  opacity: 0.6;
+}
+
 .card:hover {
   box-shadow: 0 8px 36px 0 rgba(60, 72, 88, 0.22);
+  border-color: var(--color-secondary);
+  transform: translateY(-2px);
+}
+
+.card:focus-within {
   border-color: var(--color-accent);
-  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 8px 36px 0 rgba(60, 72, 88, 0.22), 0 0 0 3px rgba(255, 209, 102, 0.3);
 }
 
 /* Input e textarea */
@@ -260,13 +279,46 @@ input:focus, textarea:focus, select:focus {
   background: var(--color-secondary);
 }
 
-/* Animazione fade-in */
+/* Animazione fade-in migliorata */
 .fade-in {
   animation: fadeIn 0.7s cubic-bezier(.4,0,.2,1);
 }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: none; }
+}
+
+/* Animazione pulse per loading */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Miglioramenti per link e focus */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Card speciali */
+.card-highlight {
+  border-color: var(--color-accent);
+  background: linear-gradient(135deg, var(--color-glass) 0%, rgba(255, 209, 102, 0.1) 100%);
+}
+
+.card-danger {
+  border-color: #ff4757;
+  background: linear-gradient(135deg, var(--color-glass) 0%, rgba(255, 71, 87, 0.1) 100%);
+}
+
+.card-success {
+  border-color: #2ed573;
+  background: linear-gradient(135deg, var(--color-glass) 0%, rgba(46, 213, 115, 0.1) 100%);
 }
 
 /* Header/Footer glassmorphism */

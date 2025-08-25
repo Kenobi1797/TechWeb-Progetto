@@ -38,94 +38,180 @@ if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number"
 }
 
   if (loading) {
-    return <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">Caricamento...</div>;
+    return (
+      <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
+        <div className="text-center py-10">
+          <div className="card inline-flex flex-col items-center gap-4 p-8">
+            <div className="animate-pulse text-4xl">🐱</div>
+            <p className="font-semibold text-lg" style={{ color: "var(--color-primary)" }}>
+              Caricamento dettagli...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
+  
   if (error) {
-    return <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl text-red-600">{error}</div>;
+    return (
+      <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
+        <div className="text-center py-10">
+          <div className="card inline-flex flex-col items-center gap-4 p-8 border-red-200">
+            <div className="text-4xl">⚠️</div>
+            <p className="font-semibold text-lg text-red-600">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
   }
+  
   if (!cat) {
-    return <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl text-gray-500">Nessun dato disponibile</div>;
+    return (
+      <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
+        <div className="text-center py-10">
+          <div className="card inline-flex flex-col items-center gap-4 p-8">
+            <div className="text-4xl opacity-60">🔍</div>
+            <p className="font-semibold text-lg" style={{ color: "var(--color-primary)" }}>
+              Avvistamento non trovato
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
-      <h1 className="text-2xl font-bold mb-2" style={{ color: "var(--color-primary)" }}>
-        {cat.title}
-      </h1>
-      <div className="mb-4 text-gray-500 text-sm">
-        Avvistato il {cat.createdAt ? new Date(cat.createdAt).toLocaleString() : ""}
-      </div>
-      {cat.imageUrl && (
-        <div className="mb-4">
-          <Image
-            src={cat.imageUrl}
-            alt={cat.title}
-            width={400}
-            height={300}
-            className="rounded shadow"
-            style={{ maxWidth: "100%", height: "auto" }}
-          />
+      <div className="card mb-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div 
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xl"
+            style={{ 
+              background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)",
+              boxShadow: "var(--color-shadow)"
+            }}
+          >
+            🐾
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold" style={{ color: "var(--color-primary)" }}>
+              {cat.title}
+            </h1>
+            <div className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+              Avvistato il {cat.createdAt ? new Date(cat.createdAt).toLocaleString() : ""}
+            </div>
+          </div>
         </div>
-      )}
-
-      {/* Descrizione */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Descrizione</h2>
-        {cat.description ? (
-          <MarkdownViewer className="prose prose-sm max-w-none">
-            {cat.description}
-          </MarkdownViewer>
-        ) : (
-          <p className="text-gray-500 italic">Nessuna descrizione disponibile</p>
-        )}
-      </div>
-
-      {/* Mappa con posizione */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Posizione</h2>
-        <div className="h-64 mb-2">
-          {typeof window !== "undefined" &&
-            cat && typeof cat.latitude === "number" && typeof cat.longitude === "number" ? (
-            <MapView
-              key={cat.id}
-              markers={[{
-                lat: cat.latitude,
-                lng: cat.longitude,
-                title: cat.title,
-                imageUrl: cat.imageUrl ?? "",
-                id: cat.id,
-                createdAt: cat.createdAt,
-                description: cat.description ?? ""
-              }]}
+        
+        {cat.imageUrl && (
+          <div className="mb-6">
+            <Image
+              src={cat.imageUrl}
+              alt={cat.title}
+              width={400}
+              height={300}
+              className="rounded-lg shadow-md w-full h-auto"
             />
+          </div>
+        )}
+
+        {/* Descrizione */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: "var(--color-primary)" }}>
+            <span>📝</span>
+            <span>Descrizione</span>
+          </h2>
+          {cat.description ? (
+            <div className="prose prose-sm max-w-none" style={{ color: "var(--color-text-primary)" }}>
+              <MarkdownViewer>
+                {cat.description}
+              </MarkdownViewer>
+            </div>
           ) : (
-            <div className="text-gray-400 italic">Mappa non disponibile</div>
+            <p className="italic" style={{ color: "var(--color-text-secondary)" }}>
+              Nessuna descrizione disponibile
+            </p>
           )}
         </div>
-        <p className="text-sm text-gray-600">
-          Luogo: {luogoValue}
-        </p>
+
+        {/* Posizione */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: "var(--color-primary)" }}>
+            <span>📍</span>
+            <span>Posizione</span>
+          </h2>
+          <div className="rounded-lg overflow-hidden shadow-md mb-3" style={{ height: "250px" }}>
+            {typeof window !== "undefined" &&
+              cat && typeof cat.latitude === "number" && typeof cat.longitude === "number" ? (
+              <MapView
+                key={cat.id}
+                markers={[{
+                  lat: cat.latitude,
+                  lng: cat.longitude,
+                  title: cat.title,
+                  imageUrl: cat.imageUrl ?? "",
+                  id: cat.id,
+                  createdAt: cat.createdAt,
+                  description: cat.description ?? ""
+                }]}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full" style={{ background: "var(--color-surface)" }}>
+                <p className="italic" style={{ color: "var(--color-text-secondary)" }}>
+                  Mappa non disponibile
+                </p>
+              </div>
+            )}
+          </div>
+          <p className="text-sm px-3 py-2 rounded-lg" style={{ 
+            background: "var(--color-surface)", 
+            color: "var(--color-text-primary)" 
+          }}>
+            <strong>Luogo:</strong> {luogoValue}
+          </p>
+        </div>
       </div>
-      <div className="mt-8">
-        <h2 className="text-lg font-semibold mb-4">Commenti ({cat.comments?.length || 0})</h2>
+
+      {/* Sezione commenti */}
+      <div className="card">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-primary)" }}>
+          <span>💬</span>
+          <span>Commenti ({cat.comments?.length || 0})</span>
+        </h2>
+        
         {!cat.comments || cat.comments.length === 0 ? (
-          <div className="text-gray-400 italic bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-xl shadow">
-            Nessun commento ancora. Sii il primo a commentare questo avvistamento!
+          <div className="text-center py-8 rounded-lg" style={{ background: "var(--color-surface)" }}>
+            <div className="text-4xl opacity-60 mb-3">💭</div>
+            <p className="italic" style={{ color: "var(--color-text-secondary)" }}>
+              Nessun commento ancora. Sii il primo a commentare questo avvistamento!
+            </p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {cat.comments.map((comment) => (
               <div
                 key={comment.id}
-                className="border border-blue-200 rounded-xl p-5 bg-gradient-to-br from-blue-50 via-white to-blue-100 shadow-lg hover:shadow-xl transition-shadow duration-200"
+                className="card border-2"
+                style={{ borderColor: "var(--color-secondary)" }}
               >
                 <div className="flex items-center mb-3 gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-tr from-blue-400 via-blue-200 to-blue-500 text-white font-bold text-lg shadow-lg border-2 border-blue-300">
+                  <div 
+                    className="flex items-center justify-center w-10 h-10 rounded-full text-white font-bold text-lg"
+                    style={{ 
+                      background: "linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%)",
+                      boxShadow: "var(--color-shadow)"
+                    }}
+                  >
                     {comment.username ? comment.username.charAt(0).toUpperCase() : "?"}
                   </div>
                   <div className="flex-1">
-                    <div className="font-semibold text-blue-900 text-base">{comment.username}</div>
-                    <div className="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded inline-block mt-1 shadow">
+                    <div className="font-semibold" style={{ color: "var(--color-primary)" }}>
+                      {comment.username}
+                    </div>
+                    <div className="text-xs px-2 py-1 rounded inline-block mt-1" style={{ 
+                      background: "var(--color-accent)", 
+                      color: "var(--color-primary)" 
+                    }}>
                       {new Date(comment.createdAt).toLocaleDateString('it-IT', {
                         year: 'numeric',
                         month: 'long',
@@ -136,10 +222,12 @@ if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number"
                     </div>
                   </div>
                 </div>
-                <hr className="my-3 border-blue-100" />
-                <MarkdownViewer className="prose prose-sm max-w-none text-blue-900">
-                  {comment.content}
-                </MarkdownViewer>
+                <hr className="my-3" style={{ borderColor: "var(--color-border)" }} />
+                <div className="prose prose-sm max-w-none" style={{ color: "var(--color-text-primary)" }}>
+                  <MarkdownViewer>
+                    {comment.content}
+                  </MarkdownViewer>
+                </div>
               </div>
             ))}
           </div>
