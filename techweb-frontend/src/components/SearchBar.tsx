@@ -24,6 +24,8 @@ export default function SearchBar({ cats, onResults, resultCount }: SearchBarPro
     status: 'all',
     location: ''
   });
+  
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Estrai città uniche dai gatti per il filtro location
   const availableLocations = Array.from(new Set(
@@ -181,20 +183,21 @@ export default function SearchBar({ cats, onResults, resultCount }: SearchBarPro
 
   return (
     <div className="relative w-full max-w-4xl mx-auto mb-6">
-      <div className="flex flex-col gap-4">
-        {/* Barra di ricerca principale */}
-        <div className="card">
-          <div className="flex flex-col gap-4">
-            <div className="relative">
+      <div className="flex flex-col gap-3">
+        {/* Barra di ricerca principale compatta */}
+        <div className="card p-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Campo di ricerca */}
+            <div className="relative flex-1">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <span className="text-xl">🔍</span>
+                <span className="text-lg">🔍</span>
               </div>
               <input
                 type="text"
-                placeholder="Cerca per titolo, descrizione o città..."
+                placeholder="Cerca gatti..."
                 value={filters.searchText}
                 onChange={(e) => handleFilterChange({ searchText: e.target.value })}
-                className="w-full pl-12 pr-4 py-3 text-lg border-2 rounded-lg focus:outline-none focus:ring-2"
+                className="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 text-sm"
                 style={{ 
                   borderColor: "var(--color-border)",
                   background: "var(--color-surface)",
@@ -211,203 +214,153 @@ export default function SearchBar({ cats, onResults, resultCount }: SearchBarPro
                 </button>
               )}
             </div>
-          </div>
-        </div>
 
-        {/* Pannello filtri sempre visibile */}
-        <div className="card">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold" style={{ color: "var(--color-primary)" }}>
-              🎛️ Filtri avanzati
-            </h3>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="btn btn-small btn-secondary"
-              >
-                Cancella tutto
-              </button>
-            )}
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label htmlFor="sortBy" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
-                Ordina per:
-              </label>
+            {/* Ordinamento rapido */}
+            <div className="flex gap-2">
               <select
-                id="sortBy"
                 value={filters.sortBy}
                 onChange={(e) => handleFilterChange({ sortBy: e.target.value as 'date' | 'title' | 'location' | 'relevance' })}
-                className="w-full"
+                className="px-3 py-2 border rounded-lg text-sm min-w-[140px]"
+                style={{ 
+                  borderColor: "var(--color-border)",
+                  background: "var(--color-surface)",
+                  color: "var(--color-text-primary)"
+                }}
               >
-                <option value="date">📅 Data (più recenti)</option>
+                <option value="date">📅 Più recenti</option>
                 <option value="relevance">🎯 Rilevanza</option>
-                <option value="title">🔤 Titolo (A-Z)</option>
+                <option value="title">🔤 A-Z</option>
                 <option value="location">📍 Posizione</option>
               </select>
-            </div>
 
-            <div>
-              <label htmlFor="location" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
-                Città:
-              </label>
-              <select
-                id="location"
-                value={filters.location}
-                onChange={(e) => handleFilterChange({ location: e.target.value })}
-                className="w-full"
+              {/* Pulsante filtri avanzati */}
+              <button
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className={`px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                  hasActiveFilters ? 'border-orange-400 bg-orange-50' : ''
+                }`}
+                style={{ 
+                  borderColor: hasActiveFilters ? "var(--color-accent)" : "var(--color-border)",
+                  background: hasActiveFilters ? "var(--color-accent)" : "var(--color-surface)",
+                  color: "var(--color-text-primary)"
+                }}
               >
-                <option value="">🌍 Tutte le città</option>
-                {availableLocations.map(city => (
-                  <option key={city} value={city}>📍 {city}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="dateRange" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
-                Periodo:
-              </label>
-              <select
-                id="dateRange"
-                value={filters.dateRange}
-                onChange={(e) => handleFilterChange({ dateRange: e.target.value as 'all' | 'today' | 'week' | 'month' })}
-                className="w-full"
-              >
-                <option value="all">🕒 Tutti i periodi</option>
-                <option value="today">📆 Oggi</option>
-                <option value="week">📅 Ultima settimana</option>
-                <option value="month">🗓️ Ultimo mese</option>
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
-                Stato:
-              </label>
-              <select
-                id="status"
-                value={filters.status}
-                onChange={(e) => handleFilterChange({ status: e.target.value as 'all' | 'active' | 'adopted' | 'moved' })}
-                className="w-full"
-              >
-                <option value="all">📊 Tutti gli stati</option>
-                <option value="active">🐾 Attivo</option>
-                <option value="adopted">🏠 Adottato</option>
-                <option value="moved">📍 Ha cambiato posto</option>
-              </select>
+                🎛️ Filtri {hasActiveFilters && '●'}
+              </button>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
+                  title="Cancella tutti i filtri"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Indicatore risultati */}
-        {(hasActiveFilters || resultCount !== undefined) && (
-          <div className="card border-2" style={{ borderColor: "var(--color-secondary)" }}>
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <span>🎯</span>
-                <span style={{ color: "var(--color-text-primary)" }}>
-                  {hasActiveFilters ? 'Filtri applicati' : 'Tutti gli avvistamenti'}
-                </span>
-              </span>
-              {resultCount !== undefined && (
-                <span className="text-sm px-3 py-1 rounded-full font-medium" style={{ 
-                  background: "var(--color-accent)", 
-                  color: "var(--color-primary)" 
-                }}>
-                  {resultCount} risultat{resultCount !== 1 ? 'i' : 'o'}
-                </span>
-              )}
+        {/* Filtri avanzati collassabili */}
+        {showAdvancedFilters && (
+          <div className="card p-4 border-l-4" style={{ borderLeftColor: "var(--color-accent)" }}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="location" className="block text-xs font-medium mb-1" style={{ color: "var(--color-text-secondary)" }}>
+                  Città:
+                </label>
+                <select
+                  id="location"
+                  value={filters.location}
+                  onChange={(e) => handleFilterChange({ location: e.target.value })}
+                  className="w-full text-sm"
+                >
+                  <option value="">🌍 Tutte</option>
+                  {availableLocations.map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor="dateRange" className="block text-xs font-medium mb-1" style={{ color: "var(--color-text-secondary)" }}>
+                  Periodo:
+                </label>
+                <select
+                  id="dateRange"
+                  value={filters.dateRange}
+                  onChange={(e) => handleFilterChange({ dateRange: e.target.value as 'all' | 'today' | 'week' | 'month' })}
+                  className="w-full text-sm"
+                >
+                  <option value="all">🕒 Tutti</option>
+                  <option value="today">📆 Oggi</option>
+                  <option value="week">📅 Settimana</option>
+                  <option value="month">🗓️ Mese</option>
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor="status" className="block text-xs font-medium mb-1" style={{ color: "var(--color-text-secondary)" }}>
+                  Stato:
+                </label>
+                <select
+                  id="status"
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange({ status: e.target.value as 'all' | 'active' | 'adopted' | 'moved' })}
+                  className="w-full text-sm"
+                >
+                  <option value="all">📊 Tutti</option>
+                  <option value="active">🐾 Attivo</option>
+                  <option value="adopted">🏠 Adottato</option>
+                  <option value="moved">📍 Spostato</option>
+                </select>
+              </div>
             </div>
+          </div>
+        )}
+
+        {/* Indicatore risultati compatto */}
+        {resultCount !== undefined && (
+          <div className="flex items-center justify-between text-sm px-2">
+            <span style={{ color: "var(--color-text-secondary)" }}>
+              {hasActiveFilters ? '🎯 Filtrato:' : '📊 Totale:'} 
+              <span className="font-medium ml-1" style={{ color: "var(--color-primary)" }}>
+                {resultCount} risultat{resultCount !== 1 ? 'i' : 'o'}
+              </span>
+            </span>
             
-            {/* Mostra filtri attivi */}
+            {/* Filtri attivi in forma compatta */}
             {hasActiveFilters && (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1">
                 {filters.searchText && (
-                  <span className="text-xs px-2 py-1 rounded-md flex items-center gap-1" style={{ 
-                    background: "var(--color-surface)", 
-                    color: "var(--color-text-secondary)" 
-                  }}>
-                    🔍 &ldquo;{filters.searchText}&rdquo;
-                    <button
-                      onClick={() => handleFilterChange({ searchText: '' })}
-                      className="ml-1 text-red-500 hover:text-red-700"
-                      aria-label="Rimuovi filtro testo"
-                    >
-                      ✕
-                    </button>
+                  <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                    &ldquo;{filters.searchText}&rdquo;
                   </span>
                 )}
                 {filters.location && (
-                  <span className="text-xs px-2 py-1 rounded-md flex items-center gap-1" style={{ 
-                    background: "var(--color-surface)", 
-                    color: "var(--color-text-secondary)" 
-                  }}>
+                  <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">
                     📍 {filters.location}
-                    <button
-                      onClick={() => handleFilterChange({ location: '' })}
-                      className="ml-1 text-red-500 hover:text-red-700"
-                      aria-label="Rimuovi filtro città"
-                    >
-                      ✕
-                    </button>
                   </span>
                 )}
                 {filters.dateRange !== 'all' && (
-                  <span className="text-xs px-2 py-1 rounded-md flex items-center gap-1" style={{ 
-                    background: "var(--color-surface)", 
-                    color: "var(--color-text-secondary)" 
-                  }}>
+                  <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700">
                     📅 {(() => {
                       switch (filters.dateRange) {
                         case 'today': return 'Oggi';
-                        case 'week': return 'Ultima settimana';
-                        case 'month': return 'Ultimo mese';
+                        case 'week': return 'Settimana';
+                        case 'month': return 'Mese';
                         default: return '';
                       }
                     })()}
-                    <button
-                      onClick={() => handleFilterChange({ dateRange: 'all' })}
-                      className="ml-1 text-red-500 hover:text-red-700"
-                      aria-label="Rimuovi filtro data"
-                    >
-                      ✕
-                    </button>
                   </span>
                 )}
                 {filters.status !== 'all' && (
-                  <span className="text-xs px-2 py-1 rounded-md flex items-center gap-1" style={{ 
-                    background: "var(--color-surface)", 
-                    color: "var(--color-text-secondary)" 
-                  }}>
-                    📊 {(() => {
+                  <span className="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-700">
+                    {(() => {
                       switch (filters.status) {
                         case 'active': return '🐾 Attivo';
                         case 'adopted': return '🏠 Adottato';
-                        case 'moved': return '📍 Ha cambiato posto';
-                        default: return '';
-                      }
-                    })()}
-                    <button
-                      onClick={() => handleFilterChange({ status: 'all' })}
-                      className="ml-1 text-red-500 hover:text-red-700"
-                      aria-label="Rimuovi filtro stato"
-                    >
-                      ✕
-                    </button>
-                  </span>
-                )}
-                {filters.sortBy !== 'date' && (
-                  <span className="text-xs px-2 py-1 rounded-md" style={{ 
-                    background: "var(--color-surface)", 
-                    color: "var(--color-text-secondary)" 
-                  }}>
-                    ↕️ {(() => {
-                      switch (filters.sortBy) {
-                        case 'relevance': return 'Per rilevanza';
-                        case 'title': return 'Per titolo';
-                        case 'location': return 'Per posizione';
+                        case 'moved': return '📍 Spostato';
                         default: return '';
                       }
                     })()}
