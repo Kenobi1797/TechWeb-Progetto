@@ -83,8 +83,8 @@ export default function MyListingsPage() {
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingCat || !editForm.image) {
-      setError("L'immagine è obbligatoria");
+    if (!editingCat) {
+      setError("Errore nell'identificazione dell'avvistamento");
       return;
     }
 
@@ -93,7 +93,7 @@ export default function MyListingsPage() {
       const updatedCat = await updateCat(editingCat.id, {
         title: editForm.title,
         description: editForm.description,
-        imageFile: editForm.image
+        imageFile: editForm.image || undefined // Converti null in undefined
       });
       setCats(cats.map(cat => cat.id === editingCat.id ? updatedCat : cat));
       closeEditModal();
@@ -272,14 +272,13 @@ export default function MyListingsPage() {
 
                 <div>
                   <label htmlFor="editImage" className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>
-                    Nuova immagine <span className="text-red-500">*</span>
+                    Nuova immagine (opzionale)
                   </label>
                   <input
                     id="editImage"
                     type="file"
                     accept="image/*"
                     onChange={(e) => setEditForm({ ...editForm, image: e.target.files?.[0] || null })}
-                    required
                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                     style={{ 
                       borderColor: "var(--color-border)",
@@ -288,7 +287,7 @@ export default function MyListingsPage() {
                     }}
                   />
                   <p className="text-xs text-gray-600 mt-1">
-                    L&apos;immagine è obbligatoria per aggiornare l&apos;avvistamento
+                    Lascia vuoto per mantenere l&apos;immagine attuale
                   </p>
                 </div>
 

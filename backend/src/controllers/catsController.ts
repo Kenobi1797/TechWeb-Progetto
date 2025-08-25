@@ -440,7 +440,7 @@ export const updateCat = async (
 
     const query = `
       UPDATE cats 
-      SET ${updateFields.join(', ')}, updated_at = NOW()
+      SET ${updateFields.join(', ')}
       WHERE id = $${paramCounter} 
       RETURNING *
     `;

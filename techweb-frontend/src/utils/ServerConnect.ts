@@ -77,6 +77,11 @@ async function handleAuthenticatedFetch<T>(fetchFunction: () => Promise<Response
         // Riprova la richiesta con il nuovo token
         res = await fetchFunction();
       } else {
+        // Sessione scaduta - forza logout
+        clearTokens();
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
         throw new Error("Sessione scaduta, effettua il login");
       }
     }
