@@ -17,23 +17,22 @@ function getRandomCoordsInCity(): { latitude: number; longitude: number; city: s
 const CAT_API = 'https://api.thecatapi.com/v1/images/search?limit=1';
 
 export function startCronJobs() {
-  console.log(`Avvio cron jobs in modalità: ${process.env.NODE_ENV || 'development'}`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Avvio cron jobs in modalità: ${process.env.NODE_ENV || 'development'}`);
+  }
   
   // Frequenza differente per development vs production
-  const interval = process.env.NODE_ENV === 'production' ? '*/10 * * * *' : '*/2 * * * *'; // Ogni 2 minuti in dev, ogni 10 in prod
-  
-  console.log(`Cron per avvistamenti programmato: ${interval}`);
+  const interval = process.env.NODE_ENV === 'production' ? '*/10 * * * *' : '*/2 * * * *';
   
   // Crea nuovi avvistamenti con la frequenza specificata
   cron.schedule(interval, async () => {
     try {
       const users = await getAllUsers();
       if (!users.length) {
-        console.log('Cron: Nessun utente trovato per la creazione di avvistamenti');
         return;
       }
       
-      const numCats = process.env.NODE_ENV === 'production' ? 2 : 1; // Più avvistamenti in prod
+      const numCats = process.env.NODE_ENV === 'production' ? 2 : 1;
       
       for (let j = 0; j < numCats; j++) {
         const systemUser = faker.helpers.arrayElement(users);
@@ -67,7 +66,9 @@ export function startCronJobs() {
           await insertComment(commenter.id, Number(cat.id), content);
         }
 
-        console.log(`Cron: creato avvistamento #${cat.id} (${city}) con ${nComments} commenti`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Cron: creato avvistamento #${cat.id} (${city}) con ${nComments} commenti`);
+        }
       }
     } catch (err) {
       console.error('Errore nel cron job:', err);

@@ -1,4 +1,3 @@
-// --- TEST CONNESSIONE ---
 import { Cat } from "./types";
 import type { Comment } from "./types";
 
@@ -293,8 +292,6 @@ export async function createCat(
   );
   return mapCatApiResponse(data);
 }
-
-// --- COMMENTI ---
 
 // --- MAPTILER KEY ---
 export async function fetchMaptilerKey(): Promise<string> {

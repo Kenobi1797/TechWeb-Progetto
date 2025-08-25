@@ -2,10 +2,7 @@ FROM node:18-alpine AS dev
 
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm prune \
-	&& npm install \
-	&& npm dedupe \
-	&& npm audit fix
+RUN npm ci --only=production && npm cache clean --force
 
 COPY . .
 EXPOSE 3000

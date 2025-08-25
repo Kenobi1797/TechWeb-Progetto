@@ -100,8 +100,6 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Credenziali non corrette' });
     }
     
-    console.log('Login successful for user:', user.id, user.username);
-    
     // Genera access token (breve durata)
     const accessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '15m' });
     

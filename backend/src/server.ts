@@ -23,13 +23,12 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-app.use(express.json({ limit: '10mb' })); // Aumentato per supportare immagini Base64
+app.use(express.json({ limit: '10mb' }));
 app.use(compression());
 
-// Log delle richieste solo per endpoint importanti
+// Middleware di logging per sviluppo
 if (process.env.NODE_ENV === 'development') {
   app.use((req: Request, res: Response, next: NextFunction) => {
-    // Log solo per richieste POST, PUT, DELETE e non per endpoint frequenti
     const skipUrls = ['/maptiler-key', '/geocode'];
     const shouldLog = !req.method.startsWith('GET') || 
                      !skipUrls.some(url => req.url.startsWith(url));
@@ -96,7 +95,9 @@ initDb()
     // Avvia cron jobs sempre tranne in test
     if (process.env.NODE_ENV !== 'test') {
       startCronJobs();
-      console.log('Cron jobs attivati');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Cron jobs attivati');
+      }
     }
     app.listen(Number(PORT), () => {
       console.log(`Server listening on port ${PORT}`);

@@ -116,9 +116,6 @@ test.describe('Upload and Details Tests', () => {
     // Compila la descrizione - il bottone dovrebbe rimanere disabilitato (manca immagine e posizione)
     await page.fill('#description', 'Descrizione di test');
     await expect(page.getByRole('button', { name: /condividi avvistamento/i })).toBeDisabled();
-    
-    // Verifica che sia mostrato il messaggio che l'immagine è obbligatoria quando si prova senza immagine
-    // Il bottone rimane disabilitato finché non ci sono tutti i campi obbligatori
   });
 
   test('View cat details page shows all information correctly', async ({ page }) => {

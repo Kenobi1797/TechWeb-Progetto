@@ -53,10 +53,14 @@ async function initDb(): Promise<void> {
       ('AlessandroRicci', 'alessandro.ricci@example.com', '$2b$10$hash9'),
       ('ValentinaNeri', 'valentina.neri@example.com', '$2b$10$hash10');
     `);
-    console.log('✅ 10 utenti di prova inseriti');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ 10 utenti di prova inseriti');
+    }
   }
 
-  console.log('✅ Database inizializzato (tabelle create se non esistono)');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ Database inizializzato (tabelle create se non esistono)');
+  }
 }
 
 export default initDb;

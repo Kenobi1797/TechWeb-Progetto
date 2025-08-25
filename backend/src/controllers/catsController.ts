@@ -49,8 +49,6 @@ export const createCat = async (
     return;
   }
 
-  console.log('Creating cat for user:', req.user.userId);
-
   // Verifica che l'utente esista effettivamente
   try {
     const userCheck = await pool.query('SELECT id FROM users WHERE id = $1', [req.user.userId]);
