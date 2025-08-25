@@ -1,11 +1,10 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Cat } from "../utils/types";
 
 interface SearchBarProps {
   readonly cats: Cat[];
   readonly onResults: (results: Cat[]) => void;
-  readonly placeholder?: string;
   readonly resultCount?: number;
 }
 
@@ -15,14 +14,7 @@ interface FilterOptions {
   status: 'all' | 'active' | 'adopted' | 'moved';
 }
 
-export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti per titolo o descrizione...", resultCount }: SearchBarProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [activeSuggestion, setActiveSuggestion] = useState(-1);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  const suggestionRef = useRef<HTMLDivElement>(null);
+export default function SearchBar({ cats, onResults, resultCount }: SearchBarProps) {
   const [filters, setFilters] = useState<FilterOptions>({
     sortBy: 'date',
     dateRange: 'all',
@@ -30,23 +22,8 @@ export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti 
   });
 
   // Apply filters function
-  const applyFilters = useCallback((term: string, currentFilters: FilterOptions) => {
+  const applyFilters = useCallback((currentFilters: FilterOptions) => {
     let filtered = [...cats];
-    
-    // Filtro per testo - ricerca più intelligente
-    if (term.trim()) {
-      const searchTerms = term.toLowerCase().split(/\s+/).filter(t => t.length > 0);
-      filtered = filtered.filter(cat => {
-        const title = cat.title.toLowerCase();
-        const description = cat.description?.toLowerCase() || '';
-        const searchText = `${title} ${description}`;
-        
-        // Ricerca AND - tutti i termini devono essere presenti
-        return searchTerms.every(searchTerm => 
-          searchText.includes(searchTerm)
-        );
-      });
-    }
 
     // Filtro per data
     if (currentFilters.dateRange !== 'all') {
@@ -96,344 +73,176 @@ export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti 
     onResults(filtered);
   }, [cats, onResults]);
 
-  // Debounced search
-  const debouncedSearch = useCallback((term: string, currentFilters: FilterOptions) => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-    
-    debounceRef.current = setTimeout(() => {
-      applyFilters(term, currentFilters);
-    }, 300); // 300ms debounce
-  }, [applyFilters]);
-
-  // Generate suggestions based on existing cat data
-  const generateSuggestions = useCallback((term: string) => {
-    if (!term.trim() || term.length < 2) {
-      setSuggestions([]);
-      return;
-    }
-
-    const uniqueSuggestions = new Set<string>();
-    const lowerTerm = term.toLowerCase();
-
-    cats.forEach(cat => {
-      // Add title matches
-      if (cat.title.toLowerCase().includes(lowerTerm)) {
-        uniqueSuggestions.add(cat.title);
-      }
-      
-      // Add relevant description words
-      if (cat.description) {
-        const words = cat.description.toLowerCase().split(/\s+/);
-        words.forEach(word => {
-          // Clean word from punctuation
-          const cleanWord = word.replace(/[^\w\sàèéìòù]/g, '');
-          if (cleanWord.length > 2 && cleanWord.startsWith(lowerTerm)) {
-            uniqueSuggestions.add(cleanWord);
-          }
-        });
-      }
-    });
-
-    // Convert to array and prioritize exact matches
-    const suggestionArray = Array.from(uniqueSuggestions);
-    const exactMatches = suggestionArray.filter(s => s.toLowerCase().startsWith(lowerTerm));
-    const partialMatches = suggestionArray.filter(s => !s.toLowerCase().startsWith(lowerTerm));
-    
-    setSuggestions([...exactMatches, ...partialMatches].slice(0, 5));
-  }, [cats]);
-
-  // Close suggestions when clicking outside
+  // Applica i filtri quando cambiano i dati o i filtri
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (suggestionRef.current && !suggestionRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-        setActiveSuggestion(-1);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Keyboard navigation for suggestions
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showSuggestions || suggestions.length === 0) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setActiveSuggestion(prev => 
-          prev < suggestions.length - 1 ? prev + 1 : prev
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setActiveSuggestion(prev => prev > 0 ? prev - 1 : prev);
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (activeSuggestion >= 0 && suggestions[activeSuggestion]) {
-          handleSuggestionClick(suggestions[activeSuggestion]);
-        }
-        break;
-      case 'Escape':
-        setShowSuggestions(false);
-        setActiveSuggestion(-1);
-        break;
-    }
-  };
-
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    generateSuggestions(term);
-    
-    if (term.length >= 2) {
-      setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
-    }
-    
-    debouncedSearch(term, filters);
-  };
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setSearchTerm(suggestion);
-    setShowSuggestions(false);
-    setActiveSuggestion(-1);
-    applyFilters(suggestion, filters);
-  };
+    applyFilters(filters);
+  }, [applyFilters, filters]);
 
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
     const updatedFilters = { ...filters, ...newFilters };
     setFilters(updatedFilters);
-    applyFilters(searchTerm, updatedFilters);
   };
 
-  const clearSearch = () => {
-    setSearchTerm("");
+  const clearFilters = () => {
     setFilters({ sortBy: 'date', dateRange: 'all', status: 'all' });
-    onResults(cats);
   };
+
+  const hasActiveFilters = filters.dateRange !== 'all' || filters.status !== 'all' || filters.sortBy !== 'date';
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto mb-6">
+    <div className="relative w-full max-w-4xl mx-auto mb-6">
       <div className="flex flex-col gap-4">
-        {/* Barra di ricerca principale */}
-        <div className="relative">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={() => {
-              if (searchTerm.length >= 2 && suggestions.length > 0) {
-                setShowSuggestions(true);
-              }
-            }}
-            placeholder={placeholder}
-            className="w-full px-4 py-3 pl-12 pr-16 border rounded-lg transition-colors focus:outline-none focus:ring-2"
-            style={{ 
-              borderRadius: "var(--radius)",
-              borderColor: "var(--color-border)",
-              background: "var(--color-surface)",
-              color: "var(--color-text-primary)"
-            }}
-          />
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <span className="text-lg" style={{ color: "var(--color-text-secondary)" }}>🔍</span>
-          </div>
-          <div className="absolute inset-y-0 right-0 pr-2 flex items-center gap-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="p-2 rounded-md transition-colors hover:bg-gray-100"
-              title="Filtri di ricerca"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              <span className="text-lg">⚙️</span>
-            </button>
-            {searchTerm && (
+        {/* Pannello filtri sempre visibile */}
+        <div 
+          className="p-6 rounded-lg border bg-white shadow-sm"
+          style={{ 
+            borderColor: "var(--color-border)",
+            background: "var(--color-surface)"
+          }}
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
+              🔍 Filtri di ricerca
+            </h3>
+            {hasActiveFilters && (
               <button
-                onClick={clearSearch}
-                className="p-2 rounded-md transition-colors hover:bg-gray-100"
-                title="Cancella ricerca"
-                style={{ color: "var(--color-text-secondary)" }}
+                onClick={clearFilters}
+                className="text-sm px-3 py-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
               >
-                <span className="text-lg hover:opacity-70">✕</span>
+                Cancella filtri
               </button>
             )}
           </div>
-
-          {/* Autocomplete suggestions */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div 
-              ref={suggestionRef}
-              className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 mt-1"
-              style={{ 
-                background: "var(--color-surface)",
-                borderColor: "var(--color-border)"
-              }}
-            >
-              {suggestions.map((suggestion, index) => (
-                <button
-                  key={suggestion}
-                  className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                    index === activeSuggestion ? 'bg-blue-50' : ''
-                  }`}
-                  onClick={() => handleSuggestionClick(suggestion)}
-                  style={{ 
-                    color: "var(--color-text)",
-                    backgroundColor: index === activeSuggestion ? "rgba(59, 130, 246, 0.1)" : undefined
-                  }}
-                >
-                  <span className="text-gray-400 mr-2">🔍</span>
-                  {suggestion}
-                </button>
-              ))}
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="sortBy" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text)" }}>
+                Ordina per:
+              </label>
+              <select
+                id="sortBy"
+                value={filters.sortBy}
+                onChange={(e) => handleFilterChange({ sortBy: e.target.value as 'date' | 'title' | 'location' })}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                style={{ 
+                  borderColor: "var(--color-border)",
+                  background: "var(--color-surface)",
+                  color: "var(--color-text)"
+                }}
+              >
+                <option value="date">📅 Data (più recenti)</option>
+                <option value="title">🔤 Titolo (A-Z)</option>
+                <option value="location">📍 Posizione</option>
+              </select>
             </div>
-          )}
+            
+            <div>
+              <label htmlFor="dateRange" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text)" }}>
+                Periodo:
+              </label>
+              <select
+                id="dateRange"
+                value={filters.dateRange}
+                onChange={(e) => handleFilterChange({ dateRange: e.target.value as 'all' | 'today' | 'week' | 'month' })}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                style={{ 
+                  borderColor: "var(--color-border)",
+                  background: "var(--color-surface)",
+                  color: "var(--color-text)"
+                }}
+              >
+                <option value="all">🕒 Tutti i periodi</option>
+                <option value="today">📆 Oggi</option>
+                <option value="week">📅 Ultima settimana</option>
+                <option value="month">🗓️ Ultimo mese</option>
+              </select>
+            </div>
+            
+            <div>
+              <label htmlFor="status" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text)" }}>
+                Stato:
+              </label>
+              <select
+                id="status"
+                value={filters.status}
+                onChange={(e) => handleFilterChange({ status: e.target.value as 'all' | 'active' | 'adopted' | 'moved' })}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                style={{ 
+                  borderColor: "var(--color-border)",
+                  background: "var(--color-surface)",
+                  color: "var(--color-text)"
+                }}
+              >
+                <option value="all">📊 Tutti gli stati</option>
+                <option value="active">🐾 Attivo</option>
+                <option value="adopted">🏠 Adottato</option>
+                <option value="moved">📍 Ha cambiato posto</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        {/* Pannello filtri */}
-        {showFilters && (
+        {/* Indicatore risultati */}
+        {(hasActiveFilters || resultCount !== undefined) && (
           <div 
-            className="p-4 rounded-lg border bg-white shadow-sm"
+            className="px-4 py-3 rounded-lg border"
             style={{ 
-              borderColor: "var(--color-border)",
-              background: "var(--color-surface)"
+              background: "rgba(108, 155, 207, 0.1)",
+              borderColor: "rgba(108, 155, 207, 0.3)",
+              color: "var(--color-text-secondary)"
             }}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label htmlFor="sortBy" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text)" }}>
-                  Ordina per:
-                </label>
-                <select
-                  id="sortBy"
-                  value={filters.sortBy}
-                  onChange={(e) => handleFilterChange({ sortBy: e.target.value as 'date' | 'title' | 'location' })}
-                  className="w-full px-3 py-2 border rounded-md"
-                  style={{ 
-                    borderColor: "var(--color-border)",
-                    background: "var(--color-surface)",
-                    color: "var(--color-text)"
-                  }}
-                >
-                  <option value="date">Data (più recenti)</option>
-                  <option value="title">Titolo (A-Z)</option>
-                  <option value="location">Posizione</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="dateRange" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text)" }}>
-                  Periodo:
-                </label>
-                <select
-                  id="dateRange"
-                  value={filters.dateRange}
-                  onChange={(e) => handleFilterChange({ dateRange: e.target.value as 'all' | 'today' | 'week' | 'month' })}
-                  className="w-full px-3 py-2 border rounded-md"
-                  style={{ 
-                    borderColor: "var(--color-border)",
-                    background: "var(--color-surface)",
-                    color: "var(--color-text)"
-                  }}
-                >
-                  <option value="all">Tutti i periodi</option>
-                  <option value="today">Oggi</option>
-                  <option value="week">Ultima settimana</option>
-                  <option value="month">Ultimo mese</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="status" className="block text-sm font-medium mb-2" style={{ color: "var(--color-text)" }}>
-                  Stato:
-                </label>
-                <select
-                  id="status"
-                  value={filters.status}
-                  onChange={(e) => handleFilterChange({ status: e.target.value as 'all' | 'active' | 'adopted' | 'moved' })}
-                  className="w-full px-3 py-2 border rounded-md"
-                  style={{ 
-                    borderColor: "var(--color-border)",
-                    background: "var(--color-surface)",
-                    color: "var(--color-text)"
-                  }}
-                >
-                  <option value="all">Tutti gli stati</option>
-                  <option value="active">🐾 Attivo</option>
-                  <option value="adopted">🏠 Adottato</option>
-                  <option value="moved">📍 Ha cambiato posto</option>
-                </select>
-              </div>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <span>🎯</span>
+                <span>
+                  {hasActiveFilters ? 'Filtri applicati' : 'Tutti gli avvistamenti'}
+                </span>
+              </span>
+              {resultCount !== undefined && (
+                <span className="text-sm px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-medium">
+                  {resultCount} risultat{resultCount !== 1 ? 'i' : 'o'}
+                </span>
+              )}
             </div>
+            
+            {/* Mostra filtri attivi */}
+            {hasActiveFilters && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {filters.dateRange !== 'all' && (
+                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-md">
+                    📅 {(() => {
+                      switch (filters.dateRange) {
+                        case 'today': return 'Oggi';
+                        case 'week': return 'Ultima settimana';
+                        case 'month': return 'Ultimo mese';
+                        default: return '';
+                      }
+                    })()}
+                  </span>
+                )}
+                {filters.status !== 'all' && (
+                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-md">
+                    📊 {(() => {
+                      switch (filters.status) {
+                        case 'active': return '🐾 Attivo';
+                        case 'adopted': return '🏠 Adottato';
+                        case 'moved': return '📍 Ha cambiato posto';
+                        default: return '';
+                      }
+                    })()}
+                  </span>
+                )}
+                {filters.sortBy !== 'date' && (
+                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-md">
+                    ↕️ {filters.sortBy === 'title' ? 'Per titolo' : 'Per posizione'}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      {/* Indicatore risultati */}
-      {(searchTerm || filters.dateRange !== 'all' || filters.status !== 'all' || filters.sortBy !== 'date') && (
-        <div 
-          className="mt-3 text-sm px-4 py-2 rounded-lg border"
-          style={{ 
-            background: "rgba(108, 155, 207, 0.1)",
-            borderColor: "rgba(108, 155, 207, 0.3)",
-            color: "var(--color-text-secondary)"
-          }}
-        >
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <span>🎯</span>
-              {searchTerm && (
-                <span>Risultati per &ldquo;<strong>{searchTerm}</strong>&rdquo;</span>
-              )}
-              {!searchTerm && (
-                <span>Filtri applicati</span>
-              )}
-            </span>
-            {resultCount !== undefined && (
-              <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                {resultCount} risultat{resultCount !== 1 ? 'i' : 'o'}
-              </span>
-            )}
-          </div>
-          {/* Mostra filtri attivi */}
-          {(filters.dateRange !== 'all' || filters.status !== 'all' || filters.sortBy !== 'date') && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {filters.dateRange !== 'all' && (
-                <span className="text-xs px-2 py-1 bg-gray-100 rounded">
-                  📅 {(() => {
-                    switch (filters.dateRange) {
-                      case 'today': return 'Oggi';
-                      case 'week': return 'Ultima settimana';
-                      case 'month': return 'Ultimo mese';
-                      default: return '';
-                    }
-                  })()}
-                </span>
-              )}
-              {filters.status !== 'all' && (
-                <span className="text-xs px-2 py-1 bg-gray-100 rounded">
-                  📊 {(() => {
-                    switch (filters.status) {
-                      case 'active': return '🐾 Attivo';
-                      case 'adopted': return '🏠 Adottato';
-                      case 'moved': return '📍 Ha cambiato posto';
-                      default: return '';
-                    }
-                  })()}
-                </span>
-              )}
-              {filters.sortBy !== 'date' && (
-                <span className="text-xs px-2 py-1 bg-gray-100 rounded">
-                  ↕️ {filters.sortBy === 'title' ? 'Per titolo' : 'Per posizione'}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

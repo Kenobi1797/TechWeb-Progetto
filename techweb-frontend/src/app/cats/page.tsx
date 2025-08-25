@@ -38,7 +38,6 @@ export default function CatsPage() {
       <SearchBar 
         cats={cats} 
         onResults={handleSearchResults}
-        placeholder="Cerca gatti per titolo o descrizione..."
         resultCount={filteredCats.length}
       />
 

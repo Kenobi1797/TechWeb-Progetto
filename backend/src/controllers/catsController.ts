@@ -64,12 +64,15 @@ export const createCat = async (
     return;
   }
   
-  // Gestione immagine da multer (opzionale)
+  // Gestione immagine da multer (OBBLIGATORIA)
   let imageUrl = null;
   if (req.file) {
     // Converte il buffer in Base64
     const base64Image = req.file.buffer.toString('base64');
     imageUrl = `data:${req.file.mimetype};base64,${base64Image}`;
+  } else {
+    res.status(400).json({ error: 'Immagine obbligatoria per creare un avvistamento' });
+    return;
   }
 
   // Validazione markdown se la descrizione è presente
@@ -338,6 +341,111 @@ export const updateCatStatus = async (
       [status, id]
     );
 
+    res.json(result.rows[0]);
+    return;
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateCat = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { id } = req.params;
+  const { title, description, lat, lng, latitude, longitude } = req.body;
+
+  if (!req.user) {
+    res.status(401).json({ error: 'Utente non autenticato' });
+    return;
+  }
+
+  try {
+    // Verifica che il gatto appartenga all'utente
+    const catCheck = await pool.query(
+      'SELECT user_id FROM cats WHERE id = $1',
+      [id]
+    );
+
+    if (catCheck.rows.length === 0) {
+      res.status(404).json({ error: 'Gatto non trovato' });
+      return;
+    }
+
+    if (catCheck.rows[0].user_id !== req.user.userId) {
+      res.status(403).json({ error: 'Non hai i permessi per modificare questo avvistamento' });
+      return;
+    }
+
+    // Prepara i dati da aggiornare
+    const updateFields: string[] = [];
+    const updateValues: any[] = [];
+    let paramCounter = 1;
+
+    if (title?.trim()) {
+      updateFields.push(`title = $${paramCounter}`);
+      updateValues.push(title.trim());
+      paramCounter++;
+    }
+
+    if (description?.trim()) {
+      // Validazione markdown se la descrizione è presente
+      const validation = validateMarkdown(description.trim());
+      if (!validation.valid) {
+        res.status(400).json({ error: validation.error });
+        return;
+      }
+      updateFields.push(`description = $${paramCounter}`);
+      updateValues.push(description.trim());
+      paramCounter++;
+    }
+
+    // Gestione coordinate se fornite
+    if ((lat || latitude) && (lng || longitude)) {
+      const coordLat = lat || latitude;
+      const coordLng = lng || longitude;
+      
+      const coordinateValidation = validateAndParseCoordinates(coordLat, coordLng);
+      if (!coordinateValidation.valid) {
+        res.status(400).json({ error: coordinateValidation.error });
+        return;
+      }
+      
+      updateFields.push(`latitude = $${paramCounter}`);
+      updateValues.push(coordinateValidation.latitude);
+      paramCounter++;
+      
+      updateFields.push(`longitude = $${paramCounter}`);
+      updateValues.push(coordinateValidation.longitude);
+      paramCounter++;
+    }
+
+    // Gestione immagine se fornita
+    if (req.file) {
+      const base64Image = req.file.buffer.toString('base64');
+      const imageUrl = `data:${req.file.mimetype};base64,${base64Image}`;
+      updateFields.push(`image_url = $${paramCounter}`);
+      updateValues.push(imageUrl);
+      paramCounter++;
+    }
+
+    if (updateFields.length === 0) {
+      res.status(400).json({ error: 'Nessun campo da aggiornare fornito' });
+      return;
+    }
+
+    // Aggiunge l'ID come ultimo parametro
+    updateValues.push(id);
+
+    const query = `
+      UPDATE cats 
+      SET ${updateFields.join(', ')}, updated_at = NOW()
+      WHERE id = $${paramCounter} 
+      RETURNING *
+    `;
+
+    const result = await pool.query(query, updateValues);
     res.json(result.rows[0]);
     return;
   } catch (err) {

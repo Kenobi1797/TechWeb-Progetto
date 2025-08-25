@@ -356,3 +356,34 @@ export async function updateCatStatus(
   );
   return mapCatApiResponse(data);
 }
+
+export async function updateCat(
+  catId: number,
+  updates: {
+    title?: string;
+    description?: string;
+    latitude?: number;
+    longitude?: number;
+    imageFile?: File;
+  }
+): Promise<Cat> {
+  const formData = new FormData();
+  
+  if (updates.title) formData.append("title", updates.title);
+  if (updates.description) formData.append("description", updates.description);
+  if (updates.latitude) formData.append("latitude", String(updates.latitude));
+  if (updates.longitude) formData.append("longitude", String(updates.longitude));
+  if (updates.imageFile) formData.append("image", updates.imageFile);
+
+  const data = await handleAuthenticatedFetch<CatApiResponse>(
+    () => fetch(`${API_URL}/cats/${catId}`, {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Authorization": `Bearer ${getAuthToken()}`
+      },
+      body: formData,
+    })
+  );
+  return mapCatApiResponse(data);
+}

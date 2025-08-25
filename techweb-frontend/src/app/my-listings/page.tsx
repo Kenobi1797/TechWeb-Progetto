@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "../../utils/useAuth";
-import { fetchUserCats, updateCatStatus } from "../../utils/ServerConnect";
+import { fetchUserCats, updateCatStatus, updateCat } from "../../utils/ServerConnect";
 import { Cat } from "../../utils/types";
 import CatCard from "../../components/CatCard";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -20,6 +20,12 @@ export default function MyListingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingCat, setUpdatingCat] = useState<number | null>(null);
+  const [editingCat, setEditingCat] = useState<Cat | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    image: null as File | null
+  });
   const router = useRouter();
 
   useEffect(() => {
@@ -52,6 +58,48 @@ export default function MyListingsPage() {
       setCats(cats.map(cat => cat.id === catId ? updatedCat : cat));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Errore nell'aggiornamento dello status");
+    } finally {
+      setUpdatingCat(null);
+    }
+  };
+
+  const openEditModal = (cat: Cat) => {
+    setEditingCat(cat);
+    setEditForm({
+      title: cat.title,
+      description: cat.description || "",
+      image: null
+    });
+  };
+
+  const closeEditModal = () => {
+    setEditingCat(null);
+    setEditForm({
+      title: "",
+      description: "",
+      image: null
+    });
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCat || !editForm.image) {
+      setError("L'immagine è obbligatoria");
+      return;
+    }
+
+    try {
+      setUpdatingCat(editingCat.id);
+      const updatedCat = await updateCat(editingCat.id, {
+        title: editForm.title,
+        description: editForm.description,
+        imageFile: editForm.image
+      });
+      setCats(cats.map(cat => cat.id === editingCat.id ? updatedCat : cat));
+      closeEditModal();
+      setError(""); // Clear any previous errors
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Errore nell'aggiornamento dell'avvistamento");
     } finally {
       setUpdatingCat(null);
     }
@@ -127,8 +175,16 @@ export default function MyListingsPage() {
 
               {/* Status Update Controls */}
               <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                <div className="block text-sm font-medium mb-2" style={{ color: "var(--color-text)" }}>
-                  Aggiorna stato:
+                <div className="flex justify-between items-center mb-2">
+                  <div className="block text-sm font-medium" style={{ color: "var(--color-text)" }}>
+                    Aggiorna stato:
+                  </div>
+                  <button
+                    onClick={() => openEditModal(cat)}
+                    className="text-sm px-3 py-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+                  >
+                    ✏️ Modifica
+                  </button>
                 </div>
                 <div className="flex gap-2">
                   {(Object.keys(statusLabels) as Array<keyof typeof statusLabels>).map((status) => (
@@ -156,6 +212,118 @@ export default function MyListingsPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal di modifica */}
+      {editingCat && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>
+                  Modifica avvistamento
+                </h2>
+                <button
+                  onClick={closeEditModal}
+                  className="text-gray-400 hover:text-gray-600 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleEditSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="editTitle" className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>
+                    Titolo
+                  </label>
+                  <input
+                    id="editTitle"
+                    type="text"
+                    value={editForm.title}
+                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    style={{ 
+                      borderColor: "var(--color-border)",
+                      background: "var(--color-surface)",
+                      color: "var(--color-text)"
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="editDescription" className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>
+                    Descrizione
+                  </label>
+                  <textarea
+                    id="editDescription"
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    rows={4}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    style={{ 
+                      borderColor: "var(--color-border)",
+                      background: "var(--color-surface)",
+                      color: "var(--color-text)"
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="editImage" className="block text-sm font-medium mb-1" style={{ color: "var(--color-text)" }}>
+                    Nuova immagine <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="editImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setEditForm({ ...editForm, image: e.target.files?.[0] || null })}
+                    required
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    style={{ 
+                      borderColor: "var(--color-border)",
+                      background: "var(--color-surface)",
+                      color: "var(--color-text)"
+                    }}
+                  />
+                  <p className="text-xs text-gray-600 mt-1">
+                    L&apos;immagine è obbligatoria per aggiornare l&apos;avvistamento
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md">
+                    {error}
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeEditModal}
+                    className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                  >
+                    Annulla
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updatingCat === editingCat.id}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {updatingCat === editingCat.id ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="animate-spin">⏳</span>
+                        {' '}Salvando...
+                      </span>
+                    ) : (
+                      'Salva modifiche'
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       )}
     </div>
