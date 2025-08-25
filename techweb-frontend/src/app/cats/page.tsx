@@ -39,6 +39,7 @@ export default function CatsPage() {
         cats={cats} 
         onResults={handleSearchResults}
         placeholder="Cerca gatti per titolo o descrizione..."
+        resultCount={filteredCats.length}
       />
 
       {(() => {

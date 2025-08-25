@@ -5,6 +5,7 @@ import { validateAndParseCoordinates } from '../utils/coordinates';
 
 interface AuthRequest extends Request {
   user?: { userId: number };
+  file?: Express.Multer.File;
 }
 
 export const createCat = async (
@@ -12,7 +13,7 @@ export const createCat = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { title, description, lat, lng } = req.body;
+  const { title, description, lat, lng, latitude, longitude } = req.body;
   
   // Validazioni di base
   if (!title?.trim()) {
@@ -25,42 +26,50 @@ export const createCat = async (
     return;
   }
   
-  if (!lat || !lng) {
+  // Accetta sia lat/lng che latitude/longitude
+  const coordLat = lat || latitude;
+  const coordLng = lng || longitude;
+  
+  if (!coordLat || !coordLng) {
     res.status(400).json({ error: 'Latitudine e longitudine sono obbligatorie' });
     return;
   }
   
   // Validazione coordinate
-  const coordinateValidation = validateAndParseCoordinates(lat, lng);
+  const coordinateValidation = validateAndParseCoordinates(coordLat, coordLng);
   if (!coordinateValidation.valid) {
     res.status(400).json({ error: coordinateValidation.error });
     return;
   }
   
-  const { latitude, longitude } = coordinateValidation;
+  const { latitude: validLat, longitude: validLng } = coordinateValidation;
   
   if (!req.user) {
     res.status(401).json({ error: 'Utente non autenticato' });
     return;
   }
+
+  console.log('Creating cat for user:', req.user.userId);
+
+  // Verifica che l'utente esista effettivamente
+  try {
+    const userCheck = await pool.query('SELECT id FROM users WHERE id = $1', [req.user.userId]);
+    if (userCheck.rows.length === 0) {
+      res.status(401).json({ error: 'Utente non trovato nel database' });
+      return;
+    }
+  } catch (err) {
+    console.error('Errore nella verifica utente:', err);
+    res.status(500).json({ error: 'Errore interno del server' });
+    return;
+  }
   
-  // Validazione immagine (ora opzionale per permettere avvistamenti senza foto)
+  // Gestione immagine da multer (opzionale)
   let imageUrl = null;
-  if (req.body.imageData) {
-    // Validazione Base64
-    if (!req.body.imageData.startsWith('data:image/')) {
-      res.status(400).json({ error: 'Formato immagine non valido' });
-      return;
-    }
-    
-    // Verifica dimensione Base64 (circa 1.37x la dimensione originale)
-    const sizeInBytes = (req.body.imageData.length * 3) / 4;
-    if (sizeInBytes > 5 * 1024 * 1024) { // 5MB
-      res.status(400).json({ error: 'Immagine troppo grande (max 5MB)' });
-      return;
-    }
-    
-    imageUrl = req.body.imageData;
+  if (req.file) {
+    // Converte il buffer in Base64
+    const base64Image = req.file.buffer.toString('base64');
+    imageUrl = `data:${req.file.mimetype};base64,${base64Image}`;
   }
 
   // Validazione markdown se la descrizione è presente
@@ -76,7 +85,7 @@ export const createCat = async (
     const result = await pool.query(
       `INSERT INTO cats (user_id, title, description, image_url, latitude, longitude, status)
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [req.user.userId, title.trim(), description.trim(), imageUrl, latitude, longitude, 'active']
+      [req.user.userId, title.trim(), description.trim(), imageUrl, validLat, validLng, 'active']
     );
     res.status(201).json(result.rows[0]);
     return;

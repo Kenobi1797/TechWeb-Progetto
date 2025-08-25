@@ -260,10 +260,13 @@ export async function createCat(
   formData.append("longitude", String(cat.longitude));
   if (cat.imageFile) formData.append("image", cat.imageFile);
 
-  const data = await handleFetch<CatApiResponse>(
-    fetch(`${API_URL}/cats`, {
+  const data = await handleAuthenticatedFetch<CatApiResponse>(
+    () => fetch(`${API_URL}/cats`, {
       method: "POST",
       credentials: "include",
+      headers: {
+        "Authorization": `Bearer ${getAuthToken()}`
+      },
       body: formData,
     })
   );
@@ -294,11 +297,14 @@ export async function addComment(
   catId: number | string,
   content: string
 ): Promise<Comment> {
-  const data = await handleFetch<CommentApiResponse>(
-    fetch(`${API_URL}/${catId}/comments`, {
+  const data = await handleAuthenticatedFetch<CommentApiResponse>(
+    () => fetch(`${API_URL}/${catId}/comments`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${getAuthToken()}`
+      },
       body: JSON.stringify({ content }),
     })
   );

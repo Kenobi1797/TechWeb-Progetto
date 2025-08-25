@@ -12,7 +12,17 @@ import { startCronJobs } from './utils/cron';
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// Configurazione CORS più specifica per supportare credenziali
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-domain.com'] // Sostituire con il dominio reale in produzione
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'], // Frontend in sviluppo
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
 app.use(express.json({ limit: '10mb' })); // Aumentato per supportare immagini Base64
 app.use(compression());
 
@@ -40,6 +50,19 @@ app.use('/geocode', geocodeRoutes);
 app.get('/maptiler-key', (req, res) => {
   res.json({ key: process.env.NODE_ENV === 'production' ? undefined : process.env.MAPTILER_KEY ?? "" });
 });
+
+// Endpoint debug per vedere utenti in sviluppo
+if (process.env.NODE_ENV === 'development') {
+  app.get('/debug/users', async (req, res) => {
+    try {
+      const result = await require('./config/db').default.query('SELECT id, username, email FROM users ORDER BY id');
+      res.json(result.rows);
+    } catch (err) {
+      console.error('Errore debug users:', err);
+      res.status(500).json({ error: 'Errore nel recupero utenti' });
+    }
+  });
+}
 
 // Middleware per gestire errori di multer e altri errori
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

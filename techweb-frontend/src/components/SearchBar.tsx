@@ -6,6 +6,7 @@ interface SearchBarProps {
   readonly cats: Cat[];
   readonly onResults: (results: Cat[]) => void;
   readonly placeholder?: string;
+  readonly resultCount?: number;
 }
 
 interface FilterOptions {
@@ -14,7 +15,7 @@ interface FilterOptions {
   status: 'all' | 'active' | 'adopted' | 'moved';
 }
 
-export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti per titolo o descrizione..." }: SearchBarProps) {
+export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti per titolo o descrizione...", resultCount }: SearchBarProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -32,12 +33,19 @@ export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti 
   const applyFilters = useCallback((term: string, currentFilters: FilterOptions) => {
     let filtered = [...cats];
     
-    // Filtro per testo
+    // Filtro per testo - ricerca più intelligente
     if (term.trim()) {
-      filtered = filtered.filter(cat => 
-        cat.title.toLowerCase().includes(term.toLowerCase()) ||
-        cat.description?.toLowerCase().includes(term.toLowerCase())
-      );
+      const searchTerms = term.toLowerCase().split(/\s+/).filter(t => t.length > 0);
+      filtered = filtered.filter(cat => {
+        const title = cat.title.toLowerCase();
+        const description = cat.description?.toLowerCase() || '';
+        const searchText = `${title} ${description}`;
+        
+        // Ricerca AND - tutti i termini devono essere presenti
+        return searchTerms.every(searchTerm => 
+          searchText.includes(searchTerm)
+        );
+      });
     }
 
     // Filtro per data
@@ -57,9 +65,10 @@ export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti 
           break;
       }
       
-      filtered = filtered.filter(cat => 
-        new Date(cat.createdAt) >= filterDate
-      );
+      filtered = filtered.filter(cat => {
+        const catDate = new Date(cat.createdAt);
+        return catDate >= filterDate;
+      });
     }
 
     // Filtro per status
@@ -71,9 +80,13 @@ export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti 
     filtered.sort((a, b) => {
       switch (currentFilters.sortBy) {
         case 'title':
-          return a.title.localeCompare(b.title);
-        case 'location':
-          return a.latitude - b.latitude; // Ordina per latitudine come proxy per posizione
+          return a.title.localeCompare(b.title, 'it', { numeric: true });
+        case 'location': {
+          // Ordina per distanza dal centro (0,0) come proxy per posizione
+          const distanceA = Math.sqrt(a.latitude ** 2 + a.longitude ** 2);
+          const distanceB = Math.sqrt(b.latitude ** 2 + b.longitude ** 2);
+          return distanceA - distanceB;
+        }
         case 'date':
         default:
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -105,23 +118,30 @@ export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti 
     const lowerTerm = term.toLowerCase();
 
     cats.forEach(cat => {
-      // Add title suggestions
+      // Add title matches
       if (cat.title.toLowerCase().includes(lowerTerm)) {
         uniqueSuggestions.add(cat.title);
       }
       
-      // Add description word suggestions
+      // Add relevant description words
       if (cat.description) {
         const words = cat.description.toLowerCase().split(/\s+/);
         words.forEach(word => {
-          if (word.length > 3 && word.includes(lowerTerm)) {
-            uniqueSuggestions.add(word);
+          // Clean word from punctuation
+          const cleanWord = word.replace(/[^\w\sàèéìòù]/g, '');
+          if (cleanWord.length > 2 && cleanWord.startsWith(lowerTerm)) {
+            uniqueSuggestions.add(cleanWord);
           }
         });
       }
     });
 
-    setSuggestions(Array.from(uniqueSuggestions).slice(0, 5));
+    // Convert to array and prioritize exact matches
+    const suggestionArray = Array.from(uniqueSuggestions);
+    const exactMatches = suggestionArray.filter(s => s.toLowerCase().startsWith(lowerTerm));
+    const partialMatches = suggestionArray.filter(s => !s.toLowerCase().startsWith(lowerTerm));
+    
+    setSuggestions([...exactMatches, ...partialMatches].slice(0, 5));
   }, [cats]);
 
   // Close suggestions when clicking outside
@@ -353,7 +373,7 @@ export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti 
       </div>
 
       {/* Indicatore risultati */}
-      {searchTerm && (
+      {(searchTerm || filters.dateRange !== 'all' || filters.status !== 'all' || filters.sortBy !== 'date') && (
         <div 
           className="mt-3 text-sm px-4 py-2 rounded-lg border"
           style={{ 
@@ -362,10 +382,56 @@ export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti 
             color: "var(--color-text-secondary)"
           }}
         >
-          <span className="flex items-center gap-2">
-            <span>🎯</span>
-            <span>Risultati per &ldquo;<strong>{searchTerm}</strong>&rdquo;</span>
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <span>🎯</span>
+              {searchTerm && (
+                <span>Risultati per &ldquo;<strong>{searchTerm}</strong>&rdquo;</span>
+              )}
+              {!searchTerm && (
+                <span>Filtri applicati</span>
+              )}
+            </span>
+            {resultCount !== undefined && (
+              <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                {resultCount} risultat{resultCount !== 1 ? 'i' : 'o'}
+              </span>
+            )}
+          </div>
+          {/* Mostra filtri attivi */}
+          {(filters.dateRange !== 'all' || filters.status !== 'all' || filters.sortBy !== 'date') && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {filters.dateRange !== 'all' && (
+                <span className="text-xs px-2 py-1 bg-gray-100 rounded">
+                  📅 {(() => {
+                    switch (filters.dateRange) {
+                      case 'today': return 'Oggi';
+                      case 'week': return 'Ultima settimana';
+                      case 'month': return 'Ultimo mese';
+                      default: return '';
+                    }
+                  })()}
+                </span>
+              )}
+              {filters.status !== 'all' && (
+                <span className="text-xs px-2 py-1 bg-gray-100 rounded">
+                  📊 {(() => {
+                    switch (filters.status) {
+                      case 'active': return '🐾 Attivo';
+                      case 'adopted': return '🏠 Adottato';
+                      case 'moved': return '📍 Ha cambiato posto';
+                      default: return '';
+                    }
+                  })()}
+                </span>
+              )}
+              {filters.sortBy !== 'date' && (
+                <span className="text-xs px-2 py-1 bg-gray-100 rounded">
+                  ↕️ {filters.sortBy === 'title' ? 'Per titolo' : 'Per posizione'}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
