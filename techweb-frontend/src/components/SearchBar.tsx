@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Cat } from "../utils/types";
 
 interface SearchBarProps {
@@ -17,18 +17,19 @@ interface FilterOptions {
 export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti per titolo o descrizione..." }: SearchBarProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeSuggestion, setActiveSuggestion] = useState(-1);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const suggestionRef = useRef<HTMLDivElement>(null);
   const [filters, setFilters] = useState<FilterOptions>({
     sortBy: 'date',
     dateRange: 'all',
     status: 'all'
   });
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    applyFilters(term, filters);
-  };
-
-  const applyFilters = (term: string, currentFilters: FilterOptions) => {
+  // Apply filters function
+  const applyFilters = useCallback((term: string, currentFilters: FilterOptions) => {
     let filtered = [...cats];
     
     // Filtro per testo
@@ -80,6 +81,108 @@ export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti 
     });
     
     onResults(filtered);
+  }, [cats, onResults]);
+
+  // Debounced search
+  const debouncedSearch = useCallback((term: string, currentFilters: FilterOptions) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    
+    debounceRef.current = setTimeout(() => {
+      applyFilters(term, currentFilters);
+    }, 300); // 300ms debounce
+  }, [applyFilters]);
+
+  // Generate suggestions based on existing cat data
+  const generateSuggestions = useCallback((term: string) => {
+    if (!term.trim() || term.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    const uniqueSuggestions = new Set<string>();
+    const lowerTerm = term.toLowerCase();
+
+    cats.forEach(cat => {
+      // Add title suggestions
+      if (cat.title.toLowerCase().includes(lowerTerm)) {
+        uniqueSuggestions.add(cat.title);
+      }
+      
+      // Add description word suggestions
+      if (cat.description) {
+        const words = cat.description.toLowerCase().split(/\s+/);
+        words.forEach(word => {
+          if (word.length > 3 && word.includes(lowerTerm)) {
+            uniqueSuggestions.add(word);
+          }
+        });
+      }
+    });
+
+    setSuggestions(Array.from(uniqueSuggestions).slice(0, 5));
+  }, [cats]);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (suggestionRef.current && !suggestionRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+        setActiveSuggestion(-1);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Keyboard navigation for suggestions
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setActiveSuggestion(prev => 
+          prev < suggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setActiveSuggestion(prev => prev > 0 ? prev - 1 : prev);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (activeSuggestion >= 0 && suggestions[activeSuggestion]) {
+          handleSuggestionClick(suggestions[activeSuggestion]);
+        }
+        break;
+      case 'Escape':
+        setShowSuggestions(false);
+        setActiveSuggestion(-1);
+        break;
+    }
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    generateSuggestions(term);
+    
+    if (term.length >= 2) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+    
+    debouncedSearch(term, filters);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setSearchTerm(suggestion);
+    setShowSuggestions(false);
+    setActiveSuggestion(-1);
+    applyFilters(suggestion, filters);
   };
 
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
@@ -103,6 +206,12 @@ export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti 
             type="text"
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={() => {
+              if (searchTerm.length >= 2 && suggestions.length > 0) {
+                setShowSuggestions(true);
+              }
+            }}
             placeholder={placeholder}
             className="w-full px-4 py-3 pl-12 pr-16 border rounded-lg transition-colors focus:outline-none focus:ring-2"
             style={{ 
@@ -135,6 +244,35 @@ export default function SearchBar({ cats, onResults, placeholder = "Cerca gatti 
               </button>
             )}
           </div>
+
+          {/* Autocomplete suggestions */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div 
+              ref={suggestionRef}
+              className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 mt-1"
+              style={{ 
+                background: "var(--color-surface)",
+                borderColor: "var(--color-border)"
+              }}
+            >
+              {suggestions.map((suggestion, index) => (
+                <button
+                  key={suggestion}
+                  className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                    index === activeSuggestion ? 'bg-blue-50' : ''
+                  }`}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  style={{ 
+                    color: "var(--color-text)",
+                    backgroundColor: index === activeSuggestion ? "rgba(59, 130, 246, 0.1)" : undefined
+                  }}
+                >
+                  <span className="text-gray-400 mr-2">🔍</span>
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Pannello filtri */}

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { isAuthenticated, logoutUser } from "./ServerConnect";
+import { isAuthenticated, logoutUser, clearTokens } from "./ServerConnect";
 
 export function useAuth() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -34,12 +34,17 @@ export function useAuth() {
   const logout = async () => {
     try {
       await logoutUser();
+      clearTokens();
       setIsLoggedIn(false);
       // Dispatcha un evento personalizzato per notificare altri componenti
       window.dispatchEvent(new Event("authStateChanged"));
       return true;
     } catch (error) {
       console.error("Errore durante il logout:", error);
+      // Anche se il logout fallisce server-side, pulisci i token locali
+      clearTokens();
+      setIsLoggedIn(false);
+      window.dispatchEvent(new Event("authStateChanged"));
       return false;
     }
   };

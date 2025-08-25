@@ -1,27 +1,25 @@
 "use client";
 import UploadFormNew from "../../components/UploadForm";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "../../utils/toast";
+import { createCat } from "../../utils/ServerConnect";
+import { useAuth } from "../../utils/useAuth";
 
 export default function UploadPage() {
   const router = useRouter();
   const { addToast } = useToast();
-  const checkedAuth = useRef(false);
-  const [isAuth, setIsAuth] = useState<null | boolean>(null);
+  const { isLoggedIn } = useAuth();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    if (checkedAuth.current) return;
-    checkedAuth.current = true;
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setIsAuth(false);
-      } else {
-        setIsAuth(true);
-      }
-    }
-  }, [router]);
+    // Breve delay per permettere al hook useAuth di inizializzarsi
+    const timer = setTimeout(() => {
+      setIsCheckingAuth(false);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSubmit = async (payload: {
     title: string;
@@ -30,70 +28,49 @@ export default function UploadPage() {
     lng: number;
     imageData: string | null;
   }) => {
-    const token = localStorage.getItem("token");
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}/cats`,
-        {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      // Convertiamo il payload nel formato che si aspetta createCat
+      const catData = {
+        title: payload.title,
+        description: payload.description,
+        latitude: payload.lat,
+        longitude: payload.lng,
+        userId: 0, // Sarà ignorato dal backend
+        status: 'active' as const,
+        // Se c'è imageData, convertiamolo in File
+        imageFile: payload.imageData ? await convertDataUrlToFile(payload.imageData, 'cat-image.jpg') : undefined
+      };
+
+      await createCat(catData);
       
-      // Se il server non risponde, gestiamo come errore di connessione
-      if (!res) {
-        throw new Error("NETWORK_ERROR");
-      }
+      addToast({
+        type: "success",
+        message: "🎉 Avvistamento inviato con successo! Reindirizzamento in corso...",
+        duration: 3000
+      });
       
-      const data = await res.json();
-      
-      if (res.ok) {
-        addToast({
-          type: "success",
-          message: "🎉 Avvistamento inviato con successo! Reindirizzamento in corso...",
-          duration: 3000
-        });
-        
-        setTimeout(() => {
-          router.push("/");
-        }, 2000);
-      } else {
-        // Errore dal server ma connessione OK - mostra l'errore specifico
-        const errorMessage = data.error || "Errore durante l'upload";
-        addToast({
-          type: "error",
-          message: errorMessage,
-          duration: 6000
-        });
-        throw new Error(errorMessage);
-      }
+      setTimeout(() => {
+        router.push("/");
+      }, 2000);
     } catch (err) {
-      // Solo per errori di rete reali
-      if (err instanceof TypeError && err.message.includes("fetch")) {
-        addToast({
-          type: "error",
-          message: "⚠️ Errore di connessione al server. Verifica la tua connessione e riprova.",
-          duration: 6000
-        });
-        throw new Error("Errore di connessione al server");
-      } else if (String(err).includes("NETWORK_ERROR")) {
-        addToast({
-          type: "error", 
-          message: "⚠️ Server non raggiungibile. Riprova più tardi.",
-          duration: 6000
-        });
-        throw new Error("Server non raggiungibile");
-      }
-      // Per altri errori, rilancia l'errore originale senza toast aggiuntivi
+      const errorMessage = err instanceof Error ? err.message : "Errore durante l'upload";
+      addToast({
+        type: "error",
+        message: errorMessage,
+        duration: 6000
+      });
       throw err;
     }
   };
 
-  if (isAuth === false) {
+  // Funzione helper per convertire data URL in File
+  const convertDataUrlToFile = async (dataUrl: string, filename: string): Promise<File> => {
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type });
+  };
+
+  if (!isLoggedIn && !isCheckingAuth) {
     return (
       <div className="min-h-screen fade-in" style={{ background: "linear-gradient(120deg, var(--color-background) 60%, var(--color-secondary) 100%)" }}>
         <div className="container mx-auto py-12 px-4 text-center">
@@ -111,7 +88,7 @@ export default function UploadPage() {
     );
   }
 
-  if (isAuth === null) {
+  if (isCheckingAuth) {
     return (
       <div className="min-h-screen fade-in" style={{ background: "linear-gradient(120deg, var(--color-background) 60%, var(--color-secondary) 100%)" }}>
         <div className="container mx-auto py-12 px-4 text-center">

@@ -33,7 +33,8 @@ type CatWithCommentsApiResponse = CatApiResponse & {
 
 type AuthResponse = {
   message: string;
-  token: string;
+  accessToken: string;
+  refreshToken: string;
   user: {
     id: number;
     username: string;
@@ -47,6 +48,39 @@ export const API_URL = "http://localhost:5000";
 async function handleFetch<T>(promise: Promise<Response>, defaultMsg = "API error"): Promise<T> {
   try {
     const res = await promise;
+    if (!res.ok) {
+      let data: Record<string, unknown> = {};
+      try { data = await res.json(); } catch { /* ignore */ }
+      throw new Error(typeof data === "object" && data !== null && "error" in data && typeof data.error === "string"
+        ? data.error
+        : defaultMsg
+      );
+    }
+    return await res.json();
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new Error(err.message || defaultMsg);
+    }
+    throw new Error(defaultMsg);
+  }
+}
+
+// Utility per gestire errori fetch con auto-refresh
+async function handleAuthenticatedFetch<T>(fetchFunction: () => Promise<Response>, defaultMsg = "API error"): Promise<T> {
+  try {
+    let res = await fetchFunction();
+    
+    // Se il token è scaduto, prova a rinnovarlo
+    if (res.status === 401) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        // Riprova la richiesta con il nuovo token
+        res = await fetchFunction();
+      } else {
+        throw new Error("Sessione scaduta, effettua il login");
+      }
+    }
+    
     if (!res.ok) {
       let data: Record<string, unknown> = {};
       try { data = await res.json(); } catch { /* ignore */ }
@@ -110,45 +144,81 @@ export async function loginUser(email: string, password: string): Promise<AuthRe
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
-    }),
-    "Credenziali non corrette"
+    })
   );
 }
 
 export async function logoutUser(): Promise<{ message: string }> {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  
-  // Rimuovi il token dal localStorage
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("token");
-  }
-  
-  // Chiama l'endpoint logout se il token esiste
-  if (token) {
-    return handleFetch<{ message: string }>(
-      fetch(`${API_URL}/auth/logout`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-      }),
-      "Errore durante il logout"
-    );
-  }
-  
-  return Promise.resolve({ message: "Logout effettuato" });
+  const refreshToken = getRefreshToken();
+  return handleFetch<{ message: string }>(
+    fetch(`${API_URL}/auth/logout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    })
+  );
 }
 
 export function isAuthenticated(): boolean {
   if (typeof window === "undefined") return false;
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("accessToken");
   return token !== null;
 }
 
-export function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
+export function getAuthToken(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("accessToken") || "";
+}
+
+export function getRefreshToken(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("refreshToken") || "";
+}
+
+export function setTokens(accessToken: string, refreshToken: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("accessToken", accessToken);
+  localStorage.setItem("refreshToken", refreshToken);
+}
+
+export function clearTokens(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
+}
+
+// Refresh access token
+export async function refreshAccessToken(): Promise<boolean> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+
+  try {
+    const response = await fetch(`${API_URL}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) {
+      clearTokens();
+      return false;
+    }
+
+    const data = await response.json();
+    setTokens(data.accessToken, data.refreshToken);
+    
+    // Aggiorna anche i dati utente se presenti
+    if (data.user) {
+      localStorage.setItem("user", JSON.stringify(data.user));
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Errore durante il refresh del token:", error);
+    clearTokens();
+    return false;
+  }
 }
 
 // --- GATTI ---
@@ -240,8 +310,8 @@ export async function fetchLocationFromCoordsServer(lat: number, lon: number): P
 // --- USER CATS ---
 
 export async function fetchUserCats(): Promise<Cat[]> {
-  const data = await handleFetch<CatApiResponse[]>(
-    fetch(`${API_URL}/cats/my-cats`, {
+  const data = await handleAuthenticatedFetch<CatApiResponse[]>(
+    () => fetch(`${API_URL}/cats/my-cats`, {
       method: "GET",
       credentials: "include",
       headers: {
@@ -257,8 +327,8 @@ export async function updateCatStatus(
   catId: number,
   status: 'active' | 'adopted' | 'moved'
 ): Promise<Cat> {
-  const data = await handleFetch<CatApiResponse>(
-    fetch(`${API_URL}/cats/${catId}/status`, {
+  const data = await handleAuthenticatedFetch<CatApiResponse>(
+    () => fetch(`${API_URL}/cats/${catId}/status`, {
       method: "PATCH",
       credentials: "include",
       headers: {
