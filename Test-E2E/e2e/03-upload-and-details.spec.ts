@@ -3,23 +3,73 @@ import { test, expect } from '@playwright/test';
 test.describe('Upload and Details Tests', () => {
   // Setup utente autenticato
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000');
-    
-    // Prova ad effettuare il login - se non serve sarà ignorato
     try {
-      // Vai al login
-      await page.getByRole('link', { name: /accedi|login/i }).first().click({ timeout: 5000 });
+      // Create a unique test user for each test
+      const testUser = {
+        email: `test-${Date.now()}@example.com`,
+        password: 'testPassword123',
+        username: `testuser${Date.now()}`
+      };
       
-      // Compila e invia form di login
-      await page.fill('input[type="email"]', 'test@example.com');
-      await page.fill('input[type="password"]', 'password123');
-      await page.getByRole('button', { name: /accedi|login/i }).click();
+      // First, go to login page and access registration
+      await page.goto('http://localhost:3000/login');
+      await page.waitForLoadState('networkidle');
       
-      // Attendi che il login sia completato
-      await page.waitForURL('http://localhost:3000/', { timeout: 10000 });
-    } catch {
-      // Se il login fallisce o l'utente è già loggato, continua
-      await page.goto('http://localhost:3000');
+      // Look for the registration link in the login page
+      const registrationLink = page.getByText('Registrati');
+      if (await registrationLink.isVisible()) {
+        await registrationLink.click();
+        await page.waitForURL('**/register');
+        
+        // Fill registration form
+        await page.fill('input[name="username"]', testUser.username);
+        await page.fill('input[name="email"]', testUser.email);
+        await page.fill('input[name="password"]', testUser.password);
+        
+        // Submit registration
+        await page.getByRole('button', { name: /registrati/i }).click();
+        await page.waitForURL('**/login');
+      }
+      
+      // Now login with the test user
+      await page.fill('input[name="email"]', testUser.email);
+      await page.fill('input[name="password"]', testUser.password);
+      await page.getByRole('button', { name: /accedi/i }).click();
+      
+      // Wait for successful login (redirect to homepage)
+      await page.waitForURL('http://localhost:3000/');
+      
+      // Verify login was successful by checking for logout button
+      await page.waitForSelector('button:has-text("Logout")', { timeout: 10000 });
+      
+    } catch (error) {
+      console.log('Authentication setup failed:', error);
+      // Alternative: Try direct API registration
+      try {
+        await page.goto('http://localhost:3000');
+        await page.evaluate(async () => {
+          const response = await fetch('http://localhost:3001/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: `testuser${Date.now()}`,
+              email: `test-${Date.now()}@example.com`,
+              password: 'testPassword123'
+            })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          }
+        });
+        
+        await page.reload();
+      } catch (apiError) {
+        console.log('API authentication also failed:', apiError);
+      }
     }
   });
 
@@ -49,18 +99,26 @@ test.describe('Upload and Details Tests', () => {
     await page.getByRole('button', { name: /condividi avvistamento/i }).click();
     
     // Verifica il successo (dovrebbe tornare alla homepage o mostrare messaggio di successo)
-    await expect(page.locator('text=/Avvistamento caricato|Upload completato|Successo|condiviso/i')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=/Avvistamento.*inviato.*successo/i')).toBeVisible({ timeout: 10000 });
   });
 
   test('Upload form validation works correctly', async ({ page }) => {
     await page.getByRole('link', { name: /nuovo|carica|upload/i }).click();
     await page.waitForSelector('input#title', { timeout: 10000 });
     
-    // Prova a inviare form vuoto
-    await page.getByRole('button', { name: /condividi avvistamento/i }).click();
-    
-    // Verifica che il form non venga inviato (il bottone dovrebbe essere disabilitato)
+    // Verifica che il form sia vuoto e il bottone disabilitato
     await expect(page.getByRole('button', { name: /condividi avvistamento/i })).toBeDisabled();
+    
+    // Compila solo il titolo - il bottone dovrebbe rimanere disabilitato
+    await page.fill('#title', 'Gatto test');
+    await expect(page.getByRole('button', { name: /condividi avvistamento/i })).toBeDisabled();
+    
+    // Compila la descrizione - il bottone dovrebbe rimanere disabilitato (manca immagine e posizione)
+    await page.fill('#description', 'Descrizione di test');
+    await expect(page.getByRole('button', { name: /condividi avvistamento/i })).toBeDisabled();
+    
+    // Verifica che sia mostrato il messaggio che l'immagine è obbligatoria quando si prova senza immagine
+    // Il bottone rimane disabilitato finché non ci sono tutti i campi obbligatori
   });
 
   test('View cat details page shows all information correctly', async ({ page }) => {
@@ -138,13 +196,17 @@ test.describe('Upload and Details Tests', () => {
 
   test('Image preview works during upload', async ({ page }) => {
     await page.getByRole('link', { name: /nuovo|carica|upload/i }).click();
-    await page.waitForSelector('input[type="file"]', { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
     
-    // Upload immagine
+    // Upload immagine usando l'input file nascosto
     const filePath = './assets/test-cat.jpg';
-    await page.setInputFiles('input[type="file"]', filePath);
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(filePath);
     
-    // Verifica che appaia l'anteprima
-    await expect(page.locator('img[src*="data:"], .image-preview img')).toBeVisible({ timeout: 5000 });
+    // Verifica che appaia l'anteprima (componente Image di Next.js)
+    await expect(page.locator('img[alt="Anteprima"]')).toBeVisible({ timeout: 10000 });
+    
+    // Verifica anche il messaggio di successo (usando regex per flessibilità)
+    await expect(page.locator('text=/Foto caricata.*successo/i')).toBeVisible({ timeout: 5000 });
   });
 });

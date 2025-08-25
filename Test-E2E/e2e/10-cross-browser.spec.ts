@@ -22,10 +22,13 @@ test.describe('Cross-Browser Tests - STREETCATS', () => {
       }
     }
     
-    // Verifica il funzionamento della ricerca
-    const searchInput = page.locator('input[placeholder*="Cerca"], input[type="text"]').first();
-    await searchInput.fill('test');
-    await searchInput.press('Enter');
+    // Verifica il funzionamento dei filtri nella pagina gatti
+    await page.getByRole('link', { name: /gatti/i }).click();
+    await expect(page.getByText('🔍 Filtri di ricerca')).toBeVisible();
+    
+    // Test dropdown filtri
+    const sortSelect = page.getByLabel('Ordina per:');
+    await sortSelect.selectOption('title');
     
     // Verifica che le card dei gatti siano visualizzate
     const catCards = page.locator('.cat-card');

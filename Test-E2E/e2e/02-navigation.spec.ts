@@ -198,7 +198,7 @@ test.describe('Navigation Tests - STREETCATS', () => {
       
       // Verifica caricamento sezione
       await expect(page.locator('header')).toBeVisible();
-      await expect(page.locator('main')).toBeVisible();
+      await expect(page.locator('main').first()).toBeVisible();
       
       // Verifica che i bottoni di navigazione siano presenti e stilizzati
       const navButtons = page.locator('header button, header a.btn');

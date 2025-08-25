@@ -19,23 +19,18 @@ test.describe('Homepage Tests', () => {
     await expect(page.getByRole('banner')).toBeVisible();
   });
 
-  test('Search bar is visible and functional', async ({ page }) => {
-    // Verifica la presenza della barra di ricerca
-    const searchInput = page.getByPlaceholder('Cerca gatti per titolo o descrizione...');
-    await expect(searchInput).toBeVisible();
+  test('Search functionality moved to cats page', async ({ page }) => {
+    // La barra di ricerca è stata spostata nella pagina gatti
+    await page.getByRole('link', { name: /gatti|cats/i }).click();
+    await expect(page).toHaveURL(/.*\/cats/);
     
-    // Test della ricerca
-    await searchInput.fill('gatto');
-    await expect(searchInput).toHaveValue('gatto');
+    // Verifica la presenza dei filtri di ricerca
+    await expect(page.getByText('🔍 Filtri di ricerca')).toBeVisible();
     
-    // Verifica che appaia l'indicatore di ricerca
-    await expect(page.getByText(/Risultati per/)).toBeVisible();
-    
-    // Test del clear search
-    const clearButton = page.getByTitle('Cancella ricerca');
-    await expect(clearButton).toBeVisible();
-    await clearButton.click();
-    await expect(searchInput).toHaveValue('');
+    // Verifica che ci siano i filtri dropdown
+    await expect(page.getByLabel('Ordina per:')).toBeVisible();
+    await expect(page.getByLabel('Periodo:')).toBeVisible();
+    await expect(page.getByLabel('Stato:')).toBeVisible();
   });
 
   test('Map is displayed on homepage', async ({ page }) => {

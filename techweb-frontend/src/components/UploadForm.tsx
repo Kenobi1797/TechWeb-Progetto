@@ -526,7 +526,7 @@ export default function UploadFormNew({ onSubmit }: UploadFormProps) {
         <div className="pt-6" style={{ borderTop: "1.5px solid var(--color-border)" }}>
           <button
             type="submit"
-            disabled={isSubmitting || !title.trim() || !description.trim() || !position}
+            disabled={isSubmitting || !title.trim() || !description.trim() || !position || !image}
             className="btn btn-primary w-full py-4 px-6 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (

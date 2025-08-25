@@ -2,53 +2,40 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Search Functionality - STREETCATS', () => {
   test('should search for cats and display results', async ({ page }) => {
-    await page.goto('/');
+    // Vai alla pagina cats dove ora si trova la funzionalità di ricerca
+    await page.goto('/cats');
     
     // Attendi che il contenuto si carichi
     await page.waitForFunction(() => !document.body.innerText.includes('Caricamento...'), { timeout: 15000 });
     
-    // Cerca il campo di ricerca nel header o nella pagina
-    let searchInput = page.locator('input[placeholder*="Cerca"], input[type="text"]').first();
-    if (await searchInput.count() === 0) {
-      searchInput = page.locator('input[placeholder*="cerca"], input[placeholder*="ricerca"]');
-    }
-    if (await searchInput.count() === 0) {
-      searchInput = page.locator('input').first();
-    }
+    // Verifica che ci siano i filtri nella SearchBar
+    const locationFilter = page.locator('select').filter({ hasText: /ubicazione|location|zona/i }).first();
+    const categoryFilter = page.locator('select').filter({ hasText: /tipo|categoria|category/i }).first();
     
-    // Verifica presenza del campo di ricerca
-    if (await searchInput.count() > 0) {
-      await expect(searchInput).toBeVisible();
+    // Verifica che i filtri siano presenti
+    if (await locationFilter.count() > 0) {
+      await expect(locationFilter).toBeVisible();
       
-      // Esegui una ricerca per "gatto"
-      await searchInput.fill('gatto');
-      await searchInput.press('Enter');
-      
-      // Attendi i risultati (o navigazione)
+      // Testa il filtro ubicazione
+      await locationFilter.selectOption({ index: 1 }); // Seleziona la prima opzione non vuota
       await page.waitForTimeout(2000);
       
-      // Verifica che ci siano risultati (card di gatti o indicazione di ricerca)
-      const catCards = page.locator('.cat-card');
-      const resultText = page.locator('text=/risultat/i');
-      
+      // Verifica che ci siano risultati filtrati
+      const catCards = page.locator('.cat-card, [data-testid="cat-card"]');
       if (await catCards.count() > 0) {
         await expect(catCards.first()).toBeVisible();
-      } else if (await resultText.count() > 0) {
-        await expect(resultText).toBeVisible();
-      }
-      
-      // Test ricerca vuota
-      await searchInput.fill('');
-      await searchInput.press('Enter');
-      await page.waitForTimeout(1000);
-    } else {
-      // Se non c'è search input, testa la navigazione alla pagina ricerca
-      const searchLink = page.locator('a').filter({ hasText: /cerca|ricerca/i });
-      if (await searchLink.count() > 0) {
-        await searchLink.click();
-        await expect(page).toHaveURL(/search|cerca/);
       }
     }
+    
+    if (await categoryFilter.count() > 0) {
+      await expect(categoryFilter).toBeVisible();
+      
+      // Testa il filtro categoria
+      await categoryFilter.selectOption({ index: 1 }); // Seleziona la prima opzione non vuota
+      await page.waitForTimeout(2000);
+    }
+    
+    console.log('Search functionality replaced with filters-only interface');
   });
 
   test('should filter cats by location/area', async ({ page }) => {

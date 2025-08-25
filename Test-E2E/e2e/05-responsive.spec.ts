@@ -37,8 +37,9 @@ test.describe('Responsive Design Tests - STREETCATS', () => {
         }
       }
       
-      // Verifica che il campo di ricerca sia accessibile
-      await expect(page.locator('input[placeholder*="Cerca"], input[type="text"]').first()).toBeVisible();
+      // Verifica che i filtri siano accessibili nella pagina gatti
+      await page.getByRole('link', { name: /gatti/i }).click();
+      await expect(page.getByText('🔍 Filtri di ricerca')).toBeVisible();
     });
   }
 
