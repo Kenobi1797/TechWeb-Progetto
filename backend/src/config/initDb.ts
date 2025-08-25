@@ -1,4 +1,5 @@
 import pool from './db';
+import bcrypt from 'bcrypt';
 
 async function initDb(): Promise<void> {
   // Crea le tabelle base
@@ -40,21 +41,31 @@ async function initDb(): Promise<void> {
   // Inserisci 10 utenti di prova solo se la tabella è vuota
   const { rows } = await pool.query('SELECT COUNT(*) FROM users');
   if (rows[0].count === "0") {
-    await pool.query(`
-      INSERT INTO users (username, email, password_hash) VALUES
-      ('MarcoRossi', 'marco.rossi@example.com', '$2b$10$hash1'),
-      ('LucaBianchi', 'luca.bianchi@example.com', '$2b$10$hash2'),
-      ('AnnaVerdi', 'anna.verdi@example.com', '$2b$10$hash3'),
-      ('GiuliaBruni', 'giulia.bruni@example.com', '$2b$10$hash4'),
-      ('PaoloNeri', 'paolo.neri@example.com', '$2b$10$hash5'),
-      ('FrancescaGialli', 'francesca.gialli@example.com', '$2b$10$hash6'),
-      ('GiorgioMarrone', 'giorgio.marrone@example.com', '$2b$10$hash7'),
-      ('MartinaBlu', 'martina.blu@example.com', '$2b$10$hash8'),
-      ('AlessandroRicci', 'alessandro.ricci@example.com', '$2b$10$hash9'),
-      ('ValentinaNeri', 'valentina.neri@example.com', '$2b$10$hash10');
-    `);
+    // Utenti di prova con password: username + numero + punto
+    const testUsers = [
+      { username: 'MarcoRossi', email: 'marco.rossi@example.com', password: 'MarcoRossi1.' },
+      { username: 'LucaBianchi', email: 'luca.bianchi@example.com', password: 'LucaBianchi2.' },
+      { username: 'AnnaVerdi', email: 'anna.verdi@example.com', password: 'AnnaVerdi3.' },
+      { username: 'GiuliaBruni', email: 'giulia.bruni@example.com', password: 'GiuliaBruni4.' },
+      { username: 'PaoloNeri', email: 'paolo.neri@example.com', password: 'PaoloNeri5.' },
+      { username: 'FrancescaGialli', email: 'francesca.gialli@example.com', password: 'FrancescaGialli6.' },
+      { username: 'GiorgioMarrone', email: 'giorgio.marrone@example.com', password: 'GiorgioMarrone7.' },
+      { username: 'MartinaBlu', email: 'martina.blu@example.com', password: 'MartinaBlu8.' },
+      { username: 'AlessandroRicci', email: 'alessandro.ricci@example.com', password: 'AlessandroRicci9.' },
+      { username: 'ValentinaNeri', email: 'valentina.neri@example.com', password: 'ValentinaNeri10.' }
+    ];
+
+    // Hash delle password e inserimento
+    for (const user of testUsers) {
+      const hashedPassword = await bcrypt.hash(user.password, 10);
+      await pool.query(
+        'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3)',
+        [user.username, user.email, hashedPassword]
+      );
+    }
+
     if (process.env.NODE_ENV === 'development') {
-      console.log('✅ 10 utenti di prova inseriti');
+      console.log('✅ 10 utenti di prova inseriti con password hashate');
     }
   }
 
