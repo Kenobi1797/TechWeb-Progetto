@@ -1,5 +1,4 @@
 import pool from './db';
-import addStatusColumnIfNotExists from './migration';
 
 async function initDb(): Promise<void> {
   // Crea le tabelle base
@@ -37,9 +36,6 @@ async function initDb(): Promise<void> {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
-
-  // Esegui migrazione per aggiungere campo status se necessario
-  await addStatusColumnIfNotExists();
 
   // Inserisci 10 utenti di prova solo se la tabella è vuota
   const { rows } = await pool.query('SELECT COUNT(*) FROM users');

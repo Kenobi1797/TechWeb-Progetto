@@ -1,32 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import CatGrid from "../components/CatGrid";
-import SearchBar from "../components/SearchBar";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { CatGridSkeleton } from "../components/CatCardSkeleton";
 import { useCats } from "../utils/DataContext";
-import { Cat } from "../utils/types";
 
 const MapView = dynamic(() => import("../components/MapView"), { ssr: false });
 
 export default function HomePage() {
   const { cats, loading, error } = useCats();
   const [page, setPage] = useState(1);
-  const [filteredCats, setFilteredCats] = useState(cats);
   const pageSize = 20;
-
-  // Aggiorna i risultati filtrati quando i gatti cambiano
-  useEffect(() => {
-    setFilteredCats(cats);
-    setPage(1); // Reset pagina quando cambiano i dati
-  }, [cats]);
-
-  const handleSearchResults = (results: Cat[]) => {
-    setFilteredCats(results);
-    setPage(1); // Reset pagina quando cambia la ricerca
-  };
 
   if (loading) return (
     <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
@@ -39,9 +25,9 @@ export default function HomePage() {
   );
   if (error) return <div className="text-center py-10">{error}</div>;
 
-  // Paginazione sui risultati filtrati
-  const totalPages = Math.ceil(filteredCats.length / pageSize);
-  const pagedCats = filteredCats.slice((page - 1) * pageSize, page * pageSize);
+  // Paginazione sui risultati
+  const totalPages = Math.ceil(cats.length / pageSize);
+  const pagedCats = cats.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
@@ -52,15 +38,9 @@ export default function HomePage() {
         Esplora gli ultimi avvistamenti di gatti randagi nella tua città. Clicca su una card per vedere i dettagli e aiutare la community!
       </p>
       
-      <SearchBar 
-        cats={cats} 
-        onResults={handleSearchResults}
-        placeholder="Cerca gatti per titolo o descrizione..."
-      />
-      
       <div className="search-results mb-8">
         <MapView
-          markers={filteredCats.map((cat) => ({
+          markers={cats.map((cat) => ({
             lat: cat.latitude,
             lng: cat.longitude,
             title: cat.title,
@@ -70,7 +50,7 @@ export default function HomePage() {
             description: cat.description ?? ""
           }))}
         />
-        {filteredCats.length === 0 && (
+        {cats.length === 0 && (
           <div className="text-center py-6 mt-4">
             <div className="inline-flex flex-col items-center gap-3 p-6 rounded-lg" style={{ background: "var(--color-surface)" }}>
               <div className="text-4xl opacity-60">🗺️</div>

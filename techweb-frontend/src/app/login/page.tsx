@@ -18,9 +18,11 @@ export default function LoginPage() {
     
     try {
       const response = await loginUser(email, password);
-      if (response?.token) {
+      if (response?.accessToken) {
         if (typeof window !== "undefined") {
-          localStorage.setItem("token", response.token);
+          localStorage.setItem("accessToken", response.accessToken);
+          localStorage.setItem("refreshToken", response.refreshToken);
+          localStorage.setItem("user", JSON.stringify(response.user));
         }
         // Aggiorna lo stato di autenticazione
         updateAuthState();

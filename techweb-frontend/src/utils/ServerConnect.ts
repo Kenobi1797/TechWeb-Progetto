@@ -139,13 +139,23 @@ export async function registerUser(username: string, email: string, password: st
 }
 
 export async function loginUser(email: string, password: string): Promise<AuthResponse> {
-  return handleFetch<AuthResponse>(
+  const response = await handleFetch<AuthResponse>(
     fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     })
   );
+  
+  // Salva i token dopo il login riuscito
+  if (response.accessToken && response.refreshToken) {
+    setTokens(response.accessToken, response.refreshToken);
+    if (response.user) {
+      localStorage.setItem("user", JSON.stringify(response.user));
+    }
+  }
+  
+  return response;
 }
 
 export async function logoutUser(): Promise<{ message: string }> {
