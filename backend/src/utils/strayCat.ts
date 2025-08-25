@@ -1,26 +1,42 @@
 import { CityRegion } from '../utils/types';
 
 export const cityRegions: CityRegion[] = [
-  { name: "Rome, IT", latMin: 41.8, latMax: 42.0, lonMin: 12.4, lonMax: 12.6 },
-  { name: "New York, US", latMin: 40.5, latMax: 40.9, lonMin: -74.3, lonMax: -73.7 },
-  { name: "Tokyo, JP", latMin: 35.6, latMax: 35.8, lonMin: 139.6, lonMax: 139.9 },
-  { name: "Mumbai, IN", latMin: 18.9, latMax: 19.2, lonMin: 72.7, lonMax: 72.9 },
-  { name: "São Paulo, BR", latMin: -23.7, latMax: -23.4, lonMin: -46.8, lonMax: -46.3 },
-  { name: "Paris, FR", latMin: 48.8, latMax: 48.9, lonMin: 2.2, lonMax: 2.4 },
-  { name: "London, UK", latMin: 51.4, latMax: 51.6, lonMin: -0.3, lonMax: 0.1 },
-  { name: "Sydney, AU", latMin: -34.0, latMax: -33.7, lonMin: 150.9, lonMax: 151.3 },
-  { name: "Berlin, DE", latMin: 52.4, latMax: 52.6, lonMin: 13.2, lonMax: 13.6 },
-  { name: "Los Angeles, US", latMin: 33.9, latMax: 34.1, lonMin: -118.5, lonMax: -118.1 },
-  { name: "Madrid, ES", latMin: 40.3, latMax: 40.5, lonMin: -3.8, lonMax: -3.5 },
-  { name: "Moscow, RU", latMin: 55.6, latMax: 55.9, lonMin: 37.4, lonMax: 37.8 },
-  { name: "Istanbul, TR", latMin: 41.0, latMax: 41.2, lonMin: 28.8, lonMax: 29.2 },
-  { name: "Cairo, EG", latMin: 30.0, latMax: 30.2, lonMin: 31.1, lonMax: 31.4 },
-  { name: "Beijing, CN", latMin: 39.8, latMax: 40.0, lonMin: 116.2, lonMax: 116.6 },
-  { name: "Toronto, CA", latMin: 43.6, latMax: 43.8, lonMin: -79.6, lonMax: -79.2 },
-  { name: "Mexico City, MX", latMin: 19.2, latMax: 19.5, lonMin: -99.3, lonMax: -98.9 },
-  { name: "Seoul, KR", latMin: 37.4, latMax: 37.7, lonMin: 126.8, lonMax: 127.1 },
-  { name: "Bangkok, TH", latMin: 13.6, latMax: 13.9, lonMin: 100.4, lonMax: 100.7 },
-  { name: "Johannesburg, ZA", latMin: -26.3, latMax: -26.1, lonMin: 27.9, lonMax: 28.2 },
+  // Europa - Coordinate più precise per evitare zone d'acqua
+  { name: "Rome, IT", latMin: 41.85, latMax: 41.95, lonMin: 12.45, lonMax: 12.55 },
+  { name: "Paris, FR", latMin: 48.82, latMax: 48.90, lonMin: 2.25, lonMax: 2.40 },
+  { name: "London, UK", latMin: 51.45, latMax: 51.55, lonMin: -0.20, lonMax: -0.05 },
+  { name: "Berlin, DE", latMin: 52.45, latMax: 52.55, lonMin: 13.35, lonMax: 13.45 },
+  { name: "Madrid, ES", latMin: 40.35, latMax: 40.45, lonMin: -3.75, lonMax: -3.65 },
+  { name: "Moscow, RU", latMin: 55.70, latMax: 55.80, lonMin: 37.55, lonMax: 37.65 },
+  { name: "Istanbul, TR", latMin: 41.00, latMax: 41.10, lonMin: 28.95, lonMax: 29.05 },
+  
+  // Nord America - Zone urbane centrali
+  { name: "New York, US", latMin: 40.70, latMax: 40.80, lonMin: -74.02, lonMax: -73.92 },
+  { name: "Los Angeles, US", latMin: 34.02, latMax: 34.12, lonMin: -118.35, lonMax: -118.25 },
+  { name: "Toronto, CA", latMin: 43.62, latMax: 43.72, lonMin: -79.42, lonMax: -79.32 },
+  { name: "Mexico City, MX", latMin: 19.40, latMax: 19.50, lonMin: -99.15, lonMax: -99.05 },
+  
+  // Asia - Centri urbani principali
+  { name: "Tokyo, JP", latMin: 35.65, latMax: 35.75, lonMin: 139.70, lonMax: 139.80 },
+  { name: "Beijing, CN", latMin: 39.88, latMax: 39.98, lonMin: 116.35, lonMax: 116.45 },
+  { name: "Seoul, KR", latMin: 37.52, latMax: 37.62, lonMin: 126.95, lonMax: 127.05 },
+  { name: "Mumbai, IN", latMin: 19.05, latMax: 19.15, lonMin: 72.82, lonMax: 72.92 },
+  { name: "Bangkok, TH", latMin: 13.72, latMax: 13.82, lonMin: 100.48, lonMax: 100.58 },
+  
+  // Sud America e Africa - Zone urbane sicure
+  { name: "São Paulo, BR", latMin: -23.58, latMax: -23.48, lonMin: -46.68, lonMax: -46.58 },
+  { name: "Cairo, EG", latMin: 30.02, latMax: 30.12, lonMin: 31.22, lonMax: 31.32 },
+  { name: "Johannesburg, ZA", latMin: -26.22, latMax: -26.12, lonMin: 28.02, lonMax: 28.12 },
+  
+  // Oceania
+  { name: "Sydney, AU", latMin: -33.90, latMax: -33.80, lonMin: 151.15, lonMax: 151.25 },
+  
+  // Aggiunte di città italiane per maggiore varietà
+  { name: "Milan, IT", latMin: 45.45, latMax: 45.50, lonMin: 9.15, lonMax: 9.25 },
+  { name: "Naples, IT", latMin: 40.83, latMax: 40.88, lonMin: 14.23, lonMax: 14.28 },
+  { name: "Florence, IT", latMin: 43.76, latMax: 43.81, lonMin: 11.24, lonMax: 11.29 },
+  { name: "Venice, IT", latMin: 45.43, latMax: 45.45, lonMin: 12.31, lonMax: 12.34 },
+  { name: "Bologna, IT", latMin: 44.48, latMax: 44.51, lonMin: 11.33, lonMax: 11.36 },
 ];
 
 export const strayCatComments = [
