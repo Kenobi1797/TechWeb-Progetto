@@ -17,16 +17,36 @@ export async function insertCat(
   description: string | null,
   image_url: string | null,
   latitude: number,
-  longitude: number
+  longitude: number,
+  status: 'active' | 'adopted' | 'moved' = 'active'
 ): Promise<Cat> {
   const r = await pool.query<Cat>(
-    `INSERT INTO cats (user_id, title, description, image_url, latitude, longitude)
-     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-    [user_id, title, description, image_url, latitude, longitude]
+    `INSERT INTO cats (user_id, title, description, image_url, latitude, longitude, status)
+     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+    [user_id, title, description, image_url, latitude, longitude, status]
   );
   return r.rows[0];
 }
 
 export async function deleteCat(id: number): Promise<void> {
   await pool.query('DELETE FROM cats WHERE id = $1', [id]);
+}
+
+export async function getCatsByUserId(user_id: number): Promise<Cat[]> {
+  const r = await pool.query<Cat>(
+    'SELECT * FROM cats WHERE user_id = $1 ORDER BY created_at DESC',
+    [user_id]
+  );
+  return r.rows;
+}
+
+export async function updateCatStatus(
+  id: number,
+  status: 'active' | 'adopted' | 'moved'
+): Promise<Cat | null> {
+  const r = await pool.query<Cat>(
+    'UPDATE cats SET status = $1 WHERE id = $2 RETURNING *',
+    [status, id]
+  );
+  return r.rows[0] || null;
 }

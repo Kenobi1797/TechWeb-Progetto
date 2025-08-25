@@ -16,6 +16,7 @@ CREATE TABLE cats (
   image_url TEXT,
   latitude DOUBLE PRECISION NOT NULL,
   longitude DOUBLE PRECISION NOT NULL,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'adopted', 'moved')),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

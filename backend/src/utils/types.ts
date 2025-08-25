@@ -14,6 +14,7 @@ export interface Cat {
   image_url: string | null;
   latitude: number;
   longitude: number;
+  status: 'active' | 'adopted' | 'moved';
   created_at: Date;
 }
 

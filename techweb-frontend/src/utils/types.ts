@@ -6,6 +6,7 @@ export interface Cat {
   imageUrl: string | null;
   latitude: number;
   longitude: number;
+  status: 'active' | 'adopted' | 'moved';
   createdAt: string;
 }
 

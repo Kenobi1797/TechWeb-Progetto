@@ -13,7 +13,14 @@ declare global {
 
 interface CatCardProps {
   readonly cat: Cat;
+  readonly showStatus?: boolean;
 }
+
+const statusLabels = {
+  active: { label: "Attivo", emoji: "🐾", color: "bg-green-100 text-green-800" },
+  adopted: { label: "Adottato", emoji: "🏠", color: "bg-blue-100 text-blue-800" },
+  moved: { label: "Ha cambiato posto", emoji: "📍", color: "bg-yellow-100 text-yellow-800" }
+};
 
 // Funzioni helper per il rendering - refactored per SonarLint
 function getRichContentImageHeight() {
@@ -61,7 +68,7 @@ function formatLocation(location: string | null, cat: Cat) {
   return "📍 Non disponibile";
 }
 
-export default function CatCard({ cat }: CatCardProps) {
+export default function CatCard({ cat, showStatus = false }: CatCardProps) {
   // Funzione dinamica per il troncamento basata sulla lunghezza del titolo
   const getDescriptionMaxLength = (title: string) => {
     if (title.length > 40) return 60;  // Titolo lungo = descrizione più corta
@@ -162,6 +169,14 @@ export default function CatCard({ cat }: CatCardProps) {
             month: 'short' 
           })}
         </div>
+        {showStatus && cat.status !== 'active' && (
+          <div className="absolute top-2 left-2">
+            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusLabels[cat.status].color}`}>
+              <span>{statusLabels[cat.status].emoji}</span>
+              {statusLabels[cat.status].label}
+            </span>
+          </div>
+        )}
       </div>
       
       <div className={`p-3 sm:p-4 flex flex-col flex-grow ${hasMinimalContent ? 'justify-center' : ''}`}>

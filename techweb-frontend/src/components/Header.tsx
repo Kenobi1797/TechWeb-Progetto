@@ -37,6 +37,9 @@ export default function Header() {
         <Link href="/" tabIndex={0} aria-label="Home" className="btn btn-secondary btn-small font-medium hover:scale-105 transition-transform" prefetch={true}>🏠 Home</Link>
         <Link href="/cats" tabIndex={0} aria-label="Vai alla pagina Gatti" className="btn btn-secondary btn-small font-medium hover:scale-105 transition-transform" prefetch={true}>🐾 Gatti</Link>
         <Link href="/map" tabIndex={0} aria-label="Vai alla mappa" className="btn btn-secondary btn-small font-medium hover:scale-105 transition-transform" prefetch={true}>🗺️ Mappa</Link>
+        {isLoggedIn && (
+          <Link href="/my-listings" tabIndex={0} aria-label="I miei avvistamenti" className="btn btn-secondary btn-small font-medium hover:scale-105 transition-transform" prefetch={true}>📝 I miei</Link>
+        )}
         <Link 
           href="/upload" 
           className="btn btn-primary font-bold"

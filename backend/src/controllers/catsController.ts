@@ -74,9 +74,9 @@ export const createCat = async (
   
   try {
     const result = await pool.query(
-      `INSERT INTO cats (user_id, title, description, image_url, latitude, longitude)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [req.user.userId, title.trim(), description.trim(), imageUrl, latitude, longitude]
+      `INSERT INTO cats (user_id, title, description, image_url, latitude, longitude, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [req.user.userId, title.trim(), description.trim(), imageUrl, latitude, longitude, 'active']
     );
     res.status(201).json(result.rows[0]);
     return;
@@ -152,7 +152,7 @@ function buildCatsQuery(params: QueryParams): QueryBuilder {
   const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 20));
   const offset = (pageNum - 1) * limitNum;
 
-  let baseQuery = 'SELECT id, title, latitude, longitude, image_url, created_at';
+  let baseQuery = 'SELECT id, title, latitude, longitude, image_url, status, created_at';
   const values: unknown[] = [];
   const conditions: string[] = [];
   let hasDistance = false;
@@ -256,6 +256,80 @@ export const getCatById = async (
       descriptionHtml,
       comments: comments.rows,
     });
+    return;
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getUserCats = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  if (!req.user) {
+    res.status(401).json({ error: 'Utente non autenticato' });
+    return;
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT id, title, description, image_url, latitude, longitude, status, created_at
+       FROM cats 
+       WHERE user_id = $1 
+       ORDER BY created_at DESC`,
+      [req.user.userId]
+    );
+
+    res.json(result.rows);
+    return;
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateCatStatus = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!req.user) {
+    res.status(401).json({ error: 'Utente non autenticato' });
+    return;
+  }
+
+  if (!status || !['active', 'adopted', 'moved'].includes(status)) {
+    res.status(400).json({ error: 'Status non valido. Valori permessi: active, adopted, moved' });
+    return;
+  }
+
+  try {
+    // Verifica che il gatto appartenga all'utente
+    const catCheck = await pool.query(
+      'SELECT user_id FROM cats WHERE id = $1',
+      [id]
+    );
+
+    if (catCheck.rows.length === 0) {
+      res.status(404).json({ error: 'Gatto non trovato' });
+      return;
+    }
+
+    if (catCheck.rows[0].user_id !== req.user.userId) {
+      res.status(403).json({ error: 'Non hai i permessi per modificare questo avvistamento' });
+      return;
+    }
+
+    // Aggiorna lo status
+    const result = await pool.query(
+      'UPDATE cats SET status = $1 WHERE id = $2 RETURNING *',
+      [status, id]
+    );
+
+    res.json(result.rows[0]);
     return;
   } catch (err) {
     next(err);

@@ -12,6 +12,7 @@ type CatApiResponse = {
   longitude: number;
   image_url?: string;
   imageUrl?: string;
+  status?: 'active' | 'adopted' | 'moved';
   created_at?: string;
   createdAt?: string;
 };
@@ -73,6 +74,7 @@ function mapCatApiResponse(cat: CatApiResponse): Cat {
     latitude: cat.latitude,
     longitude: cat.longitude,
     imageUrl: cat.image_url ?? cat.imageUrl ?? "",
+    status: cat.status ?? 'active',
     createdAt: cat.created_at ?? cat.createdAt ?? "",
   };
 }
@@ -233,4 +235,38 @@ export async function fetchLocationFromCoordsServer(lat: number, lon: number): P
   } catch {
     return null;
   }
+}
+
+// --- USER CATS ---
+
+export async function fetchUserCats(): Promise<Cat[]> {
+  const data = await handleFetch<CatApiResponse[]>(
+    fetch(`${API_URL}/cats/my-cats`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Authorization": `Bearer ${getAuthToken()}`,
+        "Content-Type": "application/json"
+      }
+    })
+  );
+  return data.map(mapCatApiResponse);
+}
+
+export async function updateCatStatus(
+  catId: number,
+  status: 'active' | 'adopted' | 'moved'
+): Promise<Cat> {
+  const data = await handleFetch<CatApiResponse>(
+    fetch(`${API_URL}/cats/${catId}/status`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Authorization": `Bearer ${getAuthToken()}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ status })
+    })
+  );
+  return mapCatApiResponse(data);
 }
