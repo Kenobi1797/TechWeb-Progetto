@@ -64,23 +64,6 @@ async function handleFetch<T>(promise: Promise<Response>, defaultMsg = "API erro
   }
 }
 
-// Utility per gestire errori fetch con auto-refresh
-// Gestisce il refresh del token quando la richiesta fallisce con 401
-async function handleTokenRefresh(fetchFunction: () => Promise<Response>): Promise<Response> {
-  const refreshed = await refreshAccessToken();
-  if (refreshed) {
-    // Riprova la richiesta con il nuovo token
-    return await fetchFunction();
-  } else {
-    // Sessione scaduta - forza logout
-    clearTokens();
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
-    }
-    throw new Error("Sessione scaduta, effettua il login");
-  }
-}
-
 // Estrae l'errore dalla risposta
 async function extractError(res: Response, defaultMsg: string): Promise<string> {
   let data: Record<string, unknown> = {};
@@ -95,13 +78,39 @@ async function extractError(res: Response, defaultMsg: string): Promise<string> 
     : defaultMsg;
 }
 
+// Utility per gestire errori fetch con auto-refresh
 async function handleAuthenticatedFetch<T>(fetchFunction: () => Promise<Response>, defaultMsg = "API error"): Promise<T> {
   try {
     let res = await fetchFunction();
     
     // Se il token è scaduto, prova a rinnovarlo
     if (res.status === 401) {
-      res = await handleTokenRefresh(fetchFunction);
+      const errorData = await res.clone().json().catch(() => ({}));
+      
+      // Solo se il token è scaduto, prova il refresh
+      if (errorData.code === 'TOKEN_EXPIRED') {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          // Riprova la richiesta con il nuovo token
+          res = await fetchFunction();
+        } else {
+          // Sessione scaduta completamente - forza logout
+          clearTokens();
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("authStateChanged"));
+            window.location.href = "/login";
+          }
+          throw new Error("Sessione scaduta, effettua il login");
+        }
+      } else {
+        // Token non valido o altro errore - forza logout
+        clearTokens();
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("authStateChanged"));
+          window.location.href = "/login";
+        }
+        throw new Error("Autenticazione non valida, effettua il login");
+      }
     }
     
     if (!res.ok) {

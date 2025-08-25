@@ -9,7 +9,10 @@ interface AuthRequest extends Request {
 function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token mancante o formato non valido' });
+    return res.status(401).json({ 
+      error: 'Token mancante o formato non valido',
+      code: 'MISSING_TOKEN' 
+    });
   }
 
   const token = authHeader.split(' ')[1];
@@ -19,7 +22,24 @@ function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
     next();
   } catch (err) {
     console.error('JWT verification error:', err);
-    return res.status(401).json({ error: 'Token non valido' });
+    
+    // Distingui tra token scaduto e token non valido
+    if (err instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ 
+        error: 'Token scaduto',
+        code: 'TOKEN_EXPIRED' 
+      });
+    } else if (err instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ 
+        error: 'Token non valido',
+        code: 'INVALID_TOKEN' 
+      });
+    } else {
+      return res.status(401).json({ 
+        error: 'Errore di autenticazione',
+        code: 'AUTH_ERROR' 
+      });
+    }
   }
 }
 

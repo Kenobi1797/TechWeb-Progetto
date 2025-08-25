@@ -47,8 +47,8 @@ export const register = async (req: Request, res: Response) => {
     );
     const user = result.rows[0];
     
-    // Genera access token (breve durata)
-    const accessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '15m' });
+    // Genera access token (durata media per UX migliore)
+    const accessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
     
     // Genera refresh token (lunga durata)
     const refreshToken = generateRefreshToken();
@@ -100,8 +100,8 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Credenziali non corrette' });
     }
     
-    // Genera access token (breve durata)
-    const accessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '15m' });
+    // Genera access token (durata media per UX migliore)
+    const accessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
     
     // Genera refresh token (lunga durata)
     const refreshToken = generateRefreshToken();
@@ -163,8 +163,8 @@ export const refreshToken = async (req: Request, res: Response) => {
     // Revoca il vecchio refresh token (rotation)
     await revokeRefreshToken(refreshToken);
     
-    // Genera nuovo access token
-    const newAccessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '15m' });
+    // Genera nuovo access token (durata media per UX migliore)
+    const newAccessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
     
     // Genera nuovo refresh token
     const newRefreshToken = generateRefreshToken();
