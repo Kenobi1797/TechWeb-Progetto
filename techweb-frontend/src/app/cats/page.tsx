@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import CatGrid from "../../components/CatGrid";
 import SearchBar from "../../components/SearchBar";
 import { useCats } from "../../utils/DataContext";
@@ -17,10 +17,10 @@ export default function CatsPage() {
     setPage(1); // Reset pagina quando cambiano i dati
   }, [cats]);
 
-  const handleSearchResults = (results: Cat[]) => {
+  const handleSearchResults = useCallback((results: Cat[]) => {
     setFilteredCats(results);
     setPage(1); // Reset pagina quando cambia la ricerca
-  };
+  }, []);
 
   if (loading) return <div className="text-center py-10">Caricamento...</div>;
   if (error) return <div className="text-center py-10">Errore nel caricamento degli avvistamenti.</div>;

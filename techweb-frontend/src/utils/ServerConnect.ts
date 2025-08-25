@@ -66,34 +66,50 @@ async function handleFetch<T>(promise: Promise<Response>, defaultMsg = "API erro
 }
 
 // Utility per gestire errori fetch con auto-refresh
+// Gestisce il refresh del token quando la richiesta fallisce con 401
+async function handleTokenRefresh(fetchFunction: () => Promise<Response>): Promise<Response> {
+  const refreshed = await refreshAccessToken();
+  if (refreshed) {
+    // Riprova la richiesta con il nuovo token
+    return await fetchFunction();
+  } else {
+    // Sessione scaduta - forza logout
+    clearTokens();
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+    throw new Error("Sessione scaduta, effettua il login");
+  }
+}
+
+// Estrae l'errore dalla risposta
+async function extractError(res: Response, defaultMsg: string): Promise<string> {
+  let data: Record<string, unknown> = {};
+  try { 
+    data = await res.json(); 
+  } catch { 
+    return defaultMsg;
+  }
+  
+  return typeof data === "object" && data !== null && "error" in data && typeof data.error === "string"
+    ? data.error
+    : defaultMsg;
+}
+
 async function handleAuthenticatedFetch<T>(fetchFunction: () => Promise<Response>, defaultMsg = "API error"): Promise<T> {
   try {
     let res = await fetchFunction();
     
     // Se il token è scaduto, prova a rinnovarlo
     if (res.status === 401) {
-      const refreshed = await refreshAccessToken();
-      if (refreshed) {
-        // Riprova la richiesta con il nuovo token
-        res = await fetchFunction();
-      } else {
-        // Sessione scaduta - forza logout
-        clearTokens();
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
-        }
-        throw new Error("Sessione scaduta, effettua il login");
-      }
+      res = await handleTokenRefresh(fetchFunction);
     }
     
     if (!res.ok) {
-      let data: Record<string, unknown> = {};
-      try { data = await res.json(); } catch { /* ignore */ }
-      throw new Error(typeof data === "object" && data !== null && "error" in data && typeof data.error === "string"
-        ? data.error
-        : defaultMsg
-      );
+      const errorMessage = await extractError(res, defaultMsg);
+      throw new Error(errorMessage);
     }
+    
     return await res.json();
   } catch (err: unknown) {
     if (err instanceof Error) {

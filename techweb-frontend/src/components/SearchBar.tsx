@@ -70,13 +70,14 @@ export default function SearchBar({ cats, onResults, resultCount }: SearchBarPro
       }
     });
     
-    onResults(filtered);
-  }, [cats, onResults]);
+    return filtered;
+  }, [cats]);
 
   // Applica i filtri quando cambiano i dati o i filtri
   useEffect(() => {
-    applyFilters(filters);
-  }, [applyFilters, filters]);
+    const results = applyFilters(filters);
+    onResults(results);
+  }, [applyFilters, filters, onResults]);
 
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
     const updatedFilters = { ...filters, ...newFilters };
