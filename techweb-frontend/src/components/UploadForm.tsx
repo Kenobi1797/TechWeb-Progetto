@@ -147,6 +147,11 @@ export default function UploadFormNew({ onSubmit }: UploadFormProps) {
       return;
     }
     
+    if (!image) {
+      setError("L'immagine è obbligatoria per creare un avvistamento");
+      return;
+    }
+    
     if (!position) {
       setError("Seleziona una posizione sulla mappa");
       return;
@@ -155,14 +160,12 @@ export default function UploadFormNew({ onSubmit }: UploadFormProps) {
     setIsSubmitting(true);
     
     let imageData = null;
-    if (image) {
-      try {
-        imageData = await fileToBase64(image);
-      } catch {
-        setError("Errore nella conversione dell'immagine");
-        setIsSubmitting(false);
-        return;
-      }
+    try {
+      imageData = await fileToBase64(image);
+    } catch {
+      setError("Errore nella conversione dell'immagine");
+      setIsSubmitting(false);
+      return;
     }
     
     const payload = {
@@ -289,9 +292,9 @@ export default function UploadFormNew({ onSubmit }: UploadFormProps) {
 
         {/* Sezione Foto */}
         <div className="space-y-6">
-          <div className="flex items-center gap-3 font-medium" style={{ color: "var(--color-accent)" }}>
+          <div className="flex items-center gap-3 font-medium" style={{ color: "var(--color-primary)" }}>
             <span className="text-xl">📸</span>
-            <span>Foto del gatto (opzionale)</span>
+            <span>Foto del gatto *</span>
           </div>
 
           <div className="pl-8">
@@ -376,7 +379,7 @@ export default function UploadFormNew({ onSubmit }: UploadFormProps) {
                 <div>
                   <div className="font-medium mb-1" style={{ color: "var(--color-primary)" }}>Suggerimento</div>
                   <div className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                    Una foto chiara del gatto aiuta altri utenti a riconoscerlo. Se non hai una foto, puoi continuare ugualmente!
+                    Una foto chiara del gatto è obbligatoria e aiuta altri utenti a riconoscerlo meglio.
                   </div>
                 </div>
               </div>
