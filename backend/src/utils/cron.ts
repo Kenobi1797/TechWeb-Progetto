@@ -10,64 +10,70 @@ import pool from '../config/db';
 function getRandomCoordsInCity(): { latitude: number; longitude: number; city: string } {
   const city = faker.helpers.arrayElement(cityRegions);
   
-  // Genera coordinate multiple volte e scegli quelle più centrali per evitare l'acqua
-  let bestCoords: { latitude: number; longitude: number } | null = null;
-  let bestDistance = Infinity;
-  
-  for (let attempt = 0; attempt < 5; attempt++) {
+  // Fai fino a 10 tentativi per trovare coordinate valide che non siano sull'acqua
+  for (let attempt = 0; attempt < 10; attempt++) {
     const latitude = faker.number.float({ min: city.latMin, max: city.latMax, fractionDigits: 4 });
     const longitude = faker.number.float({ min: city.lonMin, max: city.lonMax, fractionDigits: 4 });
     
-    // Calcola la distanza dal centro del range (approssimazione per trovare zone più urbane)
-    const centerLat = (city.latMin + city.latMax) / 2;
-    const centerLon = (city.lonMin + city.lonMax) / 2;
-    const distance = Math.sqrt(
-      Math.pow(latitude - centerLat, 2) + Math.pow(longitude - centerLon, 2)
-    );
-    
-    if (distance < bestDistance) {
-      bestDistance = distance;
-      bestCoords = { latitude, longitude };
+    // Prima verifica se le coordinate sono su terraferma
+    if (isValidLandCoordinate(latitude, longitude)) {
+      return { latitude, longitude, city: city.name };
     }
   }
   
-  // Fallback se per qualche motivo bestCoords è ancora null
-  if (!bestCoords) {
-    const centerLat = (city.latMin + city.latMax) / 2;
-    const centerLon = (city.lonMin + city.lonMax) / 2;
-    bestCoords = { latitude: centerLat, longitude: centerLon };
-  }
+  // Se tutti i tentativi falliscono, usa il centro del range della città
+  const centerLat = (city.latMin + city.latMax) / 2;
+  const centerLon = (city.lonMin + city.lonMax) / 2;
   
-  return { ...bestCoords, city: city.name };
+  return { latitude: centerLat, longitude: centerLon, city: city.name };
 }
 
 // Funzione per validare se le coordinate sono plausibili (non sull'acqua)
 function isValidLandCoordinate(latitude: number, longitude: number): boolean {
-  // Lista di controlli base per zone d'acqua note
+  // Lista di controlli più precisi per zone d'acqua note
   const waterZones = [
-    // Oceano Atlantico
-    { latMin: 0, latMax: 60, lonMin: -60, lonMax: -10 },
-    // Oceano Pacifico
-    { latMin: -60, latMax: 60, lonMin: -180, lonMax: -120 },
+    // Oceano Atlantico Nord
+    { latMin: 20, latMax: 60, lonMin: -60, lonMax: -10 },
+    // Oceano Atlantico Sud
+    { latMin: -60, latMax: 20, lonMin: -50, lonMax: 10 },
+    // Oceano Pacifico Nord
+    { latMin: 0, latMax: 60, lonMin: -180, lonMax: -120 },
+    // Oceano Pacifico Sud
+    { latMin: -60, latMax: 0, lonMin: -180, lonMax: -70 },
+    // Oceano Pacifico Ovest
     { latMin: -60, latMax: 60, lonMin: 120, lonMax: 180 },
     // Oceano Indiano
     { latMin: -60, latMax: 30, lonMin: 20, lonMax: 120 },
-    // Mar Mediterraneo (zone centrali)
-    { latMin: 35, latMax: 42, lonMin: 5, lonMax: 20 },
+    // Mar Mediterraneo centrale (zone senza isole)
+    { latMin: 36, latMax: 40, lonMin: 8, lonMax: 16 },
+    // Mar Baltico centrale
+    { latMin: 55, latMax: 59, lonMin: 15, lonMax: 25 },
+    // Mare del Nord
+    { latMin: 53, latMax: 60, lonMin: 0, lonMax: 8 },
+    // Golfo del Messico
+    { latMin: 23, latMax: 30, lonMin: -97, lonMax: -82 },
+    // Mar Rosso
+    { latMin: 12, latMax: 28, lonMin: 32, lonMax: 43 },
+    // Golfo Persico
+    { latMin: 24, latMax: 30, lonMin: 48, lonMax: 56 },
   ];
   
   // Verifica se le coordinate cadono in zone d'acqua note
   for (const zone of waterZones) {
     if (latitude >= zone.latMin && latitude <= zone.latMax &&
         longitude >= zone.lonMin && longitude <= zone.lonMax) {
-      // Se è in una zona d'acqua, verifica se è vicino a una città conosciuta
+      // Se è in una zona d'acqua, verifica se è vicino a una città conosciuta (raggio di 0.05 gradi)
       const nearCity = cityRegions.some(city => 
-        latitude >= city.latMin - 0.1 && latitude <= city.latMax + 0.1 &&
-        longitude >= city.lonMin - 0.1 && longitude <= city.lonMax + 0.1
+        latitude >= city.latMin - 0.05 && latitude <= city.latMax + 0.05 &&
+        longitude >= city.lonMin - 0.05 && longitude <= city.lonMax + 0.05
       );
-      return nearCity; // Accetta solo se vicino a una città
+      return nearCity; // Accetta solo se molto vicino a una città
     }
   }
+  
+  // Controlli aggiuntivi per coordinate ovviamente sull'acqua
+  // Coordinate impossibili per terre emerse
+  if (Math.abs(latitude) > 85) return false; // Poli
   
   return true; // Se non è in zone d'acqua note, presumiamo sia valida
 }

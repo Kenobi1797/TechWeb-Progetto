@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import pool from '../config/db';
 import { validateMarkdown, parseMarkdown } from '../utils/markdown';
 import { validateAndParseCoordinates } from '../utils/coordinates';
+import { cityRegions } from '../utils/strayCat';
 
 interface AuthRequest extends Request {
   user?: { userId: number };
@@ -37,12 +38,26 @@ export const createCat = async (
   
   // Validazione coordinate
   const coordinateValidation = validateAndParseCoordinates(coordLat, coordLng);
-  if (!coordinateValidation.valid) {
-    res.status(400).json({ error: coordinateValidation.error });
+  if (!coordinateValidation.valid || !coordinateValidation.latitude || !coordinateValidation.longitude) {
+    res.status(400).json({ error: coordinateValidation.error || 'Coordinate non valide' });
     return;
   }
   
-  const { latitude: validLat, longitude: validLng } = coordinateValidation;
+  const validLat = coordinateValidation.latitude;
+  const validLng = coordinateValidation.longitude;
+  
+  // Verifica che le coordinate siano in una zona ragionevole (vicino a città conosciute)
+  const isNearKnownCity = cityRegions.some(city => 
+    validLat >= city.latMin - 0.5 && validLat <= city.latMax + 0.5 &&
+    validLng >= city.lonMin - 0.5 && validLng <= city.lonMax + 0.5
+  );
+  
+  if (!isNearKnownCity) {
+    res.status(400).json({ 
+      error: 'Le coordinate devono essere vicine a una città conosciuta per evitare zone remote o d\'acqua' 
+    });
+    return;
+  }
   
   if (!req.user) {
     res.status(401).json({ error: 'Utente non autenticato' });
