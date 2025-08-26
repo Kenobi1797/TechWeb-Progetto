@@ -356,6 +356,7 @@ export default function MapView({ markers }: MapViewProps) {
                       imageUrl: m.imageUrl ?? null,
                       latitude: m.lat,
                       longitude: m.lng,
+                      status: 'active' as const,
                       createdAt: m.createdAt ?? "",
                     }} />
                   )}
