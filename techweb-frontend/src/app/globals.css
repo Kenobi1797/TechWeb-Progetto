@@ -47,11 +47,6 @@ body {
   user-select: text;
 }
 
-html {
-  background: linear-gradient(120deg, var(--color-background) 60%, var(--color-secondary) 100%);
-  min-height: 100vh;
-}
-
 h1, h2, h3, h4, h5 {
   font-family: inherit;
   font-weight: 800;
