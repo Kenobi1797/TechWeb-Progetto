@@ -39,7 +39,8 @@ if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number"
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
+      <div className="min-h-screen gradient-bg">
+        <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
         <div className="text-center py-10">
           <div className="card inline-flex flex-col items-center gap-4 p-8">
             <div className="animate-pulse text-4xl">🐱</div>
@@ -49,12 +50,14 @@ if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number"
           </div>
         </div>
       </div>
+    </div>
     );
   }
   
   if (error) {
     return (
-      <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
+      <div className="min-h-screen gradient-bg">
+        <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
         <div className="text-center py-10">
           <div className="card inline-flex flex-col items-center gap-4 p-8 border-red-200">
             <div className="text-4xl">⚠️</div>
@@ -62,12 +65,14 @@ if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number"
           </div>
         </div>
       </div>
+    </div>
     );
   }
   
   if (!cat) {
     return (
-      <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
+      <div className="min-h-screen gradient-bg">
+        <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
         <div className="text-center py-10">
           <div className="card inline-flex flex-col items-center gap-4 p-8">
             <div className="text-4xl opacity-60">🔍</div>
@@ -77,17 +82,18 @@ if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number"
           </div>
         </div>
       </div>
+    </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
+    <div className="min-h-screen gradient-bg">
+      <div className="container mx-auto py-8 px-2 sm:px-6 max-w-2xl">
       <div className="card mb-6">
         <div className="flex items-center gap-3 mb-4">
           <div 
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xl"
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xl gradient-primary"
             style={{ 
-              background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)",
               boxShadow: "var(--color-shadow)"
             }}
           >
@@ -196,9 +202,8 @@ if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number"
               >
                 <div className="flex items-center mb-3 gap-3">
                   <div 
-                    className="flex items-center justify-center w-10 h-10 rounded-full text-white font-bold text-lg"
+                    className="flex items-center justify-center w-10 h-10 rounded-full text-white font-bold text-lg gradient-accent"
                     style={{ 
-                      background: "linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%)",
                       boxShadow: "var(--color-shadow)"
                     }}
                   >
@@ -234,5 +239,6 @@ if (cat && typeof cat.latitude === "number" && typeof cat.longitude === "number"
         )}
       </div>
     </div>
+  </div>
   );
 }

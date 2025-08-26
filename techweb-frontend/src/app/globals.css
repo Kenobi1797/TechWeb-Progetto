@@ -27,8 +27,15 @@
   }
 }
 
+html {
+  background: linear-gradient(120deg, var(--color-background) 60%, var(--color-secondary) 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
 body {
   background: linear-gradient(120deg, var(--color-background) 60%, var(--color-secondary) 100%);
+  background-attachment: fixed;
   color: var(--color-text-primary);
   font-family: 'Inter', Arial, Helvetica, sans-serif;
   font-size: 16px;
@@ -38,6 +45,11 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   user-select: text;
+}
+
+html {
+  background: linear-gradient(120deg, var(--color-background) 60%, var(--color-secondary) 100%);
+  min-height: 100vh;
 }
 
 h1, h2, h3, h4, h5 {
@@ -691,4 +703,37 @@ footer {
 /* Fallback per immagini che non si caricano */
 .cat-popup .relative:has(img[style*="display: none"]) {
   display: none !important;
+}
+
+/* Classi di utility per gradienti */
+.gradient-bg {
+  background: linear-gradient(120deg, var(--color-background) 60%, var(--color-secondary) 100%) !important;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+}
+
+/* Gradiente di overlay per elementi che necessitano di trasparenza sopra il gradiente principale */
+.gradient-overlay {
+  background: linear-gradient(120deg, var(--color-background) 60%, var(--color-secondary) 100%);
+  position: relative;
+}
+
+.gradient-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(120deg, var(--color-background) 60%, var(--color-secondary) 100%);
+  opacity: 0.8;
+  z-index: -1;
 }

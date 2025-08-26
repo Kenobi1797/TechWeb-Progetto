@@ -19,7 +19,8 @@ export default function DataPage() {
   if (error) return <div className="error-state text-red-500 text-center py-10">{error}</div>;
 
   return (
-    <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
+    <div className="min-h-screen gradient-bg">
+      <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
       <h1 className="text-xl sm:text-3xl font-bold mb-6" style={{ color: "var(--color-primary)" }}>
         Dati API
       </h1>
@@ -35,5 +36,6 @@ export default function DataPage() {
         )}
       </div>
     </div>
+  </div>
   );
 }

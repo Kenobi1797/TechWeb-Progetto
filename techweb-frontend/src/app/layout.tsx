@@ -18,13 +18,13 @@ export default function RootLayout({
   return (
     <html lang="it">
       <body
-        className="antialiased min-h-screen flex flex-col"
-        style={{ background: "var(--color-background)", color: "var(--color-text-primary)" }}
+        className="antialiased min-h-screen flex flex-col gradient-bg"
+        style={{ color: "var(--color-text-primary)" }}
       >
         <ToastProvider>
           <DataProvider>
             <Header />
-            <main className="min-h-[80vh] flex-1 px-1 sm:px-0">{children}</main>
+            <main className="min-h-[80vh] flex-1 px-1 sm:px-0 gradient-bg">{children}</main>
             <Footer />
           </DataProvider>
         </ToastProvider>

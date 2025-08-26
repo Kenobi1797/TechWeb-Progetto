@@ -31,7 +31,8 @@ export default function HomePage() {
   const pagedCats = cats.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
+    <div className="min-h-screen gradient-bg">
+      <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
       <h1 className="text-2xl sm:text-4xl font-bold mb-2" style={{ color: "var(--color-primary)" }}>
         Avvistamenti di gatti
       </h1>
@@ -99,5 +100,6 @@ export default function HomePage() {
         )}
       </div>
     </div>
+  </div>
   );
 }

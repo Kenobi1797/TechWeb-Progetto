@@ -72,7 +72,7 @@ export default function UploadPage() {
 
   if (!isLoggedIn && !isCheckingAuth) {
     return (
-      <div className="min-h-screen fade-in" style={{ background: "linear-gradient(120deg, var(--color-background) 60%, var(--color-secondary) 100%)" }}>
+      <div className="min-h-screen fade-in gradient-bg">
         <div className="container mx-auto py-12 px-4 text-center">
           <div className="card max-w-md mx-auto">
             <h1 className="text-2xl font-bold mb-4" style={{ color: "var(--color-primary)" }}>
@@ -90,7 +90,7 @@ export default function UploadPage() {
 
   if (isCheckingAuth) {
     return (
-      <div className="min-h-screen fade-in" style={{ background: "linear-gradient(120deg, var(--color-background) 60%, var(--color-secondary) 100%)" }}>
+      <div className="min-h-screen fade-in gradient-bg">
         <div className="container mx-auto py-12 px-4 text-center">
           <div className="card max-w-md mx-auto">
             <div className="flex items-center justify-center gap-3">
@@ -107,15 +107,14 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen fade-in" style={{ background: "linear-gradient(120deg, var(--color-background) 60%, var(--color-secondary) 100%)" }}>
+    <div className="min-h-screen fade-in gradient-bg">
       <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
         {/* Header con stile del sito */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
             <div 
-              className="w-12 h-12 rounded-full flex items-center justify-center text-white text-2xl transition-transform hover:scale-105"
+              className="w-12 h-12 rounded-full flex items-center justify-center text-white text-2xl transition-transform hover:scale-105 gradient-accent"
               style={{ 
-                background: "linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%)",
                 boxShadow: "var(--color-shadow)"
               }}
             >

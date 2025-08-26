@@ -38,13 +38,13 @@ export default function MapPage() {
   );
 
   return (
-    <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
+    <div className="min-h-screen gradient-bg">
+      <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-3 mb-4">
           <div 
-            className="w-12 h-12 rounded-full flex items-center justify-center text-white text-2xl transition-transform hover:scale-105"
+            className="w-12 h-12 rounded-full flex items-center justify-center text-white text-2xl transition-transform hover:scale-105 gradient-primary"
             style={{ 
-              background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)",
               boxShadow: "var(--color-shadow)"
             }}
           >
@@ -116,5 +116,6 @@ export default function MapPage() {
         }))}
       />
     </div>
+  </div>
   );
 }

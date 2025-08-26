@@ -50,7 +50,8 @@ export default function CatsPage() {
   // Paginazione rimossa - mostriamo tutti i risultati per migliorare l'esperienza utente
 
   return (
-    <main className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
+    <div className="min-h-screen gradient-bg">
+      <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
       <h1 className="text-xl sm:text-3xl font-bold mb-6" style={{ color: "var(--color-primary)" }}>
         Gatti
       </h1>
@@ -97,6 +98,7 @@ export default function CatsPage() {
         // Mostra tutti i gatti filtrati senza paginazione
         return <CatGrid cats={filteredCats} />;
       })()}
-    </main>
+    </div>
+  </div>
   );
 }

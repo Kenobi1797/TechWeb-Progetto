@@ -145,8 +145,10 @@ export default function MyListingsPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
-        <LoadingSpinner size="lg" text="Caricamento avvistamenti..." />
+      <div className="min-h-screen gradient-bg">
+        <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
+          <LoadingSpinner size="lg" text="Caricamento avvistamenti..." />
+        </div>
       </div>
     );
   }
@@ -157,7 +159,8 @@ export default function MyListingsPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
+      <div className="min-h-screen gradient-bg">
+        <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
         <div className="text-center py-10">
           <div className="text-red-600 mb-4">{error}</div>
           <button
@@ -168,11 +171,13 @@ export default function MyListingsPage() {
           </button>
         </div>
       </div>
+    </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
+    <div className="min-h-screen gradient-bg">
+      <div className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
       {/* Header Section */}
       <div className="card p-6 mb-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -544,5 +549,6 @@ export default function MyListingsPage() {
         </div>
       )}
     </div>
+  </div>
   );
 }
