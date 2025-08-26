@@ -29,7 +29,7 @@ export default function CatGrid({ cats }: CatGridProps) {
   }
   return (
     <section aria-label="Griglia avvistamenti gatti" tabIndex={-1}>
-      <div className="grid gap-3 sm:gap-4 md:gap-6 lg:gap-8 grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 px-1 sm:px-2 md:px-0">
+      <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 px-1 sm:px-2 md:px-0">
         {cats.map((cat) => (
           <CatCard key={`${cat.id}-${cat.title}`} cat={cat} />
         ))}

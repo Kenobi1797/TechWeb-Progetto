@@ -7,19 +7,15 @@ import { Cat } from "../../utils/types";
 
 export default function CatsPage() {
   const { cats, loading, error } = useCats();
-  const [page, setPage] = useState<number>(1);
   const [filteredCats, setFilteredCats] = useState(cats);
-  const pageSize = 20;
 
   // Aggiorna i risultati filtrati quando i gatti cambiano
   useEffect(() => {
     setFilteredCats(cats);
-    setPage(1); // Reset pagina quando cambiano i dati
   }, [cats]);
 
   const handleSearchResults = useCallback((results: Cat[]) => {
     setFilteredCats(results);
-    setPage(1); // Reset pagina quando cambia la ricerca
   }, []);
 
   if (loading) return (
@@ -51,9 +47,7 @@ export default function CatsPage() {
     </div>
   );
 
-  // Paginazione sui risultati filtrati
-  const totalPages = Math.ceil(filteredCats.length / pageSize);
-  const pagedCats = filteredCats.slice((page - 1) * pageSize, page * pageSize);
+  // Paginazione rimossa - mostriamo tutti i risultati per migliorare l'esperienza utente
 
   return (
     <main className="container mx-auto py-6 px-1 sm:py-12 sm:px-4">
@@ -100,39 +94,8 @@ export default function CatsPage() {
           );
         }
 
-        return (
-          <>
-            <CatGrid cats={pagedCats} />
-            <div className="flex flex-col items-center gap-4 mt-8">
-              {totalPages > 1 && (
-                <div className="card flex justify-center items-center gap-4 py-4">
-                  <button
-                    className="btn btn-secondary btn-small disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => setPage((p: number) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    aria-label="Pagina precedente"
-                  >
-                    ← Indietro
-                  </button>
-                  <span className="font-bold px-4 py-2 rounded-lg" style={{ 
-                    background: "var(--color-accent)", 
-                    color: "var(--color-primary)" 
-                  }}>
-                    Pagina {page} di {totalPages}
-                  </span>
-                  <button
-                    className="btn btn-secondary btn-small disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => setPage((p: number) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages}
-                    aria-label="Pagina successiva"
-                  >
-                    Avanti →
-                  </button>
-                </div>
-              )}
-            </div>
-          </>
-        );
+        // Mostra tutti i gatti filtrati senza paginazione
+        return <CatGrid cats={filteredCats} />;
       })()}
     </main>
   );

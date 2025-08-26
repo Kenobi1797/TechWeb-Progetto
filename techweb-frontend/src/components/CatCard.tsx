@@ -22,37 +22,37 @@ const statusLabels = {
   moved: { label: "Ha cambiato posto", emoji: "📍", color: "bg-yellow-100 text-yellow-800" }
 };
 
-// Funzioni helper per il rendering - refactored per SonarLint
+// Funzioni helper per il rendering - ottimizzate per layout compatto
 function getRichContentImageHeight() {
-  return 'h-48 sm:h-52';
+  return 'h-36 sm:h-40';
 }
 
 function getStandardImageHeight() {
-  return 'h-40 sm:h-44';
+  return 'h-32 sm:h-36';
 }
 
 function getMinimalPlaceholderHeight() {
-  return 'h-24';
+  return 'h-20';
 }
 
 function getStandardPlaceholderHeight() {
-  return 'h-32';
+  return 'h-24';
 }
 
 function getTitleSize(titleLength: number) {
-  return titleLength > 30 ? 'text-base sm:text-lg' : 'text-lg sm:text-xl';
+  return titleLength > 25 ? 'text-sm sm:text-base' : 'text-base sm:text-lg';
 }
 
 function getRichContentLineClamp() {
-  return 'line-clamp-4';
-}
-
-function getMinimalContentLineClamp() {
   return 'line-clamp-2';
 }
 
+function getMinimalContentLineClamp() {
+  return 'line-clamp-1';
+}
+
 function getStandardLineClamp() {
-  return 'line-clamp-3';
+  return 'line-clamp-2';
 }
 
 function formatLocation(location: string | null, cat: Cat) {
@@ -69,11 +69,11 @@ function formatLocation(location: string | null, cat: Cat) {
 }
 
 export default function CatCard({ cat, showStatus = false }: CatCardProps) {
-  // Funzione dinamica per il troncamento basata sulla lunghezza del titolo
+  // Funzione dinamica per il troncamento basata sulla lunghezza del titolo - ottimizzata
   const getDescriptionMaxLength = (title: string) => {
-    if (title.length > 40) return 60;  // Titolo lungo = descrizione più corta
-    if (title.length > 20) return 100; // Titolo medio = descrizione media
-    return 140; // Titolo corto = descrizione più lunga
+    if (title.length > 30) return 40;  // Titolo lungo = descrizione molto corta
+    if (title.length > 15) return 60;  // Titolo medio = descrizione corta
+    return 80; // Titolo corto = descrizione media
   };
 
   const truncateDescription = (text: string | null, title: string) => {
@@ -83,16 +83,16 @@ export default function CatCard({ cat, showStatus = false }: CatCardProps) {
     return text.substring(0, maxLength).trim() + '...';
   };
 
-  // Determina se la card ha contenuto ricco (immagine + descrizione lunga)
+  // Determina se la card ha contenuto ricco (immagine + descrizione lunga) - ottimizzato
   const hasImage = cat.imageUrl;
-  const hasRichContent = hasImage && cat.description && cat.description.length > 50;
-  const hasMinimalContent = !hasImage && (!cat.description || cat.description.length < 30);
+  const hasRichContent = hasImage && cat.description && cat.description.length > 30;
+  const hasMinimalContent = !hasImage && (!cat.description || cat.description.length < 20);
 
-  // Calcola l'altezza minima dinamicamente
+  // Calcola l'altezza minima dinamicamente - più compatto
   const getCardHeight = () => {
-    if (hasRichContent) return 'min-h-[320px]';
-    if (hasMinimalContent) return 'min-h-[180px]';
-    return 'min-h-[240px]';
+    if (hasRichContent) return 'min-h-[240px]';
+    if (hasMinimalContent) return 'min-h-[140px]';
+    return 'min-h-[180px]';
   };
 
   // Calcola la classe per il line clamp
@@ -135,7 +135,7 @@ export default function CatCard({ cat, showStatus = false }: CatCardProps) {
 
   return (
     <article
-      className={`cat-card group rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border flex flex-col overflow-hidden w-full transform hover:scale-105 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500 ${getCardHeight()}`}
+      className={`cat-card group rounded-lg shadow-sm hover:shadow-md transition-all duration-200 border flex flex-col overflow-hidden w-full transform hover:scale-[1.02] focus-within:ring-2 focus-within:ring-offset-1 focus-within:ring-blue-400 ${getCardHeight()}`}
       style={{
         background: "var(--color-surface)",
         borderColor: "var(--color-border)",
@@ -148,62 +148,63 @@ export default function CatCard({ cat, showStatus = false }: CatCardProps) {
             <Image
               src={cat.imageUrl || ''}
               alt={cat.title}
-              width={400}
-              height={hasRichContent ? 220 : 180}
-              className={`w-full object-cover transition-transform duration-300 group-hover:scale-110 ${hasRichContent ? getRichContentImageHeight() : getStandardImageHeight()}`}
+              width={300}
+              height={hasRichContent ? 160 : 140}
+              className={`w-full object-cover transition-transform duration-200 group-hover:scale-105 ${hasRichContent ? getRichContentImageHeight() : getStandardImageHeight()}`}
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
           </div>
         ) : (
           <div className={`bg-gradient-to-br from-gray-100 to-gray-200 w-full flex items-center justify-center text-gray-400 ${hasMinimalContent ? getMinimalPlaceholderHeight() : getStandardPlaceholderHeight()}`}>
             <div className="text-center">
-              <div className="text-3xl mb-1">🐱</div>
+              <div className="text-2xl mb-0.5">🐱</div>
               <div className="text-xs">Nessuna immagine</div>
             </div>
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full shadow-lg">
+        <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-sm text-white text-xs px-1.5 py-0.5 rounded-md shadow-sm">
           {new Date(cat.createdAt).toLocaleDateString('it-IT', { 
             day: 'numeric', 
             month: 'short' 
           })}
         </div>
         {showStatus && cat.status !== 'active' && (
-          <div className="absolute top-2 left-2">
-            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusLabels[cat.status].color}`}>
-              <span>{statusLabels[cat.status].emoji}</span>
-              {statusLabels[cat.status].label}
+          <div className="absolute top-1.5 left-1.5">
+            <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-xs font-medium ${statusLabels[cat.status].color}`}>
+              <span className="text-xs">{statusLabels[cat.status].emoji}</span>
+              <span className="hidden sm:inline">{statusLabels[cat.status].label}</span>
             </span>
           </div>
         )}
       </div>
       
-      <div className={`p-3 sm:p-4 flex flex-col flex-grow ${hasMinimalContent ? 'justify-center' : ''}`}>
-        <h3 className={`font-bold mb-2 leading-tight ${getTitleSize(cat.title.length)}`} style={{ color: "var(--color-primary)" }}>
+      <div className={`p-2 sm:p-3 flex flex-col flex-grow ${hasMinimalContent ? 'justify-center' : ''}`}>
+        <h3 className={`font-bold mb-1.5 leading-tight ${getTitleSize(cat.title.length)}`} style={{ color: "var(--color-primary)" }}>
           {cat.title}
         </h3>
         
         {cat.description && (
-          <p className={`text-sm mb-3 flex-grow leading-relaxed ${getLineClampClass()}`} style={{ color: "var(--color-text-secondary)" }}>
+          <p className={`text-xs sm:text-sm mb-2 flex-grow leading-relaxed ${getLineClampClass()}`} style={{ color: "var(--color-text-secondary)" }}>
             {truncateDescription(cat.description, cat.title)}
           </p>
         )}
         
-        <div className={`flex items-center justify-between mt-auto pt-3 border-t ${
-          hasMinimalContent ? 'pt-2' : 'pt-3'
+        <div className={`flex items-center justify-between mt-auto pt-2 border-t ${
+          hasMinimalContent ? 'pt-1.5' : 'pt-2'
         }`} style={{ borderColor: "var(--color-border)" }}>
-          <span className="text-xs opacity-75 flex-1 mr-2" style={{ color: "var(--color-text-secondary)" }}>
+          <span className="text-xs opacity-75 flex-1 mr-2 truncate" style={{ color: "var(--color-text-secondary)" }}>
             {formatLocation(location, cat)}
           </span>
           <Link
             href={`/cats/${cat.id}`}
-            className="inline-flex items-center gap-1 font-semibold text-sm px-3 py-1.5 rounded-full transition-all hover:bg-blue-50 focus:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0"
+            className="inline-flex items-center gap-1 font-semibold text-xs sm:text-sm px-2 py-1 rounded-md transition-all hover:bg-blue-50 focus:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-blue-400 flex-shrink-0"
             style={{ color: "var(--color-secondary)" }}
             aria-label={`Visualizza dettagli di ${cat.title}`}
           >
-            Dettagli{" "}
-            <span className="transform transition-transform group-hover:translate-x-1">
+            <span className="hidden sm:inline">Dettagli</span>
+            <span className="sm:hidden">→</span>
+            <span className="hidden sm:inline transform transition-transform group-hover:translate-x-0.5">
               →
             </span>
           </Link>
