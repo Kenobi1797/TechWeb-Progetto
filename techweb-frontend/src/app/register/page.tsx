@@ -65,17 +65,12 @@ export default function RegisterPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="relative mb-6">
-              <div className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:-rotate-6" style={{
+              <div className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center shadow-lg" style={{
                 background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)"
               }}>
                 <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                 </svg>
-              </div>
-              <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center animate-bounce" style={{
-                background: "var(--color-accent)"
-              }}>
-                <span className="text-xs">✨</span>
               </div>
             </div>
             <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--color-primary)" }}>
@@ -221,10 +216,10 @@ export default function RegisterPage() {
                     const isActive = i <= strength.level;
                     let backgroundColor = 'var(--color-border)';
                     if (isActive) {
-                      if (strength.level === 0) backgroundColor = '#ff4757';
-                      else if (strength.level === 1) backgroundColor = '#ffa502';
-                      else if (strength.level === 2) backgroundColor = 'var(--color-secondary)';
-                      else backgroundColor = '#2ed573';
+                      if (strength.level === 0) backgroundColor = 'var(--color-accent)'; // Giallo per debole
+                      else if (strength.level === 1) backgroundColor = 'var(--color-secondary)'; // Blu per media
+                      else if (strength.level === 2) backgroundColor = 'var(--color-primary)'; // Blu scuro per buona
+                      else backgroundColor = 'var(--color-secondary)'; // Blu per forte
                     }
                     return (
                       <div
@@ -245,10 +240,10 @@ export default function RegisterPage() {
             {error && (
               <div className="card card-danger p-4 animate-in slide-in-from-top-2 duration-300">
                 <div className="flex items-center">
-                  <svg className="w-5 h-5 mr-2" style={{ color: "#ff4757" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 mr-2" style={{ color: "var(--color-accent)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
-                  <span style={{ color: "#ff4757" }} className="text-sm font-medium">{error}</span>
+                  <span style={{ color: "var(--color-primary)" }} className="text-sm font-medium">{error}</span>
                 </div>
               </div>
             )}
