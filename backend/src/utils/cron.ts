@@ -4,7 +4,7 @@ import { faker } from '@faker-js/faker';
 import { insertCat } from '../db/catsDb';
 import { insertComment } from '../db/commentsDb';
 import { getAllUsers } from '../db/usersDb';
-import { strayCatComments, strayCatDescriptions, strayCatTitles, cityRegions } from './strayCat';
+import { strayCatComments, strayCatDescriptions, strayCatTitles, safeUrbanCoordinates } from './strayCat';
 import pool from '../config/db';
 
 // Zone d'acqua più precise per validazione coordinate
@@ -52,12 +52,12 @@ function isValidLandCoordinate(latitude: number, longitude: number): boolean {
   if (Math.abs(latitude) > 85) return false;
   
   // Prima verifica se è vicino a una città conosciuta (alta priorità)
-  const nearCity = cityRegions.some(city => 
-    latitude >= city.latMin - CITY_PROXIMITY_RADIUS && 
-    latitude <= city.latMax + CITY_PROXIMITY_RADIUS &&
-    longitude >= city.lonMin - CITY_PROXIMITY_RADIUS && 
-    longitude <= city.lonMax + CITY_PROXIMITY_RADIUS
-  );
+  const nearCity = safeUrbanCoordinates.some(city => {
+    const distance = Math.sqrt(
+      Math.pow(latitude - city.lat, 2) + Math.pow(longitude - city.lng, 2)
+    );
+    return distance <= CITY_PROXIMITY_RADIUS;
+  });
   
   // Se è vicino a una città, è sempre valido
   if (nearCity) return true;
@@ -89,23 +89,22 @@ function isValidLandCoordinate(latitude: number, longitude: number): boolean {
 }
 
 function getRandomCoordsInCity(): { latitude: number; longitude: number; city: string } {
-  const city = faker.helpers.arrayElement(cityRegions);
+  const cityData = faker.helpers.arrayElement(safeUrbanCoordinates);
   
   // Tentativi per trovare coordinate valide che non siano sull'acqua
   for (let attempt = 0; attempt < MAX_COORDINATE_ATTEMPTS; attempt++) {
-    const latitude = faker.number.float({ min: city.latMin, max: city.latMax, fractionDigits: 4 });
-    const longitude = faker.number.float({ min: city.lonMin, max: city.lonMax, fractionDigits: 4 });
+    // Genera coordinate casuali in un raggio di ~2km dalla città
+    const radiusDegrees = 0.02; // ~2km
+    const latitude = parseFloat((cityData.lat + (Math.random() - 0.5) * radiusDegrees).toFixed(6));
+    const longitude = parseFloat((cityData.lng + (Math.random() - 0.5) * radiusDegrees).toFixed(6));
     
     if (isValidLandCoordinate(latitude, longitude)) {
-      return { latitude, longitude, city: city.name };
+      return { latitude, longitude, city: `${cityData.name}, ${cityData.country}` };
     }
   }
   
-  // Fallback: usa il centro della città
-  const centerLat = (city.latMin + city.latMax) / 2;
-  const centerLon = (city.lonMin + city.lonMax) / 2;
-  
-  return { latitude: centerLat, longitude: centerLon, city: city.name };
+  // Fallback: usa le coordinate esatte della città (sempre sicure)
+  return { latitude: cityData.lat, longitude: cityData.lng, city: `${cityData.name}, ${cityData.country}` };
 }
 
 export function startCronJobs() {
@@ -207,10 +206,12 @@ async function fixInvalidData() {
     }
     
     // Correggi coordinate se fuori da tutte le città o sull'acqua
-    const found = cityRegions.find(c =>
-      cat.latitude >= c.latMin && cat.latitude <= c.latMax &&
-      cat.longitude >= c.lonMin && cat.longitude <= c.lonMax
-    );
+    const found = safeUrbanCoordinates.find(city => {
+      const distance = Math.sqrt(
+        Math.pow(cat.latitude - city.lat, 2) + Math.pow(cat.longitude - city.lng, 2)
+      );
+      return distance <= CITY_PROXIMITY_RADIUS;
+    });
     
     const needsCoordinateUpdate = !found || !isValidLandCoordinate(cat.latitude, cat.longitude);
     
