@@ -88,11 +88,11 @@ export default function CatCard({ cat, showStatus = false }: CatCardProps) {
   const hasRichContent = hasImage && cat.description && cat.description.length > 30;
   const hasMinimalContent = !hasImage && (!cat.description || cat.description.length < 20);
 
-  // Calcola l'altezza minima dinamicamente - più compatto
+  // Calcola l'altezza minima dinamicamente - più compatto, considerando possibili immagini nel markdown
   const getCardHeight = () => {
-    if (hasRichContent) return 'min-h-[240px]';
+    if (hasRichContent) return 'min-h-[260px]'; // Più spazio per possibili immagini markdown
     if (hasMinimalContent) return 'min-h-[140px]';
-    return 'min-h-[180px]';
+    return 'min-h-[200px]'; // Leggermente più alto per il bottone dettagli
   };
 
   // Calcola la classe per il line clamp

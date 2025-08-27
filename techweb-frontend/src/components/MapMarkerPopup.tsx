@@ -6,90 +6,63 @@ interface MapMarkerPopupProps {
   readonly cat: Cat;
 }
 
-// Funzione per un rendering markdown semplificato e sicuro per i popup
-function renderSimpleMarkdown(text: string): string {
-  if (!text) return "";
-  
-  return text
-    // Rimuovi markdown complesso che può causare problemi di layout
-    .replace(/#{1,6}\s+/g, '') // Rimuovi headers
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // Bold
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>') // Italic
-    .replace(/`([^`]+)`/g, '<code>$1</code>') // Inline code
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>') // Links
-    .replace(/\n/g, '<br>') // Line breaks
-    // Rimuovi altri elementi markdown complessi per stabilità
-    .replace(/^[-*+]\s+/gm, '• ') // Liste semplici
-    .replace(/^\d+\.\s+/gm, '• '); // Liste numerate come bullet
-}
-
 export default function MapMarkerPopup({ cat }: MapMarkerPopupProps) {
-  // Trunca la descrizione per il popup se è troppo lunga
-  const truncateDescription = (text: string | null, maxLength: number = 120) => {
-    if (!text || text.length <= maxLength) return text || "";
-    return text.substring(0, maxLength).trim() + "...";
-  };
-
-  const truncatedDescription = truncateDescription(cat.description);
-  const simplifiedHtml = truncatedDescription ? renderSimpleMarkdown(truncatedDescription) : "";
-
   return (
-    <div
-      className="cat-popup p-3 min-w-[200px] max-w-[280px] text-sm"
-      style={{ 
-        color: "var(--color-text-primary)",
-        minHeight: "120px", // Altezza minima fissa per evitare sbalzi
-        maxHeight: "200px", // Altezza massima per evitare popup troppo grandi
-        overflow: "hidden"
-      }}
-    >
-      <div className="mb-2">
-        <strong className="text-base block mb-1 leading-tight" style={{ color: "var(--color-primary)" }}>
-          {cat.title}
-        </strong>
-        {cat.createdAt && (
-          <small className="text-xs opacity-75 block">
-            {new Date(cat.createdAt).toLocaleDateString('it-IT')}
-          </small>
-        )}
-      </div>
-      
-      {simplifiedHtml && (
-        <div 
-          className="mb-3 text-xs leading-relaxed"
-          style={{ 
-            minHeight: "40px", // Altezza minima per il contenuto
-            maxHeight: "60px",
-            overflow: "hidden"
-          }}
-          dangerouslySetInnerHTML={{ __html: simplifiedHtml }}
-        />
-      )}
-      
-      {cat.imageUrl && (
-        <div className="mb-2 relative w-full h-16"> {/* Ridotta altezza immagine */}
-          <Image 
-            src={cat.imageUrl} 
-            alt={cat.title}
-            fill
-            className="object-cover rounded-md"
-            sizes="(max-width: 280px) 100vw, 280px"
-          />
+    <div className="cat-popup relative overflow-hidden">
+      {/* Contenuto principale del popup */}
+      <div className="p-4 min-w-[200px] max-w-[300px] w-full">
+        {/* Titolo con design moderno */}
+        <div className="mb-3">
+          <h3 
+            className="text-lg font-bold leading-tight text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"
+          >
+            {cat.title}
+          </h3>
         </div>
-      )}
-      
-      <div className="flex justify-between items-center mt-auto">
-        <Link 
-          href={`/cats/${cat.id}`} 
-          className="inline-flex px-2 py-1 text-xs rounded bg-blue-100 hover:bg-blue-200 transition-colors no-underline"
-          style={{ color: "var(--color-accent)" }}
-        >
-          📋 Dettagli
-        </Link>
-        <small className="text-xs opacity-60 font-mono">
-          {cat.latitude.toFixed(3)}, {cat.longitude.toFixed(3)}
-        </small>
+        
+        {/* Immagine con effetti moderni */}
+        {cat.imageUrl && (
+          <div className="mb-4 relative w-full h-32 overflow-hidden rounded-2xl group">
+            <Image 
+              src={cat.imageUrl} 
+              alt={cat.title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
+              sizes="(max-width: 300px) 100vw, 300px"
+            />
+            {/* Overlay gradient sottile */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          </div>
+        )}
+        
+        {/* Bottone moderno con micro-interazioni */}
+        <div className="text-center">
+          <Link 
+            href={`/cats/${cat.id}`} 
+            className="group relative inline-flex items-center justify-center gap-2 w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 no-underline overflow-hidden"
+          >
+            {/* Effetto shimmer di sfondo */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+            
+            {/* Contenuto del bottone */}
+            <span className="relative z-10 flex items-center gap-2">
+              <span className="text-lg transform group-hover:rotate-12 transition-transform duration-300">🐾</span>
+              <span className="font-medium">Scopri di più</span>
+              <svg 
+                className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </Link>
+        </div>
       </div>
+      
+      {/* Decorazione sottile */}
+      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full opacity-60"></div>
     </div>
   );
 }

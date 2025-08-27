@@ -615,14 +615,48 @@ footer {
   }
 }
 
-/* Stili specifici per i popup della mappa */
+/* Stili avanzati per popup mappa - Design moderno */
 .leaflet-popup-content-wrapper {
   padding: 0;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 20px;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 8px 20px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
   overflow: hidden;
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px) saturate(1.3);
+  border: none;
   color: inherit;
+  position: relative;
+  transform: translateY(0px);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Effetto hover per il popup */
+.leaflet-popup-content-wrapper:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    0 15px 30px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+/* Gradient overlay sottile */
+.leaflet-popup-content-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    var(--color-secondary), 
+    var(--color-accent), 
+    var(--color-secondary)
+  );
+  opacity: 0.8;
+  z-index: 1;
 }
 
 .leaflet-popup-content {
@@ -631,10 +665,87 @@ footer {
   overflow: hidden;
   font-family: inherit;
   line-height: 1.4;
+  position: relative;
+  z-index: 2;
 }
 
-.custom-popup .leaflet-popup-tip {
-  background: white;
+/* Rimozione completa del triangolino del popup */
+.leaflet-popup-tip-container {
+  display: none !important;
+}
+
+.leaflet-popup-tip {
+  display: none !important;
+}
+
+/* Bottone di chiusura moderno e minimalista */
+.leaflet-popup-close-button {
+  color: rgba(0, 0, 0, 0.4) !important;
+  font-size: 16px !important;
+  font-weight: 300 !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: none !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  backdrop-filter: blur(10px) !important;
+  right: 12px !important;
+  top: 12px !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  z-index: 10 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #ff4757 !important;
+  background: rgba(255, 255, 255, 1) !important;
+  transform: scale(1.15) rotate(90deg) !important;
+  box-shadow: 0 6px 16px rgba(255, 71, 87, 0.2) !important;
+  text-decoration: none !important;
+}
+
+.leaflet-popup-close-button:active {
+  transform: scale(0.95) rotate(90deg) !important;
+}
+
+/* Animazione di entrata per il popup */
+@keyframes popupSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.leaflet-popup {
+  animation: popupSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: auto;
+  margin-bottom: 0;
+}
+
+/* Responsive per dispositivi mobili */
+@media (max-width: 640px) {
+  .leaflet-popup-content-wrapper {
+    border-radius: 16px;
+    box-shadow: 
+      0 16px 32px rgba(0, 0, 0, 0.12),
+      0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+  
+  .leaflet-popup-close-button {
+    right: 8px !important;
+    top: 8px !important;
+    width: 28px !important;
+    height: 28px !important;
+  }
 }
 
 /* Stabilizza il contenuto del popup */
@@ -678,14 +789,58 @@ footer {
   color: var(--color-accent);
 }
 
+/* Stili per il contenuto markdown nelle pagine di dettaglio */
+.markdown-content img {
+  max-width: 100% !important;
+  max-height: 300px !important;
+  width: auto !important;
+  height: auto !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  object-fit: cover;
+  margin: 16px auto;
+  display: block;
+}
+
+.markdown-content p:has(img) {
+  text-align: center;
+}
+
+/* Assicurati che le immagini non rompano il layout delle card */
+.cat-card .markdown-content img {
+  max-height: 200px !important;
+  margin: 8px auto;
+}
+
+/* Garantisce che il contenuto delle card sia ben distribuito */
+.cat-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.cat-card > div:last-child {
+  margin-top: auto;
+}
+
+/* Previeni overflow del contenuto nelle card */
+.cat-card .prose {
+  overflow: hidden;
+}
+
+.cat-card .prose p {
+  margin-bottom: 0.5rem;
+  word-wrap: break-word;
+}
+
+.cat-card .prose img {
+  max-height: 150px !important;
+  width: auto !important;
+  margin: 0.5rem auto !important;
+}
+
 /* Previeni il movimento del popup */
 .leaflet-popup-pane {
   pointer-events: none;
-}
-
-.leaflet-popup {
-  pointer-events: auto;
-  margin-bottom: 0;
 }
 
 /* Stili per immagini nei popup */

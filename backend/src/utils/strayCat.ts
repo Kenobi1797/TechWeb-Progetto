@@ -1,5 +1,3 @@
-import { CityRegion } from '../utils/types';
-
 // Lista di città del mondo con coordinate terrestri verificate (no oceani/mari/laghi)
 // Coordinate centrali di aree urbane sicure per generare avvistamenti di gatti randagi
 interface CityCoordinate {
@@ -73,36 +71,6 @@ export const safeUrbanCoordinates: CityCoordinate[] = [
   { name: "Auckland", lat: -36.8485, lng: 174.7633, country: "NZ" },
   { name: "Wellington", lat: -41.2866, lng: 174.7756, country: "NZ" },
 ];
-
-export function getRandomSafeCoordinates(radiusKm: number = 10) {
-  const city = safeUrbanCoordinates[Math.floor(Math.random() * safeUrbanCoordinates.length)];
-  
-  // Conversione approssimativa: 1 grado ≈ 111km
-  const radiusDegrees = radiusKm / 111;
-  
-  const lat = parseFloat((city.lat + (Math.random() - 0.5) * radiusDegrees).toFixed(6));
-  const lng = parseFloat((city.lng + (Math.random() - 0.5) * radiusDegrees).toFixed(6));
-  
-  return {
-    latitude: lat,
-    longitude: lng,
-    city: city.name,
-    country: city.country,
-    baseCoordinates: { lat: city.lat, lng: city.lng }
-  };
-}
-
-// Mantengo anche il sistema precedente per compatibilità
-export const cityRegions: CityRegion[] = safeUrbanCoordinates.map(city => {
-  const radiusDegrees = 0.02; // ~2km di raggio
-  return {
-    name: `${city.name}, ${city.country}`,
-    latMin: parseFloat((city.lat - radiusDegrees).toFixed(6)),
-    latMax: parseFloat((city.lat + radiusDegrees).toFixed(6)),
-    lonMin: parseFloat((city.lng - radiusDegrees).toFixed(6)),
-    lonMax: parseFloat((city.lng + radiusDegrees).toFixed(6)),
-  };
-});
 
 // Titoli specifici per avvistamenti di gatti randagi
 export const strayCatTitles = [
