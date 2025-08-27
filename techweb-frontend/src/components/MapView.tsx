@@ -197,10 +197,21 @@ export default function MapView({
     ? `https://api.maptiler.com/maps/hybrid/256/{z}/{x}/{y}.jpg?key=${maptilerKey}&lang=${userLang}`
     : "";
 
-  // Calcolo automatico del centro e zoom
-  const defaultPos: [number, number] = center || (markers.length
-    ? [markers[0].lat, markers[0].lng]
-    : [41.4845, 13.4989]); // Default: Fondi
+  // Calcolo automatico del centro e zoom con validazione sicura
+  const defaultPos: [number, number] = useMemo(() => {
+    if (center && isFinite(center[0]) && isFinite(center[1]) && 
+        Math.abs(center[0]) <= 90 && Math.abs(center[1]) <= 180) {
+      return center;
+    }
+    if (markers.length > 0) {
+      const firstMarker = markers[0];
+      if (isFinite(firstMarker.lat) && isFinite(firstMarker.lng) && 
+          Math.abs(firstMarker.lat) <= 90 && Math.abs(firstMarker.lng) <= 180) {
+        return [firstMarker.lat, firstMarker.lng];
+      }
+    }
+    return [41.4845, 13.4989]; // Default: Fondi
+  }, [center, markers]);
     
   const defaultZoom = zoom || (markers.length === 1 ? 16 : 13); // Zoom maggiore per marker singolo
 
@@ -221,20 +232,19 @@ export default function MapView({
     </div>
   )}
   {maptilerKey && (
-        <MapContainer
-          center={defaultPos}
-          zoom={defaultZoom}
-          minZoom={2}
-          maxZoom={19}
-          style={{ width: "100%", height: "100%" }}
-          className="rounded-lg shadow-sm h-full"
-          maxBounds={[[-90, -180], [90, 180]]}
-          maxBoundsViscosity={1.0}
-          worldCopyJump={false}
-          zoomControl={false}
-          preferCanvas={true}
-          key={`map-${maptilerKey}-${defaultPos[0]}-${defaultPos[1]}-${defaultZoom}`}
-        >
+    <div style={{ width: "100%", height: "100%" }}>
+      <MapContainer
+        center={defaultPos}
+        zoom={defaultZoom}
+        minZoom={2}
+        maxZoom={19}
+        style={{ width: "100%", height: "100%" }}
+        className="rounded-lg shadow-sm h-full"
+        worldCopyJump={false}
+        zoomControl={false}
+        preferCanvas={true}
+        key={`map-${maptilerKey}-${defaultPos[0]}-${defaultPos[1]}-${defaultZoom}`}
+      >
                     <ZoomControl position="bottomleft" />
           {showControls ? (
             <LayersControl position="topleft">
@@ -400,7 +410,8 @@ export default function MapView({
             );
           })}
         </MapContainer>
-      )}
+      </div>
+    )}
     </div>
   );
 }
