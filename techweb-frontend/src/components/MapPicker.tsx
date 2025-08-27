@@ -71,15 +71,25 @@ function GeoLocateButton({ onChange }: Readonly<{ onChange: (pos: { lat: number;
   };
 
   return (
-    <button
-      className="absolute bottom-2 right-2 z-[1000] bg-white border border-gray-300 rounded px-3 py-1 shadow hover:bg-gray-100 transition disabled:opacity-50"
-      onClick={handleLocate}
-      disabled={isLocating}
-      title="Centra sulla tua posizione"
-      style={{ cursor: isLocating ? "wait" : "pointer" }}
+    <div
+      style={{
+        position: "absolute",
+        top: 8,
+        right: 8,
+        zIndex: 1000,
+        pointerEvents: "auto",
+      }}
     >
-      {isLocating ? "⏳" : "📍"}
-    </button>
+      <button
+        className="bg-white border border-gray-300 rounded px-3 py-1 shadow hover:bg-gray-100 transition disabled:opacity-50"
+        onClick={handleLocate}
+        disabled={isLocating}
+        title="Centra sulla tua posizione"
+        style={{ cursor: isLocating ? "wait" : "pointer" }}
+      >
+        {isLocating ? "⏳" : "📍"}
+      </button>
+    </div>
   );
 }
 
