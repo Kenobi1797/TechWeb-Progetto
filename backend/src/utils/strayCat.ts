@@ -1,48 +1,108 @@
 import { CityRegion } from '../utils/types';
 
-export const cityRegions: CityRegion[] = [
-  // Europa - Coordinate più precise per evitare zone d'acqua
-  { name: "Rome, IT", latMin: 41.88, latMax: 41.92, lonMin: 12.48, lonMax: 12.52 },
-  { name: "Paris, FR", latMin: 48.85, latMax: 48.87, lonMin: 2.33, lonMax: 2.37 },
-  { name: "London, UK", latMin: 51.50, latMax: 51.52, lonMin: -0.13, lonMax: -0.09 },
-  { name: "Berlin, DE", latMin: 52.50, latMax: 52.52, lonMin: 13.38, lonMax: 13.42 },
-  { name: "Madrid, ES", latMin: 40.41, latMax: 40.43, lonMin: -3.72, lonMax: -3.68 },
-  { name: "Moscow, RU", latMin: 55.75, latMax: 55.77, lonMin: 37.60, lonMax: 37.64 },
-  { name: "Istanbul, TR", latMin: 41.01, latMax: 41.03, lonMin: 28.97, lonMax: 29.01 },
-  
-  // Nord America - Zone urbane centrali
-  { name: "New York, US", latMin: 40.74, latMax: 40.76, lonMin: -73.99, lonMax: -73.95 },
-  { name: "Los Angeles, US", latMin: 34.05, latMax: 34.07, lonMin: -118.26, lonMax: -118.22 },
-  { name: "Toronto, CA", latMin: 43.65, latMax: 43.67, lonMin: -79.38, lonMax: -79.36 },
-  { name: "Mexico City, MX", latMin: 19.43, latMax: 19.45, lonMin: -99.13, lonMax: -99.11 },
-  
-  // Asia - Centri urbani principali
-  { name: "Tokyo, JP", latMin: 35.67, latMax: 35.69, lonMin: 139.74, lonMax: 139.76 },
-  { name: "Beijing, CN", latMin: 39.90, latMax: 39.92, lonMin: 116.39, lonMax: 116.41 },
-  { name: "Seoul, KR", latMin: 37.56, latMax: 37.58, lonMin: 126.97, lonMax: 126.99 },
-  { name: "Mumbai, IN", latMin: 19.07, latMax: 19.09, lonMin: 72.88, lonMax: 72.90 },
-  { name: "Bangkok, TH", latMin: 13.75, latMax: 13.77, lonMin: 100.50, lonMax: 100.52 },
-  
-  // Sud America e Africa - Zone urbane sicure
-  { name: "São Paulo, BR", latMin: -23.55, latMax: -23.53, lonMin: -46.64, lonMax: -46.62 },
-  { name: "Cairo, EG", latMin: 30.04, latMax: 30.06, lonMin: 31.23, lonMax: 31.25 },
-  { name: "Johannesburg, ZA", latMin: -26.20, latMax: -26.18, lonMin: 28.04, lonMax: 28.06 },
-  
-  // Oceania - Centro città lontano dal porto
-  { name: "Sydney, AU", latMin: -33.87, latMax: -33.85, lonMin: 151.20, lonMax: 151.22 },
-  
-  // Aggiunte di città italiane per maggiore varietà - coordinate corrette
-  { name: "Milan, IT", latMin: 45.46, latMax: 45.48, lonMin: 9.18, lonMax: 9.20 },
-  { name: "Naples, IT", latMin: 40.84, latMax: 40.86, lonMin: 14.25, lonMax: 14.27 },
-  { name: "Florence, IT", latMin: 43.77, latMax: 43.79, lonMin: 11.25, lonMax: 11.27 },
-  { name: "Venice, IT", latMin: 45.44, latMax: 45.45, lonMin: 12.33, lonMax: 12.34 }, // Zona terraferma di Mestre
-  { name: "Bologna, IT", latMin: 44.49, latMax: 44.51, lonMin: 11.34, lonMax: 11.36 },
-  { name: "Turin, IT", latMin: 45.06, latMax: 45.08, lonMin: 7.68, lonMax: 7.70 },
-  { name: "Palermo, IT", latMin: 38.11, latMax: 38.13, lonMin: 13.35, lonMax: 13.37 },
-  { name: "Genoa, IT", latMin: 44.40, latMax: 44.42, lonMin: 8.93, lonMax: 8.95 },
-  { name: "Catania, IT", latMin: 37.50, latMax: 37.52, lonMin: 15.08, lonMax: 15.10 },
-  { name: "Bari, IT", latMin: 41.12, latMax: 41.14, lonMin: 16.86, lonMax: 16.88 },
+// Lista di città del mondo con coordinate terrestri verificate (no oceani/mari/laghi)
+// Coordinate centrali di aree urbane sicure per generare avvistamenti di gatti randagi
+interface CityCoordinate {
+  name: string;
+  lat: number;
+  lng: number;
+  country: string;
+}
+
+export const safeUrbanCoordinates: CityCoordinate[] = [
+  // Europa
+  { name: "Roma", lat: 41.9028, lng: 12.4964, country: "IT" },
+  { name: "Milano", lat: 45.4642, lng: 9.1900, country: "IT" },
+  { name: "Napoli", lat: 40.8518, lng: 14.2681, country: "IT" },
+  { name: "Venezia", lat: 45.4408, lng: 12.3155, country: "IT" },
+  { name: "Firenze", lat: 43.7696, lng: 11.2558, country: "IT" },
+  { name: "Bologna", lat: 44.4949, lng: 11.3426, country: "IT" },
+  { name: "Torino", lat: 45.0703, lng: 7.6869, country: "IT" },
+  { name: "Palermo", lat: 38.1157, lng: 13.3613, country: "IT" },
+  { name: "Genova", lat: 44.4056, lng: 8.9463, country: "IT" },
+  { name: "Catania", lat: 37.5079, lng: 15.0830, country: "IT" },
+  { name: "Bari", lat: 41.1171, lng: 16.8719, country: "IT" },
+  { name: "Madrid", lat: 40.4168, lng: -3.7038, country: "ES" },
+  { name: "Barcelona", lat: 41.3851, lng: 2.1734, country: "ES" },
+  { name: "Paris", lat: 48.8566, lng: 2.3522, country: "FR" },
+  { name: "London", lat: 51.5074, lng: -0.1278, country: "UK" },
+  { name: "Berlin", lat: 52.5200, lng: 13.4050, country: "DE" },
+  { name: "Amsterdam", lat: 52.3676, lng: 4.9041, country: "NL" },
+  { name: "Athens", lat: 37.9838, lng: 23.7275, country: "GR" },
+  { name: "Istanbul", lat: 41.0082, lng: 28.9784, country: "TR" },
+  { name: "Moscow", lat: 55.7558, lng: 37.6173, country: "RU" },
+
+  // Nord America
+  { name: "New York", lat: 40.7128, lng: -74.0060, country: "US" },
+  { name: "San Francisco", lat: 37.7749, lng: -122.4194, country: "US" },
+  { name: "Chicago", lat: 41.8781, lng: -87.6298, country: "US" },
+  { name: "Los Angeles", lat: 34.0522, lng: -118.2437, country: "US" },
+  { name: "Toronto", lat: 43.6532, lng: -79.3832, country: "CA" },
+  { name: "Montreal", lat: 45.5017, lng: -73.5673, country: "CA" },
+  { name: "Mexico City", lat: 19.4326, lng: -99.1332, country: "MX" },
+
+  // Sud America
+  { name: "Buenos Aires", lat: -34.6037, lng: -58.3816, country: "AR" },
+  { name: "Santiago", lat: -33.4489, lng: -70.6693, country: "CL" },
+  { name: "Lima", lat: -12.0464, lng: -77.0428, country: "PE" },
+  { name: "Rio de Janeiro", lat: -22.9068, lng: -43.1729, country: "BR" },
+  { name: "São Paulo", lat: -23.5505, lng: -46.6333, country: "BR" },
+
+  // Asia
+  { name: "Tokyo", lat: 35.6895, lng: 139.6917, country: "JP" },
+  { name: "Osaka", lat: 34.6937, lng: 135.5023, country: "JP" },
+  { name: "Seoul", lat: 37.5665, lng: 126.9780, country: "KR" },
+  { name: "Beijing", lat: 39.9042, lng: 116.4074, country: "CN" },
+  { name: "Shanghai", lat: 31.2304, lng: 121.4737, country: "CN" },
+  { name: "Bangkok", lat: 13.7563, lng: 100.5018, country: "TH" },
+  { name: "Mumbai", lat: 19.0760, lng: 72.8777, country: "IN" },
+  { name: "New Delhi", lat: 28.6139, lng: 77.2090, country: "IN" },
+  { name: "Dubai", lat: 25.2048, lng: 55.2708, country: "AE" },
+
+  // Africa
+  { name: "Cairo", lat: 30.0444, lng: 31.2357, country: "EG" },
+  { name: "Casablanca", lat: 33.5731, lng: -7.5898, country: "MA" },
+  { name: "Nairobi", lat: -1.2921, lng: 36.8219, country: "KE" },
+  { name: "Lagos", lat: 6.5244, lng: 3.3792, country: "NG" },
+  { name: "Johannesburg", lat: -26.2041, lng: 28.0473, country: "ZA" },
+  { name: "Cape Town", lat: -33.9249, lng: 18.4241, country: "ZA" },
+
+  // Oceania
+  { name: "Sydney", lat: -33.8688, lng: 151.2093, country: "AU" },
+  { name: "Melbourne", lat: -37.8136, lng: 144.9631, country: "AU" },
+  { name: "Auckland", lat: -36.8485, lng: 174.7633, country: "NZ" },
+  { name: "Wellington", lat: -41.2866, lng: 174.7756, country: "NZ" },
 ];
+
+export function getRandomSafeCoordinates(radiusKm: number = 10) {
+  const city = safeUrbanCoordinates[Math.floor(Math.random() * safeUrbanCoordinates.length)];
+  
+  // Conversione approssimativa: 1 grado ≈ 111km
+  const radiusDegrees = radiusKm / 111;
+  
+  const lat = parseFloat((city.lat + (Math.random() - 0.5) * radiusDegrees).toFixed(6));
+  const lng = parseFloat((city.lng + (Math.random() - 0.5) * radiusDegrees).toFixed(6));
+  
+  return {
+    latitude: lat,
+    longitude: lng,
+    city: city.name,
+    country: city.country,
+    baseCoordinates: { lat: city.lat, lng: city.lng }
+  };
+}
+
+// Mantengo anche il sistema precedente per compatibilità
+export const cityRegions: CityRegion[] = safeUrbanCoordinates.map(city => {
+  const radiusDegrees = 0.02; // ~2km di raggio
+  return {
+    name: `${city.name}, ${city.country}`,
+    latMin: parseFloat((city.lat - radiusDegrees).toFixed(6)),
+    latMax: parseFloat((city.lat + radiusDegrees).toFixed(6)),
+    lonMin: parseFloat((city.lng - radiusDegrees).toFixed(6)),
+    lonMax: parseFloat((city.lng + radiusDegrees).toFixed(6)),
+  };
+});
 
 export const strayCatComments = [
   "Qualcuno sa se ha un nome? Lo vedo spesso vicino al tabaccaio.",
