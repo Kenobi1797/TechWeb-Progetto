@@ -5,8 +5,89 @@ export interface CoordinateValidationResult {
   error?: string;
 }
 
+// Zone marine conosciute da evitare (bounding boxes di mari e oceani principali)
+const MARINE_ZONES = [
+  // Mar Mediterraneo centrale
+  { latMin: 35.0, latMax: 42.0, lonMin: 8.0, lonMax: 20.0, name: "Mar Mediterraneo centrale" },
+  // Mar Tirreno
+  { latMin: 38.0, latMax: 44.5, lonMin: 8.0, lonMax: 15.0, name: "Mar Tirreno" },
+  // Mar Adriatico sud
+  { latMin: 39.0, latMax: 46.0, lonMin: 14.0, lonMax: 20.0, name: "Mar Adriatico" },
+  // Atlantico Europa occidentale
+  { latMin: 35.0, latMax: 65.0, lonMin: -25.0, lonMax: -5.0, name: "Oceano Atlantico" },
+  // Pacifico
+  { latMin: -60.0, latMax: 70.0, lonMin: 120.0, lonMax: -70.0, name: "Oceano Pacifico" },
+  // Atlantico Americas
+  { latMin: -60.0, latMax: 70.0, lonMin: -80.0, lonMax: -30.0, name: "Oceano Atlantico Occidentale" },
+  // Oceano Indiano
+  { latMin: -60.0, latMax: 30.0, lonMin: 20.0, lonMax: 120.0, name: "Oceano Indiano" },
+];
+
+// Aree urbane sicure conosciute (centri città dove è probabile trovare gatti)
+const SAFE_URBAN_AREAS = [
+  // Italia - aree urbane principali
+  { latMin: 41.85, latMax: 41.95, lonMin: 12.45, lonMax: 12.55, name: "Roma centro" },
+  { latMin: 45.45, latMax: 45.48, lonMin: 9.17, lonMax: 9.21, name: "Milano centro" },
+  { latMin: 40.82, latMax: 40.88, lonMin: 14.24, lonMax: 14.30, name: "Napoli centro" },
+  { latMin: 45.43, latMax: 45.45, lonMin: 12.30, lonMax: 12.33, name: "Venezia terraferma" },
+  { latMin: 43.76, latMax: 43.78, lonMin: 11.24, lonMax: 11.27, name: "Firenze centro" },
+  { latMin: 44.48, latMax: 44.51, lonMin: 11.33, lonMax: 11.36, name: "Bologna centro" },
+  { latMin: 45.06, latMax: 45.08, lonMin: 7.67, lonMax: 7.70, name: "Torino centro" },
+  { latMin: 44.39, latMax: 44.42, lonMin: 8.93, lonMax: 8.96, name: "Genova centro" },
+  { latMin: 41.10, latMax: 41.13, lonMin: 16.86, lonMax: 16.89, name: "Bari centro" },
+  { latMin: 38.10, latMax: 38.13, lonMin: 13.35, lonMax: 13.38, name: "Palermo centro" },
+  
+  // Altre città europee
+  { latMin: 48.84, latMax: 48.87, lonMin: 2.33, lonMax: 2.37, name: "Parigi centro" },
+  { latMin: 51.49, latMax: 51.52, lonMin: -0.14, lonMax: -0.11, name: "Londra centro" },
+  { latMin: 52.50, latMax: 52.53, lonMin: 13.39, lonMax: 13.42, name: "Berlino centro" },
+  { latMin: 40.40, latMax: 40.43, lonMin: -3.72, lonMax: -3.69, name: "Madrid centro" },
+  { latMin: 41.37, latMax: 41.40, lonMin: 2.16, lonMax: 2.19, name: "Barcellona centro" },
+];
+
 /**
- * Valida e converte le coordinate da stringa a numero
+ * Verifica se le coordinate sono in una zona marina nota
+ */
+function isInMarineZone(latitude: number, longitude: number): boolean {
+  return MARINE_ZONES.some(zone => 
+    latitude >= zone.latMin && latitude <= zone.latMax &&
+    longitude >= zone.lonMin && longitude <= zone.lonMax
+  );
+}
+
+/**
+ * Verifica se le coordinate sono in un'area urbana sicura
+ */
+function isInSafeUrbanArea(latitude: number, longitude: number): boolean {
+  return SAFE_URBAN_AREAS.some(area => 
+    latitude >= area.latMin && latitude <= area.latMax &&
+    longitude >= area.lonMin && longitude <= area.lonMax
+  );
+}
+
+/**
+ * Trova l'area urbana sicura più vicina per coordinate sospette
+ */
+function findNearestSafeArea(latitude: number, longitude: number): { lat: number; lng: number; name: string } | null {
+  let minDistance = Infinity;
+  let nearestArea = null;
+  
+  for (const area of SAFE_URBAN_AREAS) {
+    const centerLat = (area.latMin + area.latMax) / 2;
+    const centerLng = (area.lonMin + area.lonMax) / 2;
+    const distance = calculateDistance(latitude, longitude, centerLat, centerLng);
+    
+    if (distance < minDistance) {
+      minDistance = distance;
+      nearestArea = { lat: centerLat, lng: centerLng, name: area.name };
+    }
+  }
+  
+  return nearestArea;
+}
+
+/**
+ * Valida e converte le coordinate da stringa a numero con controlli anti-mare
  */
 export function validateAndParseCoordinates(
   lat: string | number, 
@@ -49,6 +130,29 @@ export function validateAndParseCoordinates(
       valid: false,
       error: 'Precisione eccessiva: massimo 6 decimali per le coordinate'
     };
+  }
+
+  // Controllo zone marine - se le coordinate sono in mare, le correggiamo
+  if (isInMarineZone(latitude, longitude)) {
+    const nearestSafe = findNearestSafeArea(latitude, longitude);
+    if (nearestSafe) {
+      console.log(`Coordinate in mare (${latitude}, ${longitude}) corrette verso ${nearestSafe.name}`);
+      return {
+        valid: true,
+        latitude: parseFloat(nearestSafe.lat.toFixed(6)),
+        longitude: parseFloat(nearestSafe.lng.toFixed(6))
+      };
+    } else {
+      return {
+        valid: false,
+        error: 'Coordinate in zona marina: impossibile trovare gatti in mare'
+      };
+    }
+  }
+
+  // Se non è in area urbana sicura, ma non è nemmeno in mare, accettiamo con warning
+  if (!isInSafeUrbanArea(latitude, longitude)) {
+    console.log(`Attenzione: coordinate (${latitude}, ${longitude}) non in area urbana nota, ma accettate`);
   }
 
   return {
