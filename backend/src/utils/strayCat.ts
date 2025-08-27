@@ -7,6 +7,16 @@ interface CityCoordinate {
   country: string;
 }
 
+// Definizione delle regioni delle città per la validazione
+interface CityRegion {
+  name: string;
+  latMin: number;
+  latMax: number;
+  lonMin: number;
+  lonMax: number;
+  country: string;
+}
+
 export const safeUrbanCoordinates: CityCoordinate[] = [
   // Europa
   { name: "Roma", lat: 41.9028, lng: 12.4964, country: "IT" },
@@ -179,3 +189,13 @@ export const strayCatDescriptions = [
   "Giocava con una foglia secca, come se fosse un giocattolo.",
   "Ha un orecchio piegato, forse da una vecchia ferita.",
 ];
+
+// Regioni delle città per la validazione delle coordinate
+export const cityRegions: CityRegion[] = safeUrbanCoordinates.map(city => ({
+  name: city.name,
+  latMin: city.lat - 0.2, // Area di 0.4 gradi di latitudine (circa 44 km)
+  latMax: city.lat + 0.2,
+  lonMin: city.lng - 0.2, // Area di 0.4 gradi di longitudine
+  lonMax: city.lng + 0.2,
+  country: city.country
+}));

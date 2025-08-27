@@ -41,7 +41,7 @@ type AuthResponse = {
   };
 };
 
-export const API_URL = "http://localhost:5000";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Utility per gestire errori fetch
 async function handleFetch<T>(promise: Promise<Response>, defaultMsg = "API error"): Promise<T> {

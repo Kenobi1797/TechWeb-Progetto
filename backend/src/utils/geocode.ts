@@ -106,8 +106,8 @@ export async function forwardGeocode(address: string): Promise<{ lat: number; ln
     }
     
     const returnValue = {
-      lat: parseFloat(result.lat),
-      lng: parseFloat(result.lon),
+      lat: parseFloat(parseFloat(result.lat).toFixed(6)),
+      lng: parseFloat(parseFloat(result.lon).toFixed(6)),
       display_name: result.display_name || address
     };
     
