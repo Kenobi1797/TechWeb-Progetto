@@ -176,6 +176,9 @@ const CatLocationSection = ({ cat, luogoValue }: { cat: CatWithComments; luogoVa
             }]}
             showPopups={false}
             showControls={false}
+            zoom={16}
+            center={[cat.latitude, cat.longitude]}
+            height="250px"
           />
         </div>
       ) : (

@@ -156,9 +156,19 @@ interface MapViewProps {
   readonly markers: readonly MarkerData[];
   readonly showPopups?: boolean;
   readonly showControls?: boolean;
+  readonly zoom?: number; // Zoom personalizzabile
+  readonly center?: [number, number]; // Centro personalizzabile
+  readonly height?: string; // Altezza personalizzabile
 }
 
-export default function MapView({ markers, showPopups = true, showControls = true }: MapViewProps) {
+export default function MapView({ 
+  markers, 
+  showPopups = true, 
+  showControls = true, 
+  zoom, 
+  center,
+  height = "520px"
+}: MapViewProps) {
   const { maptilerKey } = useDataCache();
   
   // Clustering dei marker
@@ -187,17 +197,20 @@ export default function MapView({ markers, showPopups = true, showControls = tru
     ? `https://api.maptiler.com/maps/hybrid/256/{z}/{x}/{y}.jpg?key=${maptilerKey}&lang=${userLang}`
     : "";
 
-  const defaultPos: [number, number] = markers.length
+  // Calcolo automatico del centro e zoom
+  const defaultPos: [number, number] = center || (markers.length
     ? [markers[0].lat, markers[0].lng]
-    : [41.4845, 13.4989]; // Default: Fondi
+    : [41.4845, 13.4989]); // Default: Fondi
+    
+  const defaultZoom = zoom || (markers.length === 1 ? 16 : 13); // Zoom maggiore per marker singolo
 
   return (
     <div
-      className="w-full aspect-video sm:aspect-[16/9] min-h-[220px] h-[520px] relative z-0"
+      className="w-full relative z-0"
       style={{
         minHeight: 220,
         maxWidth: "100vw",
-        height: "520px",
+        height: height,
         position: "relative",
         zIndex: 0
       }}
@@ -210,7 +223,7 @@ export default function MapView({ markers, showPopups = true, showControls = tru
   {maptilerKey && (
         <MapContainer
           center={defaultPos}
-          zoom={13}
+          zoom={defaultZoom}
           minZoom={2}
           maxZoom={19}
           style={{ width: "100%", height: "100%" }}
@@ -220,7 +233,7 @@ export default function MapView({ markers, showPopups = true, showControls = tru
           worldCopyJump={false}
           zoomControl={false}
           preferCanvas={true}
-          key={`map-${maptilerKey}`}
+          key={`map-${maptilerKey}-${defaultPos[0]}-${defaultPos[1]}-${defaultZoom}`}
         >
                     <ZoomControl position="bottomleft" />
           {showControls ? (
@@ -264,13 +277,22 @@ export default function MapView({ markers, showPopups = true, showControls = tru
           )}
           {showControls && <MapControlPanel markers={markers} />}
           {clusteredMarkers.map((m, i) => {
-            // Offset casuale se marker troppo vicini (mantenuto per ulteriore dispersione)
+            // Verifica che le coordinate siano valide prima di renderizzare il marker
+            if (!isFinite(m.lat) || !isFinite(m.lng) || 
+                Math.abs(m.lat) > 90 || Math.abs(m.lng) > 180) {
+              console.warn(`Coordinate non valide per marker ${i}:`, { lat: m.lat, lng: m.lng });
+              return null;
+            }
+            
+            // Utilizziamo le coordinate originali senza offset casuali per evitare imprecisioni
             let lat = m.lat;
             let lng = m.lng;
-            const threshold = 0.00015; // ~15m
+            
+            // Applichiamo un offset minimo solo per cluster con più marker nella stessa posizione esatta
             if ((m.count || 1) > 1) {
-              lat += (Math.random() - 0.5) * threshold * 0.5;
-              lng += (Math.random() - 0.5) * threshold * 0.5;
+              const minOffset = 0.0001; // ~10m - offset molto piccolo e deterministico
+              lat += (i % 3 - 1) * minOffset; // Pattern deterministico invece di random
+              lng += (Math.floor(i / 3) % 3 - 1) * minOffset;
             }
             
             // Icona personalizzata: sistema più sensato e organizzato
@@ -301,17 +323,16 @@ export default function MapView({ markers, showPopups = true, showControls = tru
               if ((m.count || 1) >= 2) return `🐈 ${m.count} gatti in questa area`;
               if (m.imageUrl) return `📸 ${m.title || "Avvistamento"} (con foto)`;
               return `📍 ${m.title || "Avvistamento"}`;
-            };
-            
-            const iconColor = getIconColor();
+            };            const iconColor = getIconColor();
             const iconSize = getIconSize();
             const customIcon = new L.Icon({
               iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${iconColor}.png`,
               shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
               iconSize: iconSize,
-              iconAnchor: [iconSize[0] / 2, iconSize[1]],
-              popupAnchor: [1, -iconSize[1] + 10],
+              iconAnchor: [Math.floor(iconSize[0] / 2), iconSize[1]], // Ancoraggio preciso alla base del marker
+              popupAnchor: [0, -iconSize[1]], // Popup centrato sopra il marker
               shadowSize: [41, 41],
+              shadowAnchor: [12, 41], // Ancoraggio dell'ombra
             });
             
             const markerTitle = getTooltipText();

@@ -122,26 +122,26 @@ const MarkdownCode = ({ className, children }: { className?: string; children: R
 
 // Componenti per titoli personalizzati
 const MarkdownH1 = ({ children }: { children: React.ReactNode }) => (
-  <h1 className="text-2xl font-bold mb-4 mt-6" style={{ color: "var(--color-primary)" }}>
+  <h1 className="text-2xl font-bold mb-4 mt-6 text-center" style={{ color: "var(--color-primary)" }}>
     {children}
   </h1>
 );
 
 const MarkdownH2 = ({ children }: { children: React.ReactNode }) => (
-  <h2 className="text-xl font-semibold mb-3 mt-5" style={{ color: "var(--color-primary)" }}>
+  <h2 className="text-xl font-semibold mb-3 mt-5 text-center" style={{ color: "var(--color-primary)" }}>
     {children}
   </h2>
 );
 
 const MarkdownH3 = ({ children }: { children: React.ReactNode }) => (
-  <h3 className="text-lg font-medium mb-2 mt-4" style={{ color: "var(--color-primary)" }}>
+  <h3 className="text-lg font-medium mb-2 mt-4 text-center" style={{ color: "var(--color-primary)" }}>
     {children}
   </h3>
 );
 
 // Componenti per testo
 const MarkdownParagraph = ({ children }: { children: React.ReactNode }) => (
-  <p className="mb-3 leading-relaxed" style={{ color: "var(--color-text-primary)" }}>
+  <p className="mb-3 leading-relaxed text-center" style={{ color: "var(--color-text-primary)" }}>
     {children}
   </p>
 );
@@ -239,7 +239,7 @@ export default function MarkdownViewer({ children, className, compact = false }:
 
   return (
     <section
-      className={`${className ?? baseClass} markdown-content`}
+      className={`${className ?? baseClass} markdown-content text-center`}
       aria-label="Contenuto formattato"
     >
       <ReactMarkdown 
