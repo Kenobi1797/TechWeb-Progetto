@@ -104,6 +104,50 @@ export const cityRegions: CityRegion[] = safeUrbanCoordinates.map(city => {
   };
 });
 
+// Titoli specifici per avvistamenti di gatti randagi
+export const strayCatTitles = [
+  "Gatto rosso cerca famiglia",
+  "Micino nero nel parco",
+  "Gattino grigio timido",
+  "Soriano affettuoso",
+  "Gatto bianco e nero",
+  "Piccolo randagio affamato",
+  "Micio tigrato dolce",
+  "Gatto dalle orecchie tagliate",
+  "Siamese mix in difficoltà",
+  "Gattina possibile mamma",
+  "Gatto anziano solitario",
+  "Cucciolo di gatto smarrito",
+  "Micio dal collare rotto",
+  "Gatto a pelo lungo",
+  "Randagio con gli occhi verdi",
+  "Gattino tutto nero",
+  "Soriano con la coda corta",
+  "Gatto calico femminile",
+  "Micio arancione vivace",
+  "Gatto tartarugato",
+  "Piccolo gatto bianco",
+  "Micio con una zampa ferita",
+  "Gatto europeo comune",
+  "Randagio dal pelo folto",
+  "Gattino con gli occhi azzurri",
+  "Micio trovatello",
+  "Gatto di strada esperto",
+  "Piccola gatta incinta",
+  "Soriano con il muso bianco",
+  "Gatto nero con pettorina bianca",
+  "Micio dal carattere dolce",
+  "Randagio socievole",
+  "Gattino appena svezzato",
+  "Micio abituato alle persone",
+  "Gatto dal pelo arruffato",
+  "Piccolo felino coraggioso",
+  "Micio in cerca di coccole",
+  "Gatto di quartiere",
+  "Randagio dalla coda lunga",
+  "Gattino dai baffi bianchi"
+];
+
 export const strayCatComments = [
   "Qualcuno sa se ha un nome? Lo vedo spesso vicino al tabaccaio.",
   "I bambini del quartiere gli hanno costruito una piccola cuccia.",

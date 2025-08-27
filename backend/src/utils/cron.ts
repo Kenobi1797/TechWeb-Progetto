@@ -4,47 +4,85 @@ import { faker } from '@faker-js/faker';
 import { insertCat } from '../db/catsDb';
 import { insertComment } from '../db/commentsDb';
 import { getAllUsers } from '../db/usersDb';
-import { strayCatComments, strayCatDescriptions, cityRegions } from './strayCat';
+import { strayCatComments, strayCatDescriptions, strayCatTitles, cityRegions } from './strayCat';
 import pool from '../config/db';
 
-// Zone d'acqua note per validazione coordinate
+// Zone d'acqua più precise per validazione coordinate
 const WATER_ZONES = [
-  { latMin: 20, latMax: 60, lonMin: -60, lonMax: -10 },   // Oceano Atlantico Nord
-  { latMin: -60, latMax: 20, lonMin: -50, lonMax: 10 },   // Oceano Atlantico Sud
-  { latMin: 0, latMax: 60, lonMin: -180, lonMax: -120 },  // Oceano Pacifico Nord
-  { latMin: -60, latMax: 0, lonMin: -180, lonMax: -70 },  // Oceano Pacifico Sud
-  { latMin: -60, latMax: 60, lonMin: 120, lonMax: 180 },  // Oceano Pacifico Ovest
-  { latMin: -60, latMax: 30, lonMin: 20, lonMax: 120 },   // Oceano Indiano
-  { latMin: 36, latMax: 40, lonMin: 8, lonMax: 16 },      // Mar Mediterraneo centrale
-  { latMin: 55, latMax: 59, lonMin: 15, lonMax: 25 },     // Mar Baltico centrale
-  { latMin: 53, latMax: 60, lonMin: 0, lonMax: 8 },       // Mare del Nord
-  { latMin: 23, latMax: 30, lonMin: -97, lonMax: -82 },   // Golfo del Messico
-  { latMin: 12, latMax: 28, lonMin: 32, lonMax: 43 },     // Mar Rosso
-  { latMin: 24, latMax: 30, lonMin: 48, lonMax: 56 },     // Golfo Persico
+  // Oceani principali - zone più ristrette e precise
+  { latMin: 30, latMax: 70, lonMin: -70, lonMax: -10, name: "Oceano Atlantico Nord" },
+  { latMin: -40, latMax: 10, lonMin: -50, lonMax: 20, name: "Oceano Atlantico Sud" },
+  { latMin: 10, latMax: 60, lonMin: -180, lonMax: -130, name: "Oceano Pacifico Nord-Est" },
+  { latMin: -50, latMax: 10, lonMin: -180, lonMax: -80, name: "Oceano Pacifico Sud-Est" },
+  { latMin: -40, latMax: 60, lonMin: 130, lonMax: 180, name: "Oceano Pacifico Ovest" },
+  { latMin: -40, latMax: 25, lonMin: 40, lonMax: 100, name: "Oceano Indiano" },
+  
+  // Mari specifici d'Europa e Mediterraneo - coordinate precise
+  { latMin: 30, latMax: 46, lonMin: -6, lonMax: 36, name: "Mar Mediterraneo" },
+  { latMin: 53, latMax: 66, lonMin: 10, lonMax: 30, name: "Mar Baltico" },
+  { latMin: 51, latMax: 62, lonMin: -4, lonMax: 12, name: "Mare del Nord" },
+  { latMin: 39, latMax: 48, lonMin: 27, lonMax: 42, name: "Mar Nero" },
+  { latMin: 35, latMax: 48, lonMin: 32, lonMax: 45, name: "Mar Caspio" },
+  
+  // Golfi e mari minori
+  { latMin: 18, latMax: 31, lonMin: -98, lonMax: -80, name: "Golfo del Messico" },
+  { latMin: 10, latMax: 30, lonMin: 32, lonMax: 43, name: "Mar Rosso" },
+  { latMin: 24, latMax: 30, lonMin: 48, lonMax: 56, name: "Golfo Persico" },
+  { latMin: 8, latMax: 24, lonMin: 50, lonMax: 60, name: "Mar Arabico" },
+  
+  // Zone lacustri principali
+  { latMin: 41, latMax: 47, lonMin: -90, lonMax: -76, name: "Grandi Laghi Nord America" },
+  { latMin: 50, latMax: 65, lonMin: 80, lonMax: 110, name: "Lago Baikal" },
+  
+  // Coordinate specifiche Italia - mari intorno
+  { latMin: 37, latMax: 40, lonMin: 11, lonMax: 18, name: "Mar Ionio" },
+  { latMin: 40, latMax: 45, lonMin: 12, lonMax: 16, name: "Mar Adriatico Sud" },
+  { latMin: 45, latMax: 46, lonMin: 12, lonMax: 14, name: "Laguna Veneziana" },
+  { latMin: 38, latMax: 41, lonMin: 8, lonMax: 10, name: "Mar di Sardegna" },
+  { latMin: 37, latMax: 39, lonMin: 13, lonMax: 16, name: "Stretto di Sicilia" },
 ];
 
 const CAT_API = 'https://api.thecatapi.com/v1/images/search?limit=1';
-const MAX_COORDINATE_ATTEMPTS = 10;
-const CITY_PROXIMITY_RADIUS = 0.05;
+const MAX_COORDINATE_ATTEMPTS = 15;
+const CITY_PROXIMITY_RADIUS = 0.03; // Ridotto per essere più precisi
 
-// Funzione per validare se le coordinate sono plausibili (non sull'acqua)
+// Funzione migliorata per validare se le coordinate sono su terraferma
 function isValidLandCoordinate(latitude: number, longitude: number): boolean {
   // Coordinate impossibili per terre emerse
   if (Math.abs(latitude) > 85) return false;
   
-  // Verifica se le coordinate cadono in zone d'acqua note
+  // Prima verifica se è vicino a una città conosciuta (alta priorità)
+  const nearCity = cityRegions.some(city => 
+    latitude >= city.latMin - CITY_PROXIMITY_RADIUS && 
+    latitude <= city.latMax + CITY_PROXIMITY_RADIUS &&
+    longitude >= city.lonMin - CITY_PROXIMITY_RADIUS && 
+    longitude <= city.lonMax + CITY_PROXIMITY_RADIUS
+  );
+  
+  // Se è vicino a una città, è sempre valido
+  if (nearCity) return true;
+  
+  // Altrimenti verifica se cade in zone d'acqua note
   for (const zone of WATER_ZONES) {
     if (latitude >= zone.latMin && latitude <= zone.latMax &&
         longitude >= zone.lonMin && longitude <= zone.lonMax) {
-      // Se è in una zona d'acqua, verifica se è vicino a una città conosciuta
-      const nearCity = cityRegions.some(city => 
-        latitude >= city.latMin - CITY_PROXIMITY_RADIUS && 
-        latitude <= city.latMax + CITY_PROXIMITY_RADIUS &&
-        longitude >= city.lonMin - CITY_PROXIMITY_RADIUS && 
-        longitude <= city.lonMax + CITY_PROXIMITY_RADIUS
-      );
-      return nearCity;
+      console.log(`Coordinate ${latitude}, ${longitude} cadono in ${zone.name}`);
+      return false;
     }
+  }
+  
+  // Controlli aggiuntivi per zone problematiche specifiche
+  
+  // Antartide (solo ricerca scientifica)
+  if (latitude < -60) return false;
+  
+  // Groenlandia centrale (ghiaccio)
+  if (latitude > 70 && longitude >= -50 && longitude <= -20) return false;
+  
+  // Sahara centrale (deserti estremi) - opzionale
+  if (latitude >= 15 && latitude <= 30 && longitude >= -10 && longitude <= 30) {
+    // Permetti solo se vicino a città note del Nord Africa
+    return nearCity;
   }
   
   return true;
@@ -124,11 +162,12 @@ async function createRandomCatSighting(users: any[]) {
   
   // Validazione aggiuntiva per assicurarsi che le coordinate non siano sull'acqua
   if (!isValidLandCoordinate(latitude, longitude)) {
-    console.log(`Cron: Coordinate non valide per ${city}, genero nuove coordinate`);
+    console.log(`Cron: Coordinate non valide per ${city}, salto questo avvistamento`);
     return;
   }
   
-  const title = faker.word.noun({ length: { min: 5, max: 15 } });
+  // Usa titoli specifici per gatti invece di parole casuali
+  const title = faker.helpers.arrayElement(strayCatTitles);
   const description = `${faker.helpers.arrayElement(strayCatDescriptions)} (${city})`;
 
   const cat = await insertCat(
