@@ -174,6 +174,8 @@ const CatLocationSection = ({ cat, luogoValue }: { cat: CatWithComments; luogoVa
               createdAt: cat.createdAt,
               description: cat.description ?? ""
             }]}
+            showPopups={false}
+            showControls={false}
           />
         </div>
       ) : (

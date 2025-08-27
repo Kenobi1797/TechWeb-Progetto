@@ -154,9 +154,11 @@ type MarkerData = {
 
 interface MapViewProps {
   readonly markers: readonly MarkerData[];
+  readonly showPopups?: boolean;
+  readonly showControls?: boolean;
 }
 
-export default function MapView({ markers }: MapViewProps) {
+export default function MapView({ markers, showPopups = true, showControls = true }: MapViewProps) {
   const { maptilerKey } = useDataCache();
   
   // Clustering dei marker
@@ -221,36 +223,46 @@ export default function MapView({ markers }: MapViewProps) {
           key={`map-${maptilerKey}`}
         >
                     <ZoomControl position="bottomleft" />
-          <LayersControl position="topleft">
-            <LayersControl.BaseLayer checked name="Strade">
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
-                url={tileUrl}
-                key="streets-layer"
-                maxZoom={19}
-                errorTileUrl="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
-              />
-            </LayersControl.BaseLayer>
-            <LayersControl.BaseLayer name="Satellite">
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
-                url={satelliteUrl}
-                key="satellite-layer"
-                maxZoom={19}
-                errorTileUrl="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
-              />
-            </LayersControl.BaseLayer>
-            <LayersControl.BaseLayer name="Ibrida">
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
-                url={hybridUrl}
-                key="hybrid-layer"
-                maxZoom={19}
-                errorTileUrl="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
-              />
-            </LayersControl.BaseLayer>
-          </LayersControl>
-          <MapControlPanel markers={markers} />
+          {showControls ? (
+            <LayersControl position="topleft">
+              <LayersControl.BaseLayer checked name="Strade">
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
+                  url={tileUrl}
+                  key="streets-layer"
+                  maxZoom={19}
+                  errorTileUrl="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+                />
+              </LayersControl.BaseLayer>
+              <LayersControl.BaseLayer name="Satellite">
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
+                  url={satelliteUrl}
+                  key="satellite-layer"
+                  maxZoom={19}
+                  errorTileUrl="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+                />
+              </LayersControl.BaseLayer>
+              <LayersControl.BaseLayer name="Ibrida">
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
+                  url={hybridUrl}
+                  key="hybrid-layer"
+                  maxZoom={19}
+                  errorTileUrl="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+                />
+              </LayersControl.BaseLayer>
+            </LayersControl>
+          ) : (
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler'
+              url={tileUrl}
+              key="streets-layer"
+              maxZoom={19}
+              errorTileUrl="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+            />
+          )}
+          {showControls && <MapControlPanel markers={markers} />}
           {clusteredMarkers.map((m, i) => {
             // Offset casuale se marker troppo vicini (mantenuto per ulteriore dispersione)
             let lat = m.lat;
@@ -311,56 +323,58 @@ export default function MapView({ markers }: MapViewProps) {
                 aria-label={markerTitle}
                 icon={customIcon}
               >
-                <Popup 
-                  maxWidth={300} 
-                  closeButton={true} 
-                  className="custom-popup"
-                  autoPan={true}
-                  keepInView={true}
-                  closeOnEscapeKey={true}
-                >
-                  {(m.count || 1) > 1 ? (
-                    <div className="p-4">
-                      <h3 className="font-bold text-xl mb-3" style={{ color: "var(--color-primary)" }}>
-                        {(m.count || 1) >= 5 ? "�" : "�🐱"} {m.count} avvistamenti in questa zona
-                      </h3>
-                      <div className="mb-3">
-                        {(m.count || 1) >= 5 && (
-                          <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm mb-2 inline-block">
-                            ⭐ Zona molto frequentata!
-                          </div>
-                        )}
-                        <p className="text-sm text-gray-700">
-                          {(() => {
-                            if ((m.count || 1) >= 5) {
-                              return "Questa è una zona ad alta concentrazione di gatti! Probabilmente c'è una colonia felina.";
-                            } else if ((m.count || 1) >= 3) {
-                              return "Zona con diversi avvistamenti. Potrebbe essere un'area frequentata dai gatti.";
-                            } else {
-                              return "Ci sono alcuni gatti avvistati in questa area.";
-                            }
-                          })()}
-                        </p>
+                {showPopups && (
+                  <Popup 
+                    maxWidth={300} 
+                    closeButton={true} 
+                    className="custom-popup"
+                    autoPan={true}
+                    keepInView={true}
+                    closeOnEscapeKey={true}
+                  >
+                    {(m.count || 1) > 1 ? (
+                      <div className="p-4">
+                        <h3 className="font-bold text-xl mb-3" style={{ color: "var(--color-primary)" }}>
+                          {(m.count || 1) >= 5 ? "🐾" : "🐱"} {m.count} avvistamenti in questa zona
+                        </h3>
+                        <div className="mb-3">
+                          {(m.count || 1) >= 5 && (
+                            <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm mb-2 inline-block">
+                              ⭐ Zona molto frequentata!
+                            </div>
+                          )}
+                          <p className="text-sm text-gray-700">
+                            {(() => {
+                              if ((m.count || 1) >= 5) {
+                                return "Questa è una zona ad alta concentrazione di gatti! Probabilmente c'è una colonia felina.";
+                              } else if ((m.count || 1) >= 3) {
+                                return "Zona con diversi avvistamenti. Potrebbe essere un'area frequentata dai gatti.";
+                              } else {
+                                return "Ci sono alcuni gatti avvistati in questa area.";
+                              }
+                            })()}
+                          </p>
+                        </div>
+                        <div className="text-xs text-gray-600 flex items-center gap-2">
+                          <span>📍 {m.lat.toFixed(4)}, {m.lng.toFixed(4)}</span>
+                          <span className="ml-auto">🔍 Usa lo zoom per vedere i dettagli</span>
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-600 flex items-center gap-2">
-                        <span>📍 {m.lat.toFixed(4)}, {m.lng.toFixed(4)}</span>
-                        <span className="ml-auto">🔍 Usa lo zoom per vedere i dettagli</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <MapMarkerPopup cat={{
-                      id: m.id ?? 0,
-                      userId: 0,
-                      title: m.title ?? "Avvistamento",
-                      description: m.description ?? "",
-                      imageUrl: m.imageUrl ?? null,
-                      latitude: m.lat,
-                      longitude: m.lng,
-                      status: 'active' as const,
-                      createdAt: m.createdAt ?? "",
-                    }} />
-                  )}
-                </Popup>
+                    ) : (
+                      <MapMarkerPopup cat={{
+                        id: m.id ?? 0,
+                        userId: 0,
+                        title: m.title ?? "Avvistamento",
+                        description: m.description ?? "",
+                        imageUrl: m.imageUrl ?? null,
+                        latitude: m.lat,
+                        longitude: m.lng,
+                        status: 'active' as const,
+                        createdAt: m.createdAt ?? "",
+                      }} />
+                    )}
+                  </Popup>
+                )}
               </Marker>
             );
           })}
