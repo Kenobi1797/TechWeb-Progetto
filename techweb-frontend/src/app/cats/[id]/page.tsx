@@ -7,6 +7,7 @@ import { fetchLocationFromCoordsServer } from "@/utils/ServerConnect";
 import MarkdownViewer from "@/components/MarkdownViewer";
 import { useCatDetails } from "@/utils/DataContext";
 import { Cat, Comment } from "@/utils/types";
+import { useAuth } from "@/utils/useAuth";
 
 const MapView = dynamic(() => import("@/components/MapView"), { 
   ssr: false,
@@ -251,29 +252,58 @@ const CommentCard = ({ comment }: { comment: Comment }) => (
 );
 
 // Componente per la sezione commenti
-const CommentsSection = ({ cat }: { cat: CatWithComments }) => (
-  <div className="card">
-    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-primary)" }}>
-      <span>💬</span>
-      <span>Commenti ({cat.comments?.length || 0})</span>
-    </h2>
-    
-    {!cat.comments || cat.comments.length === 0 ? (
-      <div className="text-center py-8 rounded-lg" style={{ background: "var(--color-surface)" }}>
-        <div className="text-4xl opacity-60 mb-3">💭</div>
-        <p className="italic" style={{ color: "var(--color-text-secondary)" }}>
-          Nessun commento ancora. Sii il primo a commentare questo avvistamento!
-        </p>
+const CommentsSection = ({ cat }: { cat: CatWithComments }) => {
+  const { isLoggedIn, isLoading } = useAuth();
+  let actionButton = null;
+  if (!isLoading) {
+    if (isLoggedIn) {
+      actionButton = (
+        <button
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow transition"
+          style={{ marginTop: "1rem" }}
+          onClick={() => alert('Qui apparirà il form per aggiungere un commento!')}
+        >
+          ➕ Aggiungi commento
+        </button>
+      );
+    } else {
+      actionButton = (
+        <a
+          href="/login"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow transition inline-block"
+          style={{ marginTop: "1rem" }}
+        >
+          🔒 Login per commentare
+        </a>
+      );
+    }
+  }
+  return (
+    <div className="card">
+      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-primary)" }}>
+        <span>💬</span>
+        <span>Commenti ({cat.comments?.length || 0})</span>
+      </h2>
+      {!cat.comments || cat.comments.length === 0 ? (
+        <div className="text-center py-8 rounded-lg" style={{ background: "var(--color-surface)" }}>
+          <div className="text-4xl opacity-60 mb-3">💭</div>
+          <p className="italic" style={{ color: "var(--color-text-secondary)" }}>
+            Nessun commento ancora. Sii il primo a commentare questo avvistamento!
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {cat.comments.map((comment) => (
+            <CommentCard key={comment.id} comment={comment} />
+          ))}
+        </div>
+      )}
+      <div className="mt-6 text-center">
+        {actionButton}
       </div>
-    ) : (
-      <div className="space-y-4">
-        {cat.comments.map((comment) => (
-          <CommentCard key={comment.id} comment={comment} />
-        ))}
-      </div>
-    )}
-  </div>
-);
+    </div>
+  );
+};
 
 export default function CatDetailPage() {
   const { id } = useParams<{ id: string }>();

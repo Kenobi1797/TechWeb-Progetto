@@ -18,7 +18,10 @@ export const addComment = async (
   const { cat_id } = req.params;
 
   if (!req.user) {
-    res.status(401).json({ error: 'Utente non autenticato' });
+    res.status(401).json({ 
+      error: 'Solo gli utenti autenticati possono contribuire con nuovi commenti. Effettua il login per partecipare alla community!',
+      code: 'NOT_AUTHENTICATED'
+    });
     return;
   }
   if (!content) {
