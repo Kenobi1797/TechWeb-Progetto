@@ -8,6 +8,7 @@ import MarkdownViewer from "@/components/MarkdownViewer";
 import { useCatDetails } from "@/utils/DataContext";
 import { Cat, Comment } from "@/utils/types";
 import { useAuth } from "@/utils/useAuth";
+import CommentForm from "@/components/CommentForm";
 
 const MapView = dynamic(() => import("@/components/MapView"), { 
   ssr: false,
@@ -254,20 +255,12 @@ const CommentCard = ({ comment }: { comment: Comment }) => (
 // Componente per la sezione commenti
 const CommentsSection = ({ cat }: { cat: CatWithComments }) => {
   const { isLoggedIn, isLoading } = useAuth();
-  let actionButton = null;
+  let actionContent = null;
   if (!isLoading) {
     if (isLoggedIn) {
-      actionButton = (
-        <button
-          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow transition"
-          style={{ marginTop: "1rem" }}
-          onClick={() => alert('Qui apparirà il form per aggiungere un commento!')}
-        >
-          ➕ Aggiungi commento
-        </button>
-      );
+      actionContent = <CommentForm catId={String(cat.id)} />;
     } else {
-      actionButton = (
+      actionContent = (
         <a
           href="/login"
           className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow transition inline-block"
@@ -299,7 +292,7 @@ const CommentsSection = ({ cat }: { cat: CatWithComments }) => {
         </div>
       )}
       <div className="mt-6 text-center">
-        {actionButton}
+        {actionContent}
       </div>
     </div>
   );
