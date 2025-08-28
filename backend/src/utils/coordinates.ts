@@ -97,67 +97,56 @@ export function validateAndParseCoordinates(
   const latitude = typeof lat === 'string' ? parseFloat(lat) : lat;
   const longitude = typeof lng === 'string' ? parseFloat(lng) : lng;
 
-  // Controllo NaN
+  // Controlli base
   if (isNaN(latitude) || isNaN(longitude)) {
-    return {
-      valid: false,
-      error: 'Coordinate non valide: devono essere numeri'
-    };
+    return { valid: false, error: 'Coordinate non valide: devono essere numeri' };
   }
 
-  // Validazione range latitudine
   if (latitude < -90 || latitude > 90) {
-    return {
-      valid: false,
-      error: 'Latitudine non valida: deve essere tra -90 e 90 gradi'
-    };
+    return { valid: false, error: 'Latitudine non valida: deve essere tra -90 e 90 gradi' };
   }
 
-  // Validazione range longitudine
   if (longitude < -180 || longitude > 180) {
-    return {
-      valid: false,
-      error: 'Longitudine non valida: deve essere tra -180 e 180 gradi'
-    };
+    return { valid: false, error: 'Longitudine non valida: deve essere tra -180 e 180 gradi' };
   }
 
-  // Validazione precisione (max 6 decimali per evitare precisione eccessiva)
-  const latPrecision = countDecimals(latitude);
-  const lngPrecision = countDecimals(longitude);
-  
-  if (latPrecision > 6 || lngPrecision > 6) {
-    return {
-      valid: false,
-      error: 'Precisione eccessiva: massimo 6 decimali per le coordinate'
-    };
+  // Controllo precisione
+  if (countDecimals(latitude) > 6 || countDecimals(longitude) > 6) {
+    return { valid: false, error: 'Precisione eccessiva: massimo 6 decimali per le coordinate' };
   }
 
-  // Controllo zone marine - se le coordinate sono in mare, le correggiamo
+  // Controllo zone marine e correzione
+  return validateLocation(latitude, longitude);
+}
+
+// Funzione separata per validazione location
+function validateLocation(latitude: number, longitude: number): CoordinateValidationResult {
   if (isInMarineZone(latitude, longitude)) {
     const nearestSafe = findNearestSafeArea(latitude, longitude);
     if (nearestSafe) {
-      console.log(`Coordinate in mare (${latitude}, ${longitude}) corrette verso ${nearestSafe.name}`);
+      // Log ridotto
+      if (process.env.NODE_ENV === 'development' && Math.random() < 0.1) {
+        console.log(`Coordinate corrette da mare verso ${nearestSafe.name}`);
+      }
       return {
         valid: true,
         latitude: parseFloat(nearestSafe.lat.toFixed(6)),
         longitude: parseFloat(nearestSafe.lng.toFixed(6))
       };
-    } else {
-      return {
-        valid: false,
-        error: 'Coordinate in zona marina: impossibile trovare gatti in mare'
-      };
     }
+    return { valid: false, error: 'Coordinate in zona marina: impossibile trovare gatti in mare' };
   }
 
-  // Se non è in area urbana sicura, ma non è nemmeno in mare, accettiamo con warning
-  if (!isInSafeUrbanArea(latitude, longitude)) {
-    console.log(`Attenzione: coordinate (${latitude}, ${longitude}) non in area urbana nota, ma accettate`);
+  // Log ridotto per aree non urbane
+  if (!isInSafeUrbanArea(latitude, longitude) && 
+      process.env.NODE_ENV === 'development' && 
+      Math.random() < 0.05) {
+    console.log(`Coordinate accettate: (${latitude}, ${longitude})`);
   }
 
   return {
     valid: true,
-    latitude: parseFloat(latitude.toFixed(6)), // Normalize a 6 decimali
+    latitude: parseFloat(latitude.toFixed(6)),
     longitude: parseFloat(longitude.toFixed(6))
   };
 }

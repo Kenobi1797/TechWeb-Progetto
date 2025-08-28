@@ -28,10 +28,12 @@ const setupMiddleware = () => {
   app.use(express.json({ limit: '10mb' }));
   app.use(compression());
 
-  // Logging semplificato per sviluppo
+  // Logging ottimizzato per ridurre spam di log
   if (isDev) {
     app.use((req: Request, res: Response, next: NextFunction) => {
-      if (!req.method.startsWith('GET') || req.url.includes('/debug/')) {
+      // Log solo operazioni significative, non le GET ripetute di /cats
+      if (!req.method.startsWith('GET') || 
+          (req.url.includes('/debug/') || req.url.includes('/auth'))) {
         console.log(`${req.method} ${req.url}`);
       }
       next();

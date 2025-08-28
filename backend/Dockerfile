@@ -10,4 +10,5 @@ RUN npm prune \
 COPY . .
 EXPOSE 5000
 
-CMD ["npx", "ts-node-dev", "--respawn", "--transpile-only", "src/server.ts"]
+# Configurazione ottimizzata per ridurre riavvii in sviluppo
+CMD ["npx", "ts-node-dev", "--respawn", "--transpile-only", "--ignore-watch", "node_modules", "--poll", "src/server.ts"]

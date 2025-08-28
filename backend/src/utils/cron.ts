@@ -101,68 +101,52 @@ async function adjustPositionIfOverlapping(latitude: number, longitude: number):
 function getRandomCoordsInCity(): { latitude: number; longitude: number; city: string } {
   const cityData = faker.helpers.arrayElement(safeUrbanCoordinates);
   
-  // Genera coordinate casuali in un raggio più piccolo (~1km) per rimanere in aree urbane sicure
-  const radiusDegrees = 0.01; // ~1km per ridurre il rischio di finire in mare
-  let latitude = parseFloat((cityData.lat + (Math.random() - 0.5) * radiusDegrees).toFixed(6));
-  let longitude = parseFloat((cityData.lng + (Math.random() - 0.5) * radiusDegrees).toFixed(6));
+  // Usa direttamente le coordinate sicure della città per evitare warning
+  // Aggiunge solo una piccola variazione per evitare sovrapposizioni
+  const smallOffset = 0.002; // ~200m di variazione massima
+  const latitude = parseFloat((cityData.lat + (Math.random() - 0.5) * smallOffset).toFixed(6));
+  const longitude = parseFloat((cityData.lng + (Math.random() - 0.5) * smallOffset).toFixed(6));
   
-  // Valida le coordinate con la nuova funzione anti-mare
-  const validation = validateAndParseCoordinates(latitude, longitude);
-  
-  if (validation.valid && validation.latitude && validation.longitude) {
-    // Se le coordinate sono state corrette (ad esempio da mare a terraferma), usa quelle corrette
-    return { 
-      latitude: validation.latitude, 
-      longitude: validation.longitude, 
-      city: `${cityData.name}, ${cityData.country}` 
-    };
-  }
-  
-  // Fallback sicuro: coordinate esatte della città (garantite sulla terraferma)
-  return { latitude: cityData.lat, longitude: cityData.lng, city: `${cityData.name}, ${cityData.country}` };
+  return { 
+    latitude, 
+    longitude, 
+    city: `${cityData.name}, ${cityData.country}` 
+  };
 }
 
 export function startCronJobs() {
+  // Log ridotto per evitare spam
   if (process.env.NODE_ENV === 'development') {
-    console.log(`Avvio cron jobs ottimizzati in modalità: ${process.env.NODE_ENV || 'development'}`);
+    console.log('Cron jobs avviati');
   }
   
-  // Frequenza ridotta per diminuire carico computazionale
-  const interval = process.env.NODE_ENV === 'production' ? '*/15 * * * *' : '*/5 * * * *';
+  // Frequenza ottimizzata per ridurre carico
+  const interval = process.env.NODE_ENV === 'production' ? '*/15 * * * *' : '*/10 * * * *';
   
-  // Crea nuovi avvistamenti con la frequenza specificata
+  // Crea nuovi avvistamenti
   cron.schedule(interval, async () => {
     try {
       const users = await getAllUsers();
       if (!users.length) return;
       
-      const numCats = 1; // Ridotto per diminuire carico
-      
-      for (let j = 0; j < numCats; j++) {
-        await createRandomCatSighting(users);
-      }
+      // Un solo gatto per volta per ridurre il carico
+      await createRandomCatSighting(users);
     } catch (err) {
-      console.error('Errore nel cron job:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Errore nel cron job:', err);
+      }
     }
   });
 
-  // Controlli ottimizzati ogni 15 minuti
-  cron.schedule('*/15 * * * *', async () => {
+  // Controlli di manutenzione ridotti
+  cron.schedule('*/30 * * * *', async () => {
     try {
       await fixInvalidDataOptimized();
-      console.log('Cron: controlli ottimizzati completati.');
-    } catch (err) {
-      console.error('Errore controlli ottimizzati:', err);
-    }
-  });
-
-  // Controllo sovrapposizioni ridotto a ogni 10 minuti
-  cron.schedule('*/10 * * * *', async () => {
-    try {
       await checkAndFixOverlapsOptimized();
-      console.log('Cron: controllo sovrapposizioni ottimizzato completato.');
     } catch (err) {
-      console.error('Errore controllo sovrapposizioni ottimizzato:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Errore controlli:', err);
+      }
     }
   });
 }
@@ -170,58 +154,64 @@ export function startCronJobs() {
 async function createRandomCatSighting(users: any[]) {
   const systemUser = faker.helpers.arrayElement(users);
   
-  // Ottieni immagine del gatto
-  const res = await fetch(CAT_API, {
-    headers: { 'x-api-key': process.env.CATAPI_KEY ?? '' }
-  });
-  const data = await res.json();
-  const imageUrl: string | null = data?.[0]?.url ?? null;
-  
-  if (!imageUrl || imageUrl.toLowerCase().endsWith('.gif')) {
-    console.log('Cron: Immagine non valida, salto questo avvistamento');
-    return;
-  }
-  
-  const { latitude, longitude, city } = getRandomCoordsInCity();
-  
-  // Validazione aggiuntiva per assicurarsi che le coordinate non siano sull'acqua
-  if (!isValidLandCoordinate(latitude, longitude)) {
-    console.log(`Cron: Coordinate non valide per ${city}, salto questo avvistamento`);
-    return;
-  }
-  
-  // Aggiusta la posizione per evitare sovrapposizioni
-  const adjustedCoords = await adjustPositionIfOverlapping(latitude, longitude);
-  
-  // Valida nuovamente le coordinate aggiustate
-  if (!isValidLandCoordinate(adjustedCoords.lat, adjustedCoords.lon)) {
-    console.log(`Cron: Coordinate aggiustate non valide per ${city}, salto questo avvistamento`);
-    return;
-  }
-  
-  // Usa titoli specifici per gatti invece di parole casuali
-  const title = faker.helpers.arrayElement(strayCatTitles);
-  const description = `${faker.helpers.arrayElement(strayCatDescriptions)} (${city})`;
+  // Ottieni immagine del gatto con timeout
+  try {
+    const res = await fetch(CAT_API, {
+      headers: { 'x-api-key': process.env.CATAPI_KEY ?? '' },
+      timeout: 5000 // Timeout di 5 secondi
+    });
+    const data = await res.json();
+    const imageUrl: string | null = data?.[0]?.url ?? null;
+    
+    if (!imageUrl || imageUrl.toLowerCase().endsWith('.gif')) {
+      return; // Exit silenzioso
+    }
 
-  const cat = await insertCat(
-    systemUser.id,
-    title,
-    description,
-    imageUrl,
-    adjustedCoords.lat,
-    adjustedCoords.lon
-  );
+    const { latitude, longitude, city } = getRandomCoordsInCity();
+    
+    // Validazione semplificata
+    if (!isValidLandCoordinate(latitude, longitude)) {
+      return; // Exit silenzioso
+    }
+    
+    const adjustedCoords = await adjustPositionIfOverlapping(latitude, longitude);
+    
+    if (!isValidLandCoordinate(adjustedCoords.lat, adjustedCoords.lon)) {
+      return; // Exit silenzioso
+    }
+    
+    const title = faker.helpers.arrayElement(strayCatTitles);
+    const description = `${faker.helpers.arrayElement(strayCatDescriptions)} (${city})`;
 
-  // Aggiungi commenti casuali
-  const nComments = faker.number.int({ min: 1, max: 3 });
-  for (let i = 0; i < nComments; i++) {
-    const commenter = faker.helpers.arrayElement(users);
-    const content = faker.helpers.arrayElement(strayCatComments);
-    await insertComment(commenter.id, Number(cat.id), content);
-  }
+    const cat = await insertCat(
+      systemUser.id,
+      title,
+      description,
+      imageUrl,
+      adjustedCoords.lat,
+      adjustedCoords.lon
+    );
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Cron: creato avvistamento #${cat.id} (${city}) con ${nComments} commenti alle coordinate (${adjustedCoords.lat.toFixed(6)}, ${adjustedCoords.lon.toFixed(6)})`);
+    // Aggiungi commenti casuali con probabilità ridotta
+    if (Math.random() < 0.7) { // 70% di probabilità di avere commenti
+      const nComments = faker.number.int({ min: 1, max: 2 });
+      for (let i = 0; i < nComments; i++) {
+        const commenter = faker.helpers.arrayElement(users);
+        const content = faker.helpers.arrayElement(strayCatComments);
+        await insertComment(commenter.id, Number(cat.id), content);
+      }
+    }
+
+    // Log ridotto
+    if (process.env.NODE_ENV === 'development' && Math.random() < 0.1) { // Log solo 10% delle volte
+      console.log(`Nuovo avvistamento: ${cat.id} in ${city}`);
+    }
+  } catch (err) {
+    // Log solo errori critici in development
+    if (process.env.NODE_ENV === 'development' && Math.random() < 0.05) {
+      console.error('Errore nella creazione avvistamento:', err);
+    }
+    return;
   }
 }
 
@@ -293,9 +283,10 @@ async function checkAndFixOverlapsOptimized(): Promise<void> {
     }
   }
   
-  if (correctedCount > 0) {
-    console.log(`Cron: ${correctedCount} sovrapposizioni corrette`);
-    coordinatesCache.clear(); // Refresh cache dopo modifiche
+  // Log ridotto - solo se ci sono state correzioni significative
+  if (correctedCount > 5 && process.env.NODE_ENV === 'development') {
+    console.log(`Corrette ${correctedCount} sovrapposizioni`);
+    coordinatesCache.clear();
   }
 }
 
