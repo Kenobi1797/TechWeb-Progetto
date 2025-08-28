@@ -201,3 +201,162 @@ export function calculateDistance(
 function toRadians(degrees: number): number {
   return degrees * (Math.PI / 180);
 }
+
+/**
+ * Genera coordinate casuali entro un raggio specificato da un punto centrale
+ */
+export function generateRandomCoordinatesInRadius(
+  centerLat: number, 
+  centerLon: number, 
+  radiusMeters: number
+): { lat: number; lon: number } {
+  const radiusInDegrees = radiusMeters / 111000; // Approssimazione: 1 grado ≈ 111km
+  
+  const angle = Math.random() * 2 * Math.PI;
+  const distance = Math.random() * radiusInDegrees;
+  
+  const deltaLat = distance * Math.cos(angle);
+  const deltaLon = distance * Math.sin(angle) / Math.cos(toRadians(centerLat));
+  
+  return {
+    lat: parseFloat((centerLat + deltaLat).toFixed(6)),
+    lon: parseFloat((centerLon + deltaLon).toFixed(6))
+  };
+}
+
+/**
+ * Verifica se le coordinate sono valide
+ */
+export function areValidCoordinates(lat: number, lon: number): boolean {
+  return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+}
+
+/**
+ * Verifica se le coordinate sono in Italia (approssimativo)
+ */
+export function areCoordinatesInItaly(lat: number, lon: number): boolean {
+  return lat >= 35 && lat <= 47.5 && lon >= 6 && lon <= 19;
+}
+
+/**
+ * Calcola il punto medio tra due coordinate
+ */
+export function calculateMidpoint(lat1: number, lon1: number, lat2: number, lon2: number): { lat: number; lon: number } {
+  const φ1 = toRadians(lat1);
+  const φ2 = toRadians(lat2);
+  const Δλ = toRadians(lon2 - lon1);
+
+  const Bx = Math.cos(φ2) * Math.cos(Δλ);
+  const By = Math.cos(φ2) * Math.sin(Δλ);
+
+  const φ3 = Math.atan2(
+    Math.sin(φ1) + Math.sin(φ2),
+    Math.sqrt((Math.cos(φ1) + Bx) * (Math.cos(φ1) + Bx) + By * By)
+  );
+  const λ3 = toRadians(lon1) + Math.atan2(By, Math.cos(φ1) + Bx);
+
+  return {
+    lat: parseFloat((φ3 * 180 / Math.PI).toFixed(6)),
+    lon: parseFloat((λ3 * 180 / Math.PI).toFixed(6))
+  };
+}
+
+/**
+ * Trova le coordinate che minimizzano la sovrapposizione con punti esistenti
+ */
+export function findOptimalPosition(
+  targetLat: number,
+  targetLon: number,
+  existingPoints: Array<{ lat: number; lon: number }>,
+  maxRadiusMeters: number = 500,
+  minDistanceMeters: number = 100,
+  maxAttempts: number = 20
+): { lat: number; lon: number; attempts: number } {
+  let bestPosition = { lat: targetLat, lon: targetLon };
+  let bestMinDistance = 0;
+  let attempts = 0;
+
+  // Calcola la distanza minima dalla posizione iniziale
+  for (const point of existingPoints) {
+    const distance = calculateDistance(targetLat, targetLon, point.lat, point.lon) * 1000; // Converti in metri
+    if (attempts === 0 || distance < bestMinDistance) {
+      bestMinDistance = distance;
+    }
+  }
+
+  // Se la posizione iniziale è già buona, usala
+  if (bestMinDistance >= minDistanceMeters) {
+    return { lat: targetLat, lon: targetLon, attempts: 0 };
+  }
+
+  // Prova a trovare una posizione migliore
+  for (let i = 0; i < maxAttempts; i++) {
+    attempts++;
+    const newPos = generateRandomCoordinatesInRadius(targetLat, targetLon, maxRadiusMeters);
+    
+    let minDistanceFromExisting = Infinity;
+    for (const point of existingPoints) {
+      const distance = calculateDistance(newPos.lat, newPos.lon, point.lat, point.lon) * 1000; // Converti in metri
+      minDistanceFromExisting = Math.min(minDistanceFromExisting, distance);
+    }
+
+    if (minDistanceFromExisting > bestMinDistance) {
+      bestMinDistance = minDistanceFromExisting;
+      bestPosition = newPos;
+      
+      // Se abbiamo trovato una posizione abbastanza buona, fermati
+      if (minDistanceFromExisting >= minDistanceMeters) {
+        break;
+      }
+    }
+  }
+
+  return { ...bestPosition, attempts };
+}
+
+/**
+ * Raggruppa punti vicini e calcola i centroidi
+ */
+export function clusterNearbyPoints(
+  points: Array<{ lat: number; lon: number; id?: string }>,
+  maxDistanceMeters: number = 200
+): Array<{ lat: number; lon: number; count: number; ids: string[] }> {
+  const clusters: Array<{ lat: number; lon: number; count: number; ids: string[] }> = [];
+  const processed = new Set<number>();
+
+  for (let i = 0; i < points.length; i++) {
+    if (processed.has(i)) continue;
+
+    const cluster = {
+      lat: points[i].lat,
+      lon: points[i].lon,
+      count: 1,
+      ids: [points[i].id || i.toString()]
+    };
+
+    processed.add(i);
+
+    // Trova tutti i punti vicini
+    for (let j = i + 1; j < points.length; j++) {
+      if (processed.has(j)) continue;
+
+      const distance = calculateDistance(
+        points[i].lat, points[i].lon,
+        points[j].lat, points[j].lon
+      ) * 1000; // Converti in metri
+
+      if (distance <= maxDistanceMeters) {
+        // Aggiorna il centroide
+        cluster.lat = (cluster.lat * cluster.count + points[j].lat) / (cluster.count + 1);
+        cluster.lon = (cluster.lon * cluster.count + points[j].lon) / (cluster.count + 1);
+        cluster.count++;
+        cluster.ids.push(points[j].id || j.toString());
+        processed.add(j);
+      }
+    }
+
+    clusters.push(cluster);
+  }
+
+  return clusters;
+}
