@@ -1,3 +1,18 @@
+export interface CityCoordinate {
+  name: string;
+  lat: number;
+  lng: number;
+  country: string;
+}
+
+export interface CityRegion {
+  name: string;
+  latMin: number;
+  latMax: number;
+  lonMin: number;
+  lonMax: number;
+  country: string;
+}
 export interface User {
   id: number;
   username: string;

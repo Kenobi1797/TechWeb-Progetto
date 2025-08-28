@@ -1,21 +1,4 @@
-// Lista di città del mondo con coordinate terrestri verificate (no oceani/mari/laghi)
-// Coordinate centrali di aree urbane sicure per generare avvistamenti di gatti randagi
-interface CityCoordinate {
-  name: string;
-  lat: number;
-  lng: number;
-  country: string;
-}
-
-// Definizione delle regioni delle città per la validazione
-interface CityRegion {
-  name: string;
-  latMin: number;
-  latMax: number;
-  lonMin: number;
-  lonMax: number;
-  country: string;
-}
+import { CityCoordinate, CityRegion } from "./types";
 
 export const safeUrbanCoordinates: CityCoordinate[] = [
   // Europa
