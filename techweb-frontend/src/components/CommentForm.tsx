@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { addComment } from "../utils/ServerConnect";
 
 interface CommentFormProps {
   readonly catId: string;
@@ -17,25 +18,16 @@ export default function CommentForm({ catId, onCommentAdded }: CommentFormProps)
     setError(null);
     setSuccess(false);
     try {
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
-  const res = await fetch(`${backendUrl}/comments/${catId}/comments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ content }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Errore nell'invio del commento");
+      await addComment(catId, content);
+      setContent("");
+      setSuccess(true);
+      if (onCommentAdded) onCommentAdded();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Errore nell'invio del commento");
       } else {
-        setContent("");
-        setSuccess(true);
-        if (onCommentAdded) onCommentAdded();
+        setError("Errore nell'invio del commento");
       }
-    } catch {
-      setError("Errore di rete");
     } finally {
       setLoading(false);
     }

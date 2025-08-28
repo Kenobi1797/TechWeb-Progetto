@@ -337,7 +337,7 @@ export async function addComment(
   content: string
 ): Promise<Comment> {
   const data = await handleAuthenticatedFetch<CommentApiResponse>(
-    () => fetch(`${API_URL}/${catId}/comments`, {
+    () => fetch(`${API_URL}/comments/${catId}/comments`, {
       method: "POST",
       credentials: "include",
       headers: { 
