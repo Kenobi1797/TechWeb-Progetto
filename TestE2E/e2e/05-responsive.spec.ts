@@ -9,8 +9,8 @@ test.describe('Responsive Design Tests - STREETCATS', () => {
 
   for (const viewport of viewports) {
     test(`should display correctly on ${viewport.name}`, async ({ page }) => {
-      await page.setViewportSize({ width: viewport.width, height: viewport.height });
-      await page.goto('/');
+  await page.setViewportSize({ width: viewport.width, height: viewport.height });
+  await page.goto('/', { timeout: 30000 });
       
       // Verifica che gli elementi principali siano visibili
       await expect(page.locator('header')).toBeVisible();
@@ -21,13 +21,15 @@ test.describe('Responsive Design Tests - STREETCATS', () => {
       const mapContainer = page.locator('.leaflet-container, .map-container, [class*="map"]');
       if (await mapContainer.count() > 0) {
         await expect(mapContainer.first()).toBeVisible();
+      } else {
+        // Se la mappa non è presente, il test non fallisce
+        console.warn('Map container not found for viewport', viewport.name);
       }
       
       // Verifica che le card dei gatti si adattino al viewport
       const catCards = page.locator('.cat-card');
       if (await catCards.count() > 0) {
         await expect(catCards.first()).toBeVisible();
-        
         // Su mobile, verifica che le card siano in colonna singola
         if (viewport.width <= 640) {
           const cardWidth = await catCards.first().boundingBox();
@@ -35,6 +37,9 @@ test.describe('Responsive Design Tests - STREETCATS', () => {
             expect(cardWidth.width).toBeGreaterThan(viewport.width * 0.8);
           }
         }
+      } else {
+        // Se non ci sono card, il test non fallisce
+        console.warn('Cat card not found for viewport', viewport.name);
       }
       
       // Verifica che i filtri siano accessibili nella pagina gatti

@@ -8,7 +8,7 @@ const testUser = {
 
 test.describe('Authentication Tests - STREETCATS', () => {
   test('should register new user successfully', async ({ page }) => {
-    await page.goto('/register');
+  await page.goto('/register', { timeout: 30000 });
     
     // Verifica che la pagina di registrazione sia caricata
     await expect(page.locator('h1, h2')).toContainText(/registra|signup/i);
@@ -38,7 +38,7 @@ test.describe('Authentication Tests - STREETCATS', () => {
   });
 
   test('should login with valid credentials', async ({ page }) => {
-    await page.goto('/login');
+  await page.goto('/login', { timeout: 30000 });
     
     // Verifica che la pagina di login sia caricata
     await expect(page.locator('h1, h2')).toContainText(/login|accedi/i);

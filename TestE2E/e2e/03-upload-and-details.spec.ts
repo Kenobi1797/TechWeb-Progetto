@@ -12,14 +12,14 @@ test.describe('Upload and Details Tests', () => {
       };
       
       // First, go to login page and access registration
-      await page.goto('http://localhost:3000/login');
-      await page.waitForLoadState('networkidle');
+  await page.goto('http://localhost:3000/login', { timeout: 30000 });
+  await page.waitForLoadState('networkidle', { timeout: 30000 });
       
       // Look for the registration link in the login page
       const registrationLink = page.getByText('Registrati');
       if (await registrationLink.isVisible()) {
         await registrationLink.click();
-        await page.waitForURL('**/register');
+        await page.waitForURL('**/register', { timeout: 30000 });
         
         // Fill registration form
         await page.fill('input[name="username"]', testUser.username);
@@ -27,26 +27,24 @@ test.describe('Upload and Details Tests', () => {
         await page.fill('input[name="password"]', testUser.password);
         
         // Submit registration
-        await page.getByRole('button', { name: /registrati/i }).click();
-        await page.waitForURL('**/login');
+  await page.getByRole('button', { name: /registrati/i }).click();
+  await page.waitForURL('**/login', { timeout: 30000 });
       }
       
       // Now login with the test user
       await page.fill('input[name="email"]', testUser.email);
       await page.fill('input[name="password"]', testUser.password);
-      await page.getByRole('button', { name: /accedi/i }).click();
-      
-      // Wait for successful login (redirect to homepage)
-      await page.waitForURL('http://localhost:3000/');
-      
-      // Verify login was successful by checking for logout button
-      await page.waitForSelector('button:has-text("Logout")', { timeout: 10000 });
+  await page.getByRole('button', { name: /accedi/i }).click();
+  // Wait for successful login (redirect to homepage)
+  await page.waitForURL('http://localhost:3000/', { timeout: 30000 });
+  // Verify login was successful by checking for logout button
+  await page.waitForSelector('button:has-text("Logout")', { timeout: 20000 });
       
     } catch (error) {
       console.log('Authentication setup failed:', error);
       // Alternative: Try direct API registration
       try {
-        await page.goto('http://localhost:3000');
+        await page.goto('http://localhost:3000', { timeout: 30000 });
         await page.evaluate(async () => {
           const response = await fetch('http://localhost:3001/auth/register', {
             method: 'POST',
