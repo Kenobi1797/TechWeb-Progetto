@@ -1,9 +1,4 @@
-export interface CoordinateValidationResult {
-  valid: boolean;
-  latitude?: number;
-  longitude?: number;
-  error?: string;
-}
+import { CoordinateValidationResult } from "./types";
 
 const MARINE_ZONES = [
   { latMin: 35, latMax: 42, lonMin: 8, lonMax: 20, name: "Mar Mediterraneo centrale" },
