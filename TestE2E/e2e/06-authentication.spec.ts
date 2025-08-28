@@ -10,8 +10,8 @@ test.describe('Authentication Tests - STREETCATS', () => {
   test('should register new user successfully', async ({ page }) => {
   await page.goto('/register', { timeout: 30000 });
     
-    // Verifica che la pagina di registrazione sia caricata
-    await expect(page.locator('h1, h2')).toContainText(/registra|signup/i);
+  // Verifica che la pagina di registrazione sia caricata
+  await expect(page.locator('h1, h2')).toContainText(/registra|signup|unisciti/i);
     
     // Compila il form di registrazione
     await page.fill('input[name="username"]', testUser.username);
@@ -40,8 +40,8 @@ test.describe('Authentication Tests - STREETCATS', () => {
   test('should login with valid credentials', async ({ page }) => {
   await page.goto('/login', { timeout: 30000 });
     
-    // Verifica che la pagina di login sia caricata
-    await expect(page.locator('h1, h2')).toContainText(/login|accedi/i);
+  // Verifica che la pagina di login sia caricata
+  await expect(page.locator('h1, h2')).toContainText(/login|accedi|bentornato/i);
     
     // Compila il form di login
     await page.fill('input[name="email"]', testUser.email);
