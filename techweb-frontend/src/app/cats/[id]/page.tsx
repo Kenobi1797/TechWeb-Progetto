@@ -5,10 +5,9 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { fetchLocationFromCoordsServer } from "@/utils/ServerConnect";
 import MarkdownViewer from "@/components/MarkdownViewer";
-import { useCatDetails } from "@/utils/DataContext";
+import { useCatDetails, DataContext } from "@/utils/DataContext";
 import { Cat, Comment } from "@/utils/types";
 import { useAuth } from "@/utils/useAuth";
-import { DataContext } from "@/utils/DataContext";
 import CommentForm from "@/components/CommentForm";
 
 const MapView = dynamic(() => import("@/components/MapView"), { 
