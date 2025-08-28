@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import dynamic from "next/dynamic";
@@ -8,6 +8,7 @@ import MarkdownViewer from "@/components/MarkdownViewer";
 import { useCatDetails } from "@/utils/DataContext";
 import { Cat, Comment } from "@/utils/types";
 import { useAuth } from "@/utils/useAuth";
+import { DataContext } from "@/utils/DataContext";
 import CommentForm from "@/components/CommentForm";
 
 const MapView = dynamic(() => import("@/components/MapView"), { 
@@ -255,10 +256,20 @@ const CommentCard = ({ comment }: { comment: Comment }) => (
 // Componente per la sezione commenti
 const CommentsSection = ({ cat }: { cat: CatWithComments }) => {
   const { isLoggedIn, isLoading } = useAuth();
+  const dataContext = React.useContext(DataContext);
+  const fetchCatDetails = dataContext?.fetchCatDetails;
+  const [refreshing, setRefreshing] = useState(false);
+  const handleCommentAdded = async () => {
+    setRefreshing(true);
+    if (fetchCatDetails) {
+      await fetchCatDetails(String(cat.id));
+    }
+    setRefreshing(false);
+  };
   let actionContent = null;
   if (!isLoading) {
     if (isLoggedIn) {
-      actionContent = <CommentForm catId={String(cat.id)} />;
+      actionContent = <CommentForm catId={String(cat.id)} onCommentAdded={handleCommentAdded} />;
     } else {
       actionContent = (
         <a
@@ -293,6 +304,7 @@ const CommentsSection = ({ cat }: { cat: CatWithComments }) => {
       )}
       <div className="mt-6 text-center">
         {actionContent}
+        {refreshing && <p className="text-xs text-gray-500 mt-2">Aggiornamento commenti...</p>}
       </div>
     </div>
   );

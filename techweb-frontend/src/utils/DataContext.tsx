@@ -32,7 +32,7 @@ interface CacheContext {
   getCatsWithFilter: (filter?: (cat: Cat) => boolean) => Cat[];
 }
 
-const DataContext = createContext<CacheContext | null>(null);
+export const DataContext = createContext<CacheContext | null>(null);
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minuti
 const AUTO_REFRESH_INTERVAL = 30 * 1000; // 30 secondi

@@ -17,7 +17,8 @@ export default function CommentForm({ catId, onCommentAdded }: CommentFormProps)
     setError(null);
     setSuccess(false);
     try {
-      const res = await fetch(`/api/cats/${catId}/comments`, {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  const res = await fetch(`${backendUrl}/comments/${catId}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
