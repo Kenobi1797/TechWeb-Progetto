@@ -21,16 +21,30 @@ test.describe('Homepage Tests', () => {
 
   test('Search functionality moved to cats page', async ({ page }) => {
     // La barra di ricerca è stata spostata nella pagina gatti
-    await page.getByRole('link', { name: /gatti|cats/i }).click();
+    // Prova a cliccare il link con testo esatto 'Gatti' oppure href '/cats'
+    const catsLink = await page.getByRole('link', { name: /Gatti|🐾 Gatti/ });
+    if (await catsLink.count() > 0) {
+      await catsLink.first().click();
+    } else {
+      // Fallback: cerca il link con href '/cats'
+      await page.locator('a[href="/cats"]').first().click();
+    }
     await expect(page).toHaveURL(/.*\/cats/);
-    
+
     // Verifica la presenza dei filtri di ricerca
-    await expect(page.getByText('🔍 Filtri di ricerca')).toBeVisible();
-    
-    // Verifica che ci siano i filtri dropdown
-    await expect(page.getByLabel('Ordina per:')).toBeVisible();
-    await expect(page.getByLabel('Periodo:')).toBeVisible();
-    await expect(page.getByLabel('Stato:')).toBeVisible();
+  // Verifica la presenza della barra di ricerca tramite placeholder
+  await expect(page.getByPlaceholder('🔍 Cerca gatti per nome, descrizione...')).toBeVisible();
+
+  // Verifica che ci siano i filtri: "Ordina", bottoni periodo e stato
+  await expect(page.getByText('Ordina:')).toBeVisible();
+  await expect(page.getByRole('combobox')).toBeVisible();
+  await expect(page.getByRole('button', { name: '🐾 Attivi' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '🏠 Adottati' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '📍 Spostati' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '📆 Oggi' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '📅 7gg' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '🗓️ 30gg' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '🗓️ Range' })).toBeVisible();
   });
 
   test('Map is displayed on homepage', async ({ page }) => {
