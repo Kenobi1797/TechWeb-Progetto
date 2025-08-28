@@ -33,58 +33,59 @@ Benvenuto su **Streetcats**, la piattaforma web per la condivisione di avvistame
 
 ---
 
-## 🚀 Avvio rapido
+## 🚀 Istruzioni dettagliate di esecuzione
 
-### 1. Installa le dipendenze
+### Backend
 
-Backend:
-```bash
-cd backend
-npm install
-```
-Frontend:
-```bash
-cd techweb-frontend
-npm install
-```
-Test E2E:
-```bash
-cd TestE2E
-npm install
-```
+1. Accedi alla cartella backend:
+   cd backend
+2. Installa le dipendenze:
+   npm install
+3. Configura il file `.env` con i parametri richiesti (vedi esempio in `.env.example` se presente).
+4. Avvia il server:
+   npm run dev
+   # oppure
+   npm start
+   Il backend sarà attivo su http://localhost:5000
 
-### 2. Avvia i servizi
+5. Per avviare tramite Docker:
+   docker build -t streetcats-backend .
+   docker run -p 5000:5000 streetcats-backend
+   Oppure usa direttamente:
+   docker compose up --build
 
-Backend:
-```bash
-npm run dev
-# oppure
-npm start
-```
-Frontend:
-```bash
-npm run dev
-```
+### Frontend
 
-### 3. Avvia i test End-to-End
-```bash
-npm run test:e2e
-```
+1. Accedi alla cartella frontend:
+   cd techweb-frontend
+2. Installa le dipendenze:
+   npm install
+3. Avvia l'applicazione:
+   npm run dev
+   Il frontend sarà attivo su http://localhost:3000
 
-### 4. Docker (opzionale)
+4. Per avviare tramite Docker:
+   docker build -t streetcats-frontend .
+   docker run -p 3000:3000 streetcats-frontend
+   Oppure usa direttamente:
+   docker compose up --build
 
-Per avviare tutto tramite Docker:
-```bash
-docker compose up --build
-```
+### Test End-to-End
+
+1. Accedi alla cartella dei test:
+   cd TestE2E
+2. Installa le dipendenze:
+   npm install
+3. Avvia i test:
+   npm run test:e2e
 
 ---
 
 ## 📄 Modalità di consegna
 
-- Non includere le cartelle `node_modules` o altre dipendenze, solo i file descrittori (`package.json`, ecc.).
-- Organizza i sorgenti in due directory distinte: `backend/` e `techweb-frontend/`.
-- Includi questo `README.md` con istruzioni dettagliate.
+- Non includere le cartelle node_modules o altre dipendenze, solo i file descrittori (package.json, ecc.).
+- Organizza i sorgenti in due directory distinte: backend/ e techweb-frontend/.
+- Includi questo README.md con istruzioni dettagliate.
 - Includi un PDF (max 1 pagina) con nome, cognome, matricola, traccia scelta, tecnologie usate.
 - Comprimi tutto in un archivio ZIP senza altri file compressi.
 - Invia tramite Filesender all’indirizzo del docente, seguendo le istruzioni del bando.
@@ -93,19 +94,19 @@ docker compose up --build
 
 ## 🛠️ Stack tecnologico
 
-- **Express + TypeScript** (backend)
-- **React + Next.js** (frontend)
-- **TailwindCSS** (con DaisyUI)
-- **Leaflet** (mappa interattiva)
-- **JWT** (autenticazione)
-- **Playwright** (test E2E)
-- **Docker** (containerizzazione)
+- Express + TypeScript (backend)
+- React + Next.js (frontend)
+- TailwindCSS (con DaisyUI)
+- Leaflet (mappa interattiva)
+- JWT (autenticazione)
+- Playwright (test E2E)
+- Docker (containerizzazione)
 
 ---
 
 ## 🧪 Test End-to-End
 
-Sono presenti almeno 10 test automatici Playwright in `TestE2E/e2e/` che coprono:
+Sono presenti almeno 10 test automatici Playwright in TestE2E/e2e/ che coprono:
 - Homepage
 - Navigazione
 - Upload e dettagli
@@ -116,3 +117,12 @@ Sono presenti almeno 10 test automatici Playwright in `TestE2E/e2e/` che coprono
 - Performance
 - Accessibilità
 - Cross-browser
+
+---
+
+## ℹ️ Note
+
+Streetcats è parte di un progetto open source dedicato alla tutela degli animali.  
+Per dettagli tecnici consulta la documentazione interna del progetto.
+
+Unisciti alla community, segnala un micio e aiuta a mappare la città... una zampa alla volta! 🐈‍⬛
