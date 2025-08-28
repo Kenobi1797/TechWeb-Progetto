@@ -8,89 +8,78 @@ interface AuthRequest extends Request {
   file?: Express.Multer.File;
 }
 
+// Utility per validazioni comuni
+function validateCatData(body: any): { error?: string; validatedData?: any } {
+  const { title, description, lat, lng, latitude, longitude } = body;
+  
+  if (!title?.trim()) return { error: 'Il titolo è obbligatorio' };
+  if (!description?.trim()) return { error: 'La descrizione è obbligatoria' };
+  
+  const coordLat = lat || latitude;
+  const coordLng = lng || longitude;
+  if (!coordLat || !coordLng) return { error: 'Latitudine e longitudine sono obbligatorie' };
+  
+  const coordinateValidation = validateAndParseCoordinates(coordLat, coordLng);
+  if (!coordinateValidation.valid || !coordinateValidation.latitude || !coordinateValidation.longitude) {
+    return { error: coordinateValidation.error || 'Coordinate non valide' };
+  }
+  
+  if (description.trim()) {
+    const validation = validateMarkdown(description.trim());
+    if (!validation.valid) return { error: validation.error };
+  }
+  
+  return { 
+    validatedData: {
+      title: title.trim(),
+      description: description.trim(),
+      latitude: coordinateValidation.latitude,
+      longitude: coordinateValidation.longitude
+    }
+  };
+}
+
 export const createCat = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { title, description, lat, lng, latitude, longitude } = req.body;
-  
-  // Validazioni di base
-  if (!title?.trim()) {
-    res.status(400).json({ error: 'Il titolo è obbligatorio' });
-    return;
-  }
-  
-  if (!description?.trim()) {
-    res.status(400).json({ error: 'La descrizione è obbligatoria' });
-    return;
-  }
-  
-  // Accetta sia lat/lng che latitude/longitude
-  const coordLat = lat || latitude;
-  const coordLng = lng || longitude;
-  
-  if (!coordLat || !coordLng) {
-    res.status(400).json({ error: 'Latitudine e longitudine sono obbligatorie' });
-    return;
-  }
-  
-  // Validazione coordinate
-  const coordinateValidation = validateAndParseCoordinates(coordLat, coordLng);
-  if (!coordinateValidation.valid || !coordinateValidation.latitude || !coordinateValidation.longitude) {
-    res.status(400).json({ error: coordinateValidation.error || 'Coordinate non valide' });
-    return;
-  }
-  
-  const validLat = coordinateValidation.latitude;
-  const validLng = coordinateValidation.longitude;
-
   if (!req.user) {
     res.status(401).json({ error: 'Utente non autenticato' });
     return;
   }
 
-  // Verifica che l'utente esista effettivamente
+  const validation = validateCatData(req.body);
+  if (validation.error) {
+    res.status(400).json({ error: validation.error });
+    return;
+  }
+
+  const { title, description, latitude, longitude } = validation.validatedData!;
+
+  // Gestione immagine obbligatoria
+  if (!req.file) {
+    res.status(400).json({ error: 'Immagine obbligatoria per creare un avvistamento' });
+    return;
+  }
+
+  const imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
   try {
+    // Verifica utente e inserimento in una query
     const userCheck = await pool.query('SELECT id FROM users WHERE id = $1', [req.user.userId]);
     if (userCheck.rows.length === 0) {
       res.status(401).json({ error: 'Utente non trovato nel database' });
       return;
     }
-  } catch (err) {
-    console.error('Errore nella verifica utente:', err);
-    res.status(500).json({ error: 'Errore interno del server' });
-    return;
-  }
-  
-  // Gestione immagine da multer (OBBLIGATORIA)
-  let imageUrl = null;
-  if (req.file) {
-    // Converte il buffer in Base64
-    const base64Image = req.file.buffer.toString('base64');
-    imageUrl = `data:${req.file.mimetype};base64,${base64Image}`;
-  } else {
-    res.status(400).json({ error: 'Immagine obbligatoria per creare un avvistamento' });
-    return;
-  }
 
-  // Validazione markdown se la descrizione è presente
-  if (description.trim()) {
-    const validation = validateMarkdown(description.trim());
-    if (!validation.valid) {
-      res.status(400).json({ error: validation.error });
-      return;
-    }
-  }
-  
-  try {
     const result = await pool.query(
       `INSERT INTO cats (user_id, title, description, image_url, latitude, longitude, status)
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [req.user.userId, title.trim(), description.trim(), imageUrl, validLat, validLng, 'active']
+      [req.user.userId, title, description, imageUrl, latitude, longitude, 'active']
     );
+    
     res.status(201).json(result.rows[0]);
-    return;
   } catch (err) {
     next(err);
   }
