@@ -310,7 +310,8 @@ const CommentsSection = ({ cat }: { cat: CatWithComments }) => {
 };
 
 export default function CatDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
+  const id = params?.id ?? "";
   const { cat, loading, error } = useCatDetails(id);
   const [location, setLocation] = useState<string | null>(null);
 
