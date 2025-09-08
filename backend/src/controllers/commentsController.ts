@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import pool from '../config/db';
 
-// Estendi Request per user (se non già fatto globalmente)
 interface AuthUser {
   userId: number;
 }
