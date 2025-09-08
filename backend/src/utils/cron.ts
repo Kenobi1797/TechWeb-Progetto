@@ -52,7 +52,7 @@ const coordinatesCache = CoordinatesCache.getInstance();
 
 // Funzione semplificata per validazione coordinate
 function isValidLandCoordinate(latitude: number, longitude: number): boolean {
-  return validateAndParseCoordinates(latitude, longitude).valid;
+  return validateAndParseCoordinates(latitude, longitude, true).valid;
 }
 
 // Funzione ottimizzata per generare coordinate senza sovrapposizioni
@@ -230,7 +230,7 @@ async function fixInvalidDataOptimized(): Promise<void> {
   coordinatesCache.clear(); // Forza refresh cache
   
   for (const cat of catsWithIssues) {
-    const validation = validateAndParseCoordinates(cat.latitude, cat.longitude);
+  const validation = validateAndParseCoordinates(cat.latitude, cat.longitude, true);
     
     if (!validation.valid) {
       const { latitude, longitude, city } = getRandomCoordsInCity();
