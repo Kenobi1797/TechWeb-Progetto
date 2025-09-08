@@ -19,7 +19,7 @@ function validateCatData(body: any): { error?: string; validatedData?: any } {
   const coordLng = lng || longitude;
   if (!coordLat || !coordLng) return { error: 'Latitudine e longitudine sono obbligatorie' };
   
-  const coordinateValidation = validateAndParseCoordinates(coordLat, coordLng);
+  const coordinateValidation = validateAndParseCoordinates(coordLat, coordLng, false);
   if (!coordinateValidation.valid || !coordinateValidation.latitude || !coordinateValidation.longitude) {
     return { error: coordinateValidation.error || 'Coordinate non valide' };
   }

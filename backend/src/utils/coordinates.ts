@@ -65,25 +65,26 @@ function findNearestSafeArea(latitude: number, longitude: number): { lat: number
 
 export function validateAndParseCoordinates(
   lat: string | number,
-  lng: string | number
-): CoordinateValidationResult {
-  const latitude = typeof lat === "string" ? parseFloat(lat) : lat;
-  const longitude = typeof lng === "string" ? parseFloat(lng) : lng;
+  lng: string | number,
+  allowMarineCorrection: boolean = false
+  ): CoordinateValidationResult {
+    const latitude = typeof lat === "string" ? parseFloat(lat) : lat;
+    const longitude = typeof lng === "string" ? parseFloat(lng) : lng;
 
-  if (!isFinite(latitude) || !isFinite(longitude))
-    return { valid: false, error: "Coordinate non valide: devono essere numeri" };
-  if (latitude < -90 || latitude > 90)
-    return { valid: false, error: "Latitudine non valida: deve essere tra -90 e 90 gradi" };
-  if (longitude < -180 || longitude > 180)
-    return { valid: false, error: "Longitudine non valida: deve essere tra -180 e 180 gradi" };
-  if (countDecimals(latitude) > 6 || countDecimals(longitude) > 6)
-    return { valid: false, error: "Precisione eccessiva: massimo 6 decimali per le coordinate" };
+    if (!isFinite(latitude) || !isFinite(longitude))
+      return { valid: false, error: "Coordinate non valide: devono essere numeri" };
+    if (latitude < -90 || latitude > 90)
+      return { valid: false, error: "Latitudine non valida: deve essere tra -90 e 90 gradi" };
+    if (longitude < -180 || longitude > 180)
+      return { valid: false, error: "Longitudine non valida: deve essere tra -180 e 180 gradi" };
+    if (countDecimals(latitude) > 6 || countDecimals(longitude) > 6)
+      return { valid: false, error: "Precisione eccessiva: massimo 6 decimali per le coordinate" };
 
-  return validateLocation(latitude, longitude);
-}
+    return validateLocation(latitude, longitude, allowMarineCorrection);
+  }
 
-function validateLocation(latitude: number, longitude: number): CoordinateValidationResult {
-  if (isInMarineZone(latitude, longitude)) {
+function validateLocation(latitude: number, longitude: number, allowMarineCorrection: boolean = false): CoordinateValidationResult {
+  if (allowMarineCorrection && isInMarineZone(latitude, longitude)) {
     const nearestSafe = findNearestSafeArea(latitude, longitude);
     if (nearestSafe) {
       if (process.env.NODE_ENV === "development" && Math.random() < 0.1)
