@@ -315,14 +315,15 @@ export default function CatDetailPage() {
   const { cat, loading, error } = useCatDetails(id);
   const [location, setLocation] = useState<string | null>(null);
 
+  // Ottimizzazione: chiama fetchLocation solo se le coordinate cambiano
   useEffect(() => {
     if (hasValidCoordinates(cat)) {
+      const { latitude, longitude } = cat!;
       const timeoutId = setTimeout(() => {
-        fetchLocationFromCoordsServer(cat!.latitude, cat!.longitude)
+        fetchLocationFromCoordsServer(latitude, longitude)
           .then(setLocation)
           .catch(() => setLocation(null));
       }, 500);
-      
       return () => clearTimeout(timeoutId);
     }
   }, [cat]);
