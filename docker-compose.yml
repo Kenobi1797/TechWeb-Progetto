@@ -14,7 +14,6 @@ services:
     depends_on:
       - techweb-db
     restart: unless-stopped
-    # Consigliato: usa variabili d'ambiente tramite file .env per maggiore sicurezza
 
   techweb-frontend:
     build:
@@ -46,7 +45,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    # Consigliato: proteggi la password in produzione
 
 volumes:
   db_data:
