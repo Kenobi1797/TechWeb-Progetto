@@ -1,5 +1,5 @@
 import pool from '../config/db';
-import { Comment } from '../utils/types';
+import { Comment } from '../dto/CommentDto';
 
 // Funzione base per query commenti
 async function queryComments(query: string, values: unknown[]): Promise<Comment[]> {

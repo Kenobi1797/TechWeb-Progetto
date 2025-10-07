@@ -1,5 +1,5 @@
 import pool from '../config/db';
-import { Cat } from '../utils/types';
+import { Cat } from '../dto/CatsDto';
 
 // Funzione base per query singola
 async function queryCat(query: string, values: unknown[]): Promise<Cat | null> {

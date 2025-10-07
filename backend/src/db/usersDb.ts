@@ -1,5 +1,5 @@
 import pool from '../config/db';
-import { User } from '../utils/types';
+import { User } from '../dto/UserDto';
 
 // Funzione base per query singola utente
 async function queryUser(query: string, values: unknown[]): Promise<User | null> {

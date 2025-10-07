@@ -1,4 +1,4 @@
-import { CoordinateValidationResult } from "./types";
+import { CoordinateValidationResult } from "../dto/GeoCodeDto";
 
 const MARINE_ZONES = [
   { latMin: 35, latMax: 42, lonMin: 8, lonMax: 20, name: "Mar Mediterraneo centrale" },
