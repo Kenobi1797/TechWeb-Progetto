@@ -1,9 +1,9 @@
 import cron from 'node-cron';
 import fetch from 'node-fetch';
 import { faker } from '@faker-js/faker';
-import { insertCat } from '../db/catsDb';
-import { insertComment } from '../db/commentsDb';
-import { getAllUsers } from '../db/usersDb';
+import { insertCat } from '../repository/catsDb';
+import { insertComment } from '../repository/commentsDb';
+import { getAllUsers } from '../repository/usersDb';
 import { strayCatComments, strayCatDescriptions, strayCatTitles, safeUrbanCoordinates } from './strayCat';
 import { validateAndParseCoordinates, calculateDistance } from './coordinates';
 import pool from '../config/db';
