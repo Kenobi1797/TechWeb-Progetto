@@ -9,17 +9,21 @@ import { QueryParams, QueryBuilder } from '../dto/CatsDto';
 const geoapifyService = new GeoapifyService(process.env.GEOAPIFY_API_KEY || '');
 
 // Utility per validazioni comuni
-function validateCatData(body: any): { error?: string; validatedData?: any } {
+async function validateCatData(body: any): Promise<{ error?: string; validatedData?: any }> {
   const { title, description, lat, lng, latitude, longitude } = body;
   
   if (!title?.trim()) return { error: 'Il titolo è obbligatorio' };
   if (!description?.trim()) return { error: 'La descrizione è obbligatoria' };
   
-  const coordLat = lat || latitude;
-  const coordLng = lng || longitude;
-  if (!coordLat || !coordLng) return { error: 'Latitudine e longitudine sono obbligatorie' };
+  // Conversione esplicita delle coordinate in numeri
+  const coordLat = parseFloat(lat || latitude);
+  const coordLng = parseFloat(lng || longitude);
   
-  const coordinateValidation = geoapifyService.validateAndParseCoordinates(coordLat, coordLng);
+  if (Number.isNaN(coordLat) || Number.isNaN(coordLng)) {
+    return { error: 'Coordinate non valide: devono essere numeri' };
+  }
+  
+  const coordinateValidation = await geoapifyService.validateAndParseCoordinates(coordLat, coordLng);
   if (!coordinateValidation.valid || !coordinateValidation.latitude || !coordinateValidation.longitude) {
     return { error: coordinateValidation.error || 'Coordinate non valide' };
   }
@@ -49,7 +53,7 @@ export const createCat = async (
     return;
   }
 
-  const validation = validateCatData(req.body);
+  const validation = await validateCatData(req.body);
   if (validation.error) {
     res.status(400).json({ error: validation.error });
     return;
@@ -87,13 +91,13 @@ export const createCat = async (
 
 
 
-function addDistanceCalculation(
+async function addDistanceCalculation(
   baseQuery: string, 
   lat: string, 
   lon: string, 
   values: unknown[]
-): { query: string; coordValid: boolean } {
-  const coordValidation = geoapifyService.validateAndParseCoordinates(lat, lon);
+): Promise<{ query: string; coordValid: boolean }> {
+  const coordValidation = await geoapifyService.validateAndParseCoordinates(lat, lon);
   if (!coordValidation.valid) {
     return { query: baseQuery, coordValid: false };
   }
@@ -132,7 +136,7 @@ function addRadiusFilter(
   values.push(radiusKm);
 }
 
-function buildCatsQuery(params: QueryParams): QueryBuilder {
+async function buildCatsQuery(params: QueryParams): Promise<QueryBuilder> {
   const { from, to, lat, lon, radius, page = '1', limit = '20' } = params;
   
   const pageNum = Math.max(1, parseInt(String(page)) || 1);
@@ -146,7 +150,7 @@ function buildCatsQuery(params: QueryParams): QueryBuilder {
 
   // Gestione coordinate
   if (lat && lon) {
-    const result = addDistanceCalculation(baseQuery, String(lat), String(lon), values);
+    const result = await addDistanceCalculation(baseQuery, String(lat), String(lon), values);
     baseQuery = result.query;
     hasDistance = result.coordValid;
     
@@ -183,7 +187,7 @@ export const getAllCats = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { query, values } = buildCatsQuery(req.query as QueryParams);
+    const { query, values } = await buildCatsQuery(req.query as QueryParams);
     const result = await pool.query(query, values);
     let cats: Array<Record<string, unknown>> = result.rows;
 
@@ -381,7 +385,7 @@ export const updateCat = async (
       const coordLat = lat || latitude;
       const coordLng = lng || longitude;
       
-      const coordinateValidation = geoapifyService.validateAndParseCoordinates(coordLat, coordLng);
+      const coordinateValidation = await geoapifyService.validateAndParseCoordinates(coordLat, coordLng);
       if (!coordinateValidation.valid) {
         res.status(400).json({ error: coordinateValidation.error });
         return;

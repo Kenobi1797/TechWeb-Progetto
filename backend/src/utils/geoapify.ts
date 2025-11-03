@@ -253,16 +253,21 @@ export class GeoapifyService {
 
       const feature = response.data.features[0].properties;
       
-      // Verifica che sia in un'area urbana
-      if (!feature.city && !feature.town && !feature.village) {
-        return { valid: false, error: "Coordinate non valide: non in area urbana" };
+      // Verifica la presenza di qualsiasi informazione di località
+      const locality = feature.city || feature.town || feature.village || 
+                      feature.suburb || feature.district || feature.county || 
+                      feature.state || feature.country;
+
+      if (!locality) {
+        return { valid: false, error: "Coordinate non valide: località non riconosciuta" };
       }
 
       return {
         valid: true,
         latitude: Number.parseFloat(latitude.toFixed(6)),
         longitude: Number.parseFloat(longitude.toFixed(6)),
-        city: feature.city || feature.town || feature.village,
+        city: feature.city || feature.town || feature.village || 
+              feature.suburb || feature.district || feature.county,
         country: feature.country
       };
     } catch (error) {
