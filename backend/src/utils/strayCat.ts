@@ -1,4 +1,4 @@
-import { CityCoordinate, CityRegion } from "../dto/GeoCodeDto";
+import { CityCoordinate, CityRegion } from "../dto/GeoapifyDto";
 
 export const safeUrbanCoordinates: CityCoordinate[] = [
   // Europa

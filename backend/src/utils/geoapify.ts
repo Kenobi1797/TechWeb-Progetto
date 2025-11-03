@@ -1,28 +1,11 @@
 import axios from 'axios';
-import { CoordinateValidationResult } from '../dto/GeoCodeDto';
+import { CoordinateValidationResult, Coordinates } from '../dto/GeoapifyDto';
 
 // Cache per ottimizzare le richieste
 const geocodeCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_DURATION = 60 * 60 * 1000; // 1 ora
 const RATE_LIMIT_DELAY = 1000; // 1 secondo tra le richieste
 let lastRequestTime = 0;
-
-interface Coordinates {
-  lat: number;
-  lon: number;
-  address?: string;
-  city?: string;
-  country?: string;
-}
-
-interface GeocodeResult {
-  lat: number;
-  lon: number;
-  formatted?: string;
-  city?: string;
-  country?: string;
-  display_name?: string;
-}
 
 async function waitForRateLimit(): Promise<void> {
   const now = Date.now();
@@ -338,5 +321,5 @@ export class GeoapifyService {
   }
 }
 
-// Esporta la classe e le interfacce
-export { Coordinates, GeocodeResult };
+// Esporta la classe
+export * from '../dto/GeoapifyDto';
