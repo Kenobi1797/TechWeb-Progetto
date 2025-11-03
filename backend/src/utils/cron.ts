@@ -5,8 +5,11 @@ import { insertCat } from '../repository/catsDb';
 import { insertComment } from '../repository/commentsDb';
 import { getAllUsers } from '../repository/usersDb';
 import { strayCatComments, strayCatDescriptions, strayCatTitles, safeUrbanCoordinates } from './strayCat';
-import { validateAndParseCoordinates, calculateDistance } from './coordinates';
+import { GeoapifyService } from './geoapify';
 import pool from '../config/db';
+
+// Inizializza il servizio Geoapify
+const geoapifyService = new GeoapifyService(process.env.GEOAPIFY_API_KEY || '');
 
 const CAT_API = 'https://api.thecatapi.com/v1/images/search?limit=1';
 
@@ -52,7 +55,8 @@ const coordinatesCache = CoordinatesCache.getInstance();
 
 // Funzione semplificata per validazione coordinate
 function isValidLandCoordinate(latitude: number, longitude: number): boolean {
-  return validateAndParseCoordinates(latitude, longitude, true).valid;
+  const validation = geoapifyService.validateAndParseCoordinates(latitude, longitude);
+  return validation.valid;
 }
 
 // Funzione ottimizzata per generare coordinate senza sovrapposizioni
@@ -69,7 +73,7 @@ async function generateOptimalCoordinates(cityCoords: { latitude: number; longit
     
     // Controllo distanza con coordinate esistenti
     const hasConflict = coords.some(existing => 
-      calculateDistance(candidateLat, candidateLon, existing.lat, existing.lon) < CONFIG.MIN_DISTANCE
+      GeoapifyService.calculateDistance(candidateLat, candidateLon, existing.lat, existing.lon) < CONFIG.MIN_DISTANCE
     );
     
     if (!hasConflict) {
@@ -90,7 +94,7 @@ async function adjustPositionIfOverlapping(latitude: number, longitude: number):
   
   // Controllo sovrapposizione
   const hasOverlap = coords.some(existing => 
-    calculateDistance(latitude, longitude, existing.lat, existing.lon) < CONFIG.MIN_DISTANCE
+    GeoapifyService.calculateDistance(latitude, longitude, existing.lat, existing.lon) < CONFIG.MIN_DISTANCE
   );
   
   return hasOverlap 
@@ -183,14 +187,15 @@ async function createRandomCatSighting(users: any[]) {
     const title = faker.helpers.arrayElement(strayCatTitles);
     const description = `${faker.helpers.arrayElement(strayCatDescriptions)} (${city})`;
 
-    const cat = await insertCat(
-      systemUser.id,
+    const cat = await insertCat({
+      user_id: systemUser.id,
       title,
       description,
-      imageUrl,
-      adjustedCoords.lat,
-      adjustedCoords.lon
-    );
+      image_url: imageUrl,
+      latitude: adjustedCoords.lat,
+      longitude: adjustedCoords.lon,
+      status: 'active'
+    });
 
     // Aggiungi commenti casuali con probabilità ridotta
     if (Math.random() < 0.7) { // 70% di probabilità di avere commenti
@@ -198,7 +203,7 @@ async function createRandomCatSighting(users: any[]) {
       for (let i = 0; i < nComments; i++) {
         const commenter = faker.helpers.arrayElement(users);
         const content = faker.helpers.arrayElement(strayCatComments);
-        await insertComment(commenter.id, Number(cat.id), content);
+        await insertComment(commenter.id, { cat_id: Number(cat.id), content });
       }
     }
 
@@ -230,7 +235,7 @@ async function fixInvalidDataOptimized(): Promise<void> {
   coordinatesCache.clear(); // Forza refresh cache
   
   for (const cat of catsWithIssues) {
-  const validation = validateAndParseCoordinates(cat.latitude, cat.longitude, true);
+  const validation = geoapifyService.validateAndParseCoordinates(cat.latitude, cat.longitude);
     
     if (!validation.valid) {
       const { latitude, longitude, city } = getRandomCoordsInCity();
@@ -262,7 +267,7 @@ async function checkAndFixOverlapsOptimized(): Promise<void> {
   let correctedCount = 0;
   
   for (const pair of nearCats) {
-    const distance = calculateDistance(pair.lat1, pair.lon1, pair.lat2, pair.lon2);
+    const distance = GeoapifyService.calculateDistance(pair.lat1, pair.lon1, pair.lat2, pair.lon2);
     
     if (distance < CONFIG.MIN_DISTANCE) {
       const catToMove = pair.id1 > pair.id2 ? 
