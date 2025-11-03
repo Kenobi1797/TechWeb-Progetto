@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
-import { reverseGeocode, forwardGeocode } from '../utils/geocode';
+import { GeoapifyService } from '../utils/geoapify';
+
+const geoapifyService = new GeoapifyService(process.env.GEOAPIFY_API_KEY || '');
 
 export async function getGeocode(req: Request, res: Response) {
   try {
@@ -10,12 +12,16 @@ export async function getGeocode(req: Request, res: Response) {
         return res.status(400).json({ error: 'Parametro address non valido' });
       }
       
-      const result = await forwardGeocode(address.trim());
+      const result = await geoapifyService.getCoordinatesFromAddress(address.trim());
       if (!result) {
         return res.status(404).json({ error: 'Indirizzo non trovato' });
       }
       
-      return res.json(result);
+      return res.json({
+        lat: result.lat,
+        lng: result.lon,
+        display_name: result.address
+      });
     }
     
     // Reverse geocoding: coordinate -> indirizzo
@@ -25,7 +31,7 @@ export async function getGeocode(req: Request, res: Response) {
       return res.status(400).json({ error: 'Parametri lat e lon non validi' });
     }
     
-    const location = await reverseGeocode(lat, lon);
+    const location = await geoapifyService.reverseGeocode(lat, lon);
     if (!location) {
       return res.status(404).json({ error: 'Luogo non trovato' });
     }

@@ -1,9 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import pool from '../config/db';
 import { validateMarkdown, parseMarkdown } from '../utils/markdown';
-import { validateAndParseCoordinates } from '../utils/coordinates';
+import { GeoapifyService } from '../utils/geoapify';
 import { AuthRequest } from '../dto/AuthDto';
 import { QueryParams, QueryBuilder } from '../dto/CatsDto';
+
+// Inizializza il servizio Geoapify
+const geoapifyService = new GeoapifyService(process.env.GEOAPIFY_API_KEY || '');
 
 // Utility per validazioni comuni
 function validateCatData(body: any): { error?: string; validatedData?: any } {
@@ -16,7 +19,7 @@ function validateCatData(body: any): { error?: string; validatedData?: any } {
   const coordLng = lng || longitude;
   if (!coordLat || !coordLng) return { error: 'Latitudine e longitudine sono obbligatorie' };
   
-  const coordinateValidation = validateAndParseCoordinates(coordLat, coordLng, false);
+  const coordinateValidation = geoapifyService.validateAndParseCoordinates(coordLat, coordLng);
   if (!coordinateValidation.valid || !coordinateValidation.latitude || !coordinateValidation.longitude) {
     return { error: coordinateValidation.error || 'Coordinate non valide' };
   }
@@ -90,7 +93,7 @@ function addDistanceCalculation(
   lon: string, 
   values: unknown[]
 ): { query: string; coordValid: boolean } {
-  const coordValidation = validateAndParseCoordinates(lat, lon);
+  const coordValidation = geoapifyService.validateAndParseCoordinates(lat, lon);
   if (!coordValidation.valid) {
     return { query: baseQuery, coordValid: false };
   }
@@ -132,8 +135,8 @@ function addRadiusFilter(
 function buildCatsQuery(params: QueryParams): QueryBuilder {
   const { from, to, lat, lon, radius, page = '1', limit = '20' } = params;
   
-  const pageNum = Math.max(1, parseInt(page) || 1);
-  const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 20));
+  const pageNum = Math.max(1, parseInt(String(page)) || 1);
+  const limitNum = Math.min(100, Math.max(1, parseInt(String(limit)) || 20));
   const offset = (pageNum - 1) * limitNum;
 
   let baseQuery = 'SELECT id, title, latitude, longitude, image_url, status, created_at';
@@ -143,12 +146,12 @@ function buildCatsQuery(params: QueryParams): QueryBuilder {
 
   // Gestione coordinate
   if (lat && lon) {
-    const result = addDistanceCalculation(baseQuery, lat, lon, values);
+    const result = addDistanceCalculation(baseQuery, String(lat), String(lon), values);
     baseQuery = result.query;
     hasDistance = result.coordValid;
     
     if (hasDistance && radius) {
-      addRadiusFilter(conditions, radius, values);
+      addRadiusFilter(conditions, String(radius), values);
     }
   }
 
@@ -378,7 +381,7 @@ export const updateCat = async (
       const coordLat = lat || latitude;
       const coordLng = lng || longitude;
       
-      const coordinateValidation = validateAndParseCoordinates(coordLat, coordLng);
+      const coordinateValidation = geoapifyService.validateAndParseCoordinates(coordLat, coordLng);
       if (!coordinateValidation.valid) {
         res.status(400).json({ error: coordinateValidation.error });
         return;
