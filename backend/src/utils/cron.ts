@@ -54,8 +54,8 @@ class CoordinatesCache {
 const coordinatesCache = CoordinatesCache.getInstance();
 
 // Funzione semplificata per validazione coordinate
-function isValidLandCoordinate(latitude: number, longitude: number): boolean {
-  const validation = geoapifyService.validateAndParseCoordinates(latitude, longitude);
+async function isValidLandCoordinate(latitude: number, longitude: number): Promise<boolean> {
+  const validation = await geoapifyService.validateAndParseCoordinates(latitude, longitude);
   return validation.valid;
 }
 
@@ -235,7 +235,7 @@ async function fixInvalidDataOptimized(): Promise<void> {
   coordinatesCache.clear(); // Forza refresh cache
   
   for (const cat of catsWithIssues) {
-  const validation = geoapifyService.validateAndParseCoordinates(cat.latitude, cat.longitude);
+    const validation = await geoapifyService.validateAndParseCoordinates(cat.latitude, cat.longitude);
     
     if (!validation.valid) {
       const { latitude, longitude, city } = getRandomCoordsInCity();
