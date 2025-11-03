@@ -6,6 +6,8 @@ export const CoordinateValidationResultSchema = z.object({
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   error: z.string().optional(),
+  city: z.string().optional(),
+  country: z.string().optional(),
 });
 
 // Schema Zod per le coordinate della città

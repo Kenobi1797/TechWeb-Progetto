@@ -210,14 +210,15 @@ export class GeoapifyService {
     }
   }
 
-  // Valida e formatta le coordinate
-  validateAndParseCoordinates(
+  // Valida e formatta le coordinate con controllo area urbana
+  async validateAndParseCoordinates(
     lat: string | number,
     lng: string | number
-  ): CoordinateValidationResult {
+  ): Promise<CoordinateValidationResult> {
     const latitude = typeof lat === "string" ? Number.parseFloat(lat) : lat;
     const longitude = typeof lng === "string" ? Number.parseFloat(lng) : lng;
 
+    // Validazione base
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
       return { valid: false, error: "Coordinate non valide: devono essere numeri" };
     }
@@ -228,11 +229,46 @@ export class GeoapifyService {
       return { valid: false, error: "Longitudine non valida: deve essere tra -180 e 180 gradi" };
     }
 
-    return {
-      valid: true,
-      latitude: Number.parseFloat(latitude.toFixed(6)),
-      longitude: Number.parseFloat(longitude.toFixed(6))
-    };
+    // Verifica che le coordinate siano in un'area urbana
+    try {
+      const address = await this.reverseGeocode(latitude, longitude);
+      if (!address) {
+        return { valid: false, error: "Coordinate non valide: posizione non trovata" };
+      }
+
+      // Ottieni i dettagli del luogo
+      const response = await axios.get(`${this.baseUrl}/geocode/reverse`, {
+        params: {
+          lat: latitude,
+          lon: longitude,
+          apiKey: this.apiKey,
+          type: 'city'
+        },
+        timeout: 10000
+      });
+
+      if (!response.data.features || response.data.features.length === 0) {
+        return { valid: false, error: "Coordinate non valide: non in area urbana" };
+      }
+
+      const feature = response.data.features[0].properties;
+      
+      // Verifica che sia in un'area urbana
+      if (!feature.city && !feature.town && !feature.village) {
+        return { valid: false, error: "Coordinate non valide: non in area urbana" };
+      }
+
+      return {
+        valid: true,
+        latitude: Number.parseFloat(latitude.toFixed(6)),
+        longitude: Number.parseFloat(longitude.toFixed(6)),
+        city: feature.city || feature.town || feature.village,
+        country: feature.country
+      };
+    } catch (error) {
+      console.error('Errore nella validazione delle coordinate:', error);
+      return { valid: false, error: "Errore nella validazione delle coordinate" };
+    }
   }
 
   // Calcola la distanza tra due punti in chilometri
