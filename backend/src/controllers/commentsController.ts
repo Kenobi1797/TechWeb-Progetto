@@ -1,12 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import pool from '../config/db';
-
-interface AuthUser {
-  userId: number;
-}
-interface AuthRequest extends Request {
-  user?: AuthUser;
-}
+import { AuthRequest } from '../dto/AuthDto';
 
 export const addComment = async (
   req: AuthRequest,

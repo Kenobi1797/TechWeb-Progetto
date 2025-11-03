@@ -3,10 +3,7 @@ import pool from '../config/db';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-
-interface AuthRequest extends Request {
-  user?: { userId: number };
-}
+import { AuthRequest } from '../dto/AuthDto';
 
 // Funzione per generare refresh token
 const generateRefreshToken = (): string => {

@@ -9,3 +9,18 @@ export interface Cat {
   status: 'active' | 'adopted' | 'moved';
   created_at: Date;
 }
+
+export interface QueryParams {
+  from?: string;
+  to?: string;
+  lat?: string;
+  lon?: string;
+  radius?: string;
+  page?: string;
+  limit?: string;
+}
+
+export interface QueryBuilder {
+  query: string;
+  values: unknown[];
+}

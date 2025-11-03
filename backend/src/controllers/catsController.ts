@@ -2,11 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import pool from '../config/db';
 import { validateMarkdown, parseMarkdown } from '../utils/markdown';
 import { validateAndParseCoordinates } from '../utils/coordinates';
-
-interface AuthRequest extends Request {
-  user?: { userId: number };
-  file?: Express.Multer.File;
-}
+import { AuthRequest } from '../dto/AuthDto';
+import { QueryParams, QueryBuilder } from '../dto/CatsDto';
 
 // Utility per validazioni comuni
 function validateCatData(body: any): { error?: string; validatedData?: any } {
@@ -85,20 +82,7 @@ export const createCat = async (
   }
 };
 
-interface QueryParams {
-  from?: string;
-  to?: string;
-  lat?: string;
-  lon?: string;
-  radius?: string;
-  page?: string;
-  limit?: string;
-}
 
-interface QueryBuilder {
-  query: string;
-  values: unknown[];
-}
 
 function addDistanceCalculation(
   baseQuery: string, 

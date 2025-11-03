@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-
-interface AuthRequest extends Request {
-  user?: { userId: number };
-  file?: Express.Multer.File;
-}
+import { AuthRequest } from '../dto/AuthDto';
 
 function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
