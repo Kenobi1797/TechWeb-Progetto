@@ -1,49 +1,57 @@
 import pool from '../config/db';
-import { Cat } from '../dto/CatsDto';
+import { Cat, CreateCatDTO, CatSchema, UpdateCatStatusDTO } from '../dto/CatsDto';
 
-// Funzione base per query singola
+// Funzione base per query singola con validazione
 async function queryCat(query: string, values: unknown[]): Promise<Cat | null> {
-  const r = await pool.query<Cat>(query, values);
-  return r.rows[0] || null;
+  const result = await pool.query(query, values);
+  const row = result.rows[0];
+  return row ? CatSchema.parse(row) : null;
 }
 
-// Funzione base per query multiple
+// Funzione base per query multiple con validazione
 async function queryCats(query: string, values: unknown[] = []): Promise<Cat[]> {
-  const r = await pool.query<Cat>(query, values);
-  return r.rows;
+  const result = await pool.query(query, values);
+  return result.rows.map(row => CatSchema.parse(row));
 }
 
-export const getAllCats = (): Promise<Cat[]> => 
-  queryCats('SELECT * FROM cats ORDER BY created_at DESC');
+export const getAllCats = async (): Promise<Cat[]> => {
+  const query = 'SELECT * FROM cats ORDER BY created_at DESC';
+  return queryCats(query);
+};
 
-export const getCatById = (id: number): Promise<Cat | null> => 
-  queryCat('SELECT * FROM cats WHERE id = $1', [id]);
+export const getCatById = async (id: number): Promise<Cat | null> => {
+  const query = 'SELECT * FROM cats WHERE id = $1';
+  return queryCat(query, [id]);
+};
 
-export const getCatsByUserId = (user_id: number): Promise<Cat[]> => 
-  queryCats('SELECT * FROM cats WHERE user_id = $1 ORDER BY created_at DESC', [user_id]);
+export const getCatsByUserId = async (user_id: number): Promise<Cat[]> => {
+  const query = 'SELECT * FROM cats WHERE user_id = $1 ORDER BY created_at DESC';
+  return queryCats(query, [user_id]);
+};
 
-export async function insertCat(
-  user_id: number,
-  title: string,
-  description: string | null,
-  image_url: string | null,
-  latitude: number,
-  longitude: number,
-  status: 'active' | 'adopted' | 'moved' = 'active'
-): Promise<Cat> {
-  const cat = await queryCat(
-    `INSERT INTO cats (user_id, title, description, image_url, latitude, longitude, status)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-    [user_id, title, description, image_url, latitude, longitude, status]
-  );
-  return cat!; // Safe because INSERT sempre ritorna un record
+export async function insertCat(data: CreateCatDTO): Promise<Cat> {
+  const { user_id, title, description, image_url, latitude, longitude, status = 'active' } = data;
+  
+  const query = `
+    INSERT INTO cats (user_id, title, description, image_url, latitude, longitude, status)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    RETURNING *
+  `;
+  const values = [user_id, title, description, image_url, latitude, longitude, status];
+  
+  const cat = await queryCat(query, values);
+  if (!cat) {
+    throw new Error('Failed to insert cat');
+  }
+  return cat;
 }
 
-export const deleteCat = (id: number): Promise<void> => 
-  pool.query('DELETE FROM cats WHERE id = $1', [id]).then();
+export const deleteCat = async (id: number): Promise<void> => {
+  const query = 'DELETE FROM cats WHERE id = $1';
+  await pool.query(query, [id]);
+};
 
-export const updateCatStatus = (
-  id: number,
-  status: 'active' | 'adopted' | 'moved'
-): Promise<Cat | null> => 
-  queryCat('UPDATE cats SET status = $1 WHERE id = $2 RETURNING *', [status, id]);
+export const updateCatStatus = async (id: number, data: UpdateCatStatusDTO): Promise<Cat | null> => {
+  const query = 'UPDATE cats SET status = $1 WHERE id = $2 RETURNING *';
+  return queryCat(query, [data.status, id]);
+};
