@@ -24,9 +24,7 @@ export class GeoapifyService {
     this.apiKey = apiKey;
   }
 
-  /**
-   * Genera coordinate da un indirizzo con gestione cache
-   */
+  // Genera coordinate da un indirizzo con gestione cache
   async getCoordinatesFromAddress(address: string): Promise<Coordinates | null> {
     const cacheKey = `forward:${address.toLowerCase().trim()}`;
     
@@ -74,9 +72,7 @@ export class GeoapifyService {
     }
   }
 
-  /**
-   * Genera coordinate casuali per una località specifica
-   */
+  // Genera coordinate casuali per una località specifica
   async getRandomCoordinatesInLocation(location: string, count: number = 5, radiusKm: number = 5): Promise<Coordinates[]> {
     try {
       const locationCenter = await this.getCoordinatesFromAddress(location);
@@ -107,9 +103,7 @@ export class GeoapifyService {
     }
   }
 
-  /**
-   * Cerca luoghi di un tipo specifico
-   */
+  // Cerca luoghi di un tipo specifico
   async getPlacesCoordinates(
     category: string, 
     location: string, 
@@ -166,9 +160,7 @@ export class GeoapifyService {
     }
   }
 
-  /**
-   * Genera coordinate di test per una lista di città
-   */
+  // Genera coordinate di test per una lista di città
   async getTestCoordinates(cities: string[]): Promise<Coordinates[]> {
     const coordinates: Coordinates[] = [];
 
@@ -182,9 +174,7 @@ export class GeoapifyService {
     return coordinates;
   }
 
-  /**
-   * Verifica e converte coordinate in indirizzo con cache
-   */
+  // Verifica e converte coordinate in indirizzo con cache
   async reverseGeocode(lat: number, lon: number): Promise<string | null> {
     const cacheKey = `reverse:${lat.toFixed(6)},${lon.toFixed(6)}`;
     
@@ -220,9 +210,7 @@ export class GeoapifyService {
     }
   }
 
-  /**
-   * Valida e formatta le coordinate
-   */
+  // Valida e formatta le coordinate
   validateAndParseCoordinates(
     lat: string | number,
     lng: string | number
@@ -247,16 +235,14 @@ export class GeoapifyService {
     };
   }
 
-  /**
-   * Calcola la distanza tra due punti in chilometri
-   */
+  // Calcola la distanza tra due punti in chilometri
   static calculateDistance(
     lat1: number, 
     lon1: number, 
     lat2: number, 
     lon2: number
   ): number {
-    const R = 6371; // Raggio della Terra in km
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = 
@@ -267,9 +253,7 @@ export class GeoapifyService {
     return R * c;
   }
 
-  /**
-   * Ottimizza la posizione per evitare sovrapposizioni
-   */
+  // Ottimizza la posizione per evitare sovrapposizioni
   findOptimalPosition(
     targetLat: number,
     targetLon: number,
@@ -321,5 +305,4 @@ export class GeoapifyService {
   }
 }
 
-// Esporta la classe
 export * from '../dto/GeoapifyDto';
