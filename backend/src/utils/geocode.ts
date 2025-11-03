@@ -29,13 +29,10 @@ export async function reverseGeocode(lat: number, lon: number): Promise<string |
   // Aspetta per rispettare il rate limit
   await waitForRateLimit();
 
-  const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+  const apiKey = process.env.GEOAPIFY_API_KEY;
+  const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${apiKey}`;
   try {
     const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'TechWeb-Progetto/1.0 (contact@example.com)',
-        'Referer': 'https://localhost:3000'
-      },
       timeout: 10000 // 10 secondi di timeout
     });
     
@@ -46,7 +43,7 @@ export async function reverseGeocode(lat: number, lon: number): Promise<string |
     }
     
     const data = await response.json();
-    const result = data.display_name || null;
+    const result = data.features[0]?.properties?.formatted || null;
     
     // Salva in cache
     geocodeCache.set(cacheKey, { data: result, timestamp: Date.now() });
@@ -78,13 +75,10 @@ export async function forwardGeocode(address: string): Promise<{ lat: number; ln
   // Aspetta per rispettare il rate limit
   await waitForRateLimit();
 
-  const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(address)}&limit=1`;
+  const apiKey = process.env.GEOAPIFY_API_KEY;
+  const url = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(address)}&limit=1&apiKey=${apiKey}`;
   try {
     const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'TechWeb-Progetto/1.0 (contact@example.com)',
-        'Referer': 'https://localhost:3000'
-      },
       timeout: 10000 // 10 secondi di timeout
     });
     
@@ -94,21 +88,21 @@ export async function forwardGeocode(address: string): Promise<{ lat: number; ln
     }
     
     const data = await response.json();
-    if (!Array.isArray(data) || data.length === 0) {
+    if (!data.features || data.features.length === 0) {
       geocodeCache.set(cacheKey, { data: null, timestamp: Date.now() });
       return null;
     }
     
-    const result = data[0];
-    if (!result.lat || !result.lon) {
+    const result = data.features[0];
+    if (!result.properties.lat || !result.properties.lon) {
       geocodeCache.set(cacheKey, { data: null, timestamp: Date.now() });
       return null;
     }
     
     const returnValue = {
-      lat: parseFloat(parseFloat(result.lat).toFixed(6)),
-      lng: parseFloat(parseFloat(result.lon).toFixed(6)),
-      display_name: result.display_name || address
+      lat: parseFloat(parseFloat(result.properties.lat).toFixed(6)),
+      lng: parseFloat(parseFloat(result.properties.lon).toFixed(6)),
+      display_name: result.properties.formatted || address
     };
     
     // Salva in cache
