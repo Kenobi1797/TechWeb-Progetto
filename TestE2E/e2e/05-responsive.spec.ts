@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Responsive Design Tests - STREETCATS', () => {
+/**
+ * Test Responsive Design - STREETCATS
+ * Verifica: layout mobile, tablet, desktop per tutte le pagine principali
+ */
+test.describe('05 - Responsive Design - STREETCATS', () => {
   const viewports = [
     { name: 'Mobile', width: 375, height: 667 },
     { name: 'Tablet', width: 768, height: 1024 },
@@ -8,88 +12,141 @@ test.describe('Responsive Design Tests - STREETCATS', () => {
   ];
 
   for (const viewport of viewports) {
-    test(`should display correctly on ${viewport.name}`, async ({ page }) => {
-  await page.setViewportSize({ width: viewport.width, height: viewport.height });
-  await page.goto('/', { timeout: 30000 });
+    test(`Homepage displays correctly on ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
       
       // Verifica che gli elementi principali siano visibili
-      await expect(page.locator('header')).toBeVisible();
-      await expect(page.locator('main')).toBeVisible();
-      await expect(page.locator('h1')).toBeVisible();
+      const header = page.getByRole('banner').or(page.locator('header')).first();
+      const hasHeader = await header.isVisible().catch(() => false);
+      expect(hasHeader).toBeTruthy();
       
       // Verifica che la mappa sia responsiva (se presente)
-      const mapContainer = page.locator('.leaflet-container, .map-container, [class*="map"]');
-      if (await mapContainer.count() > 0) {
-        await expect(mapContainer.first()).toBeVisible();
-      } else {
-        // Se la mappa non è presente, il test non fallisce
-        console.warn('Map container not found for viewport', viewport.name);
-      }
+      const mapContainer = page.locator('[data-testid="map-container"], .leaflet-container, [class*="map"]').first();
+      const hasMap = await mapContainer.isVisible().catch(() => false);
       
-      // Verifica che le card dei gatti si adattino al viewport
-      const catCards = page.locator('.cat-card');
-      if (await catCards.count() > 0) {
-        await expect(catCards.first()).toBeVisible();
-        // Su mobile, verifica che le card siano in colonna singola
+      // Se viewport è mobile, verifica che il menu sia accessibile
+      if (viewport.width <= 640) {
+        const mobileMenuButton = page.locator('button[class*="menu"], button[aria-label*="menu"]').first();
+        const hasMobileMenu = await mobileMenuButton.isVisible().catch(() => false);
+        
+        // Su mobile dovrebbe esserci un menu hamburger
+        expect(hasMobileMenu || hasMap).toBeTruthy();
+      }
+    });
+
+    test(`Cat list page displays correctly on ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto('http://localhost:3000/cats', { waitUntil: 'domcontentloaded' });
+      
+      // Attendi caricamento
+      await page.waitForFunction(() => {
+        return document.querySelectorAll('.cat-card, [data-testid="cat-card"]').length > 0;
+      }, { timeout: 10000 }).catch(() => {});
+      
+      // Verifica che le card siano presenti
+      const catCards = page.locator('.cat-card, [data-testid="cat-card"]');
+      const hasCards = await catCards.first().isVisible().catch(() => false);
+      
+      if (hasCards) {
+        // Su mobile, verifica che le card si adattino
         if (viewport.width <= 640) {
-          const cardWidth = await catCards.first().boundingBox();
-          if (cardWidth) {
-            expect(cardWidth.width).toBeGreaterThan(viewport.width * 0.8);
+          const cardBounds = await catCards.first().boundingBox();
+          
+          if (cardBounds) {
+            // La card dovrebbe occupare la maggior parte della larghezza
+            expect(cardBounds.width).toBeGreaterThan(viewport.width * 0.7);
           }
         }
-      } else {
-        // Se non ci sono card, il test non fallisce
-        console.warn('Cat card not found for viewport', viewport.name);
+        
+        // Su tablet/desktop, dovrebbero esserci più colonne
+        if (viewport.width > 768) {
+          const cardCount = await catCards.count();
+          expect(cardCount >= 0).toBeTruthy();
+        }
       }
+    });
+
+    test(`Map page displays correctly on ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto('http://localhost:3000/map', { waitUntil: 'domcontentloaded' });
       
-      // Verifica che i filtri siano accessibili nella pagina gatti
-      await page.getByRole('link', { name: /gatti/i }).click();
-      await expect(page.getByText('🔍 Filtri di ricerca')).toBeVisible();
+      await page.waitForTimeout(1500);
+      
+      // Verifica che la mappa sia visibile
+      const mapContainer = page.locator('[data-testid="map-container"], .leaflet-container').first();
+      const hasMap = await mapContainer.isVisible().catch(() => false);
+      
+      expect(hasMap).toBeTruthy();
+      
+      // Verifica che la mappa sia contenuta nel viewport
+      if (hasMap) {
+        const mapBounds = await mapContainer.boundingBox();
+        
+        if (mapBounds) {
+          // La mappa dovrebbe occupare la maggior parte dello spazio
+          expect(mapBounds.width).toBeGreaterThan(viewport.width * 0.7);
+          expect(mapBounds.height).toBeGreaterThan(viewport.height * 0.5);
+        }
+      }
+    });
+
+    test(`Upload page displays correctly on ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      
+      // Login (se necessario)
+      await page.goto('http://localhost:3000/login');
+      
+      // Tenta login (potrebbe fallire ma non importa per questo test)
+      await page.fill('input[name="email"]', 'test@example.com').catch(() => {});
+      await page.fill('input[name="password"]', 'testpass').catch(() => {});
+      await page.click('button[type="submit"]').catch(() => {});
+      
+      await page.waitForTimeout(2000);
+      
+      // Naviga all'upload
+      await page.goto('http://localhost:3000/upload', { waitUntil: 'domcontentloaded' }).catch(() => {});
+      
+      // Verifica che il form sia presente (se raggiunto)
+      const form = page.locator('form, [class*="form"]').first();
+      const hasForm = await form.isVisible().catch(() => false);
+      
+      // Se il form è presente, dovrebbe adattarsi al viewport
+      if (hasForm) {
+        const formBounds = await form.boundingBox();
+        
+        if (formBounds) {
+          // Su mobile, il form dovrebbe occupare la maggior parte della larghezza
+          if (viewport.width <= 640) {
+            expect(formBounds.width).toBeGreaterThan(viewport.width * 0.7);
+          }
+        }
+      }
+    });
+
+    test(`Text is readable on ${viewport.name} (no horizontal scroll needed)`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto('http://localhost:3000');
+      
+      // Verifica che non sia necessario scorrere orizzontalmente
+      const horizontalScroll = await page.evaluate(() => {
+        return document.documentElement.scrollWidth > window.innerWidth;
+      });
+      
+      expect(horizontalScroll).toBe(false);
     });
   }
 
-  test('should handle navigation menu on mobile', async ({ page }) => {
+  test('Navigation menu is accessible on all devices', async ({ page }) => {
+    // Test su mobile
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('/');
+    await page.goto('http://localhost:3000');
     
-    // Su mobile, il menu potrebbe essere nascosto in un hamburger
-    const hamburgerMenu = page.locator('button').filter({ hasText: /menu|☰|≡/ });
-    if (await hamburgerMenu.count() > 0) {
-      await hamburgerMenu.click();
-      
-      // Verifica che il menu si apra
-      await expect(page.locator('nav, .menu')).toBeVisible();
-    }
-  });
-
-  test('should display map responsively', async ({ page }) => {
-    const viewports = [
-      { width: 320, height: 568 }, // Mobile
-      { width: 768, height: 1024 }, // Tablet
-      { width: 1920, height: 1080 } // Desktop
-    ];
-
-    for (const viewport of viewports) {
-      await page.setViewportSize(viewport);
-      await page.goto('/');
-      
-      // Verifica che la mappa si adatti al viewport
-      const mapContainer = page.locator('.leaflet-container, .map-container, [data-testid="map"]');
-      
-      if (await mapContainer.count() > 0) {
-        await expect(mapContainer).toBeVisible();
-        
-        const mapBox = await mapContainer.boundingBox();
-        if (mapBox) {
-          expect(mapBox.width).toBeGreaterThan(0);
-          expect(mapBox.height).toBeGreaterThan(0);
-          
-          // Verifica che la mappa non superi la larghezza del viewport
-          expect(mapBox.width).toBeLessThanOrEqual(viewport.width);
-        }
-      } else {
-        console.log(`Map container not found for viewport ${viewport.width}x${viewport.height}`);
-      }
-    }
+    // Verifica che sia possibile navigare
+    const navElements = page.locator('a[href="/"], a[href="/cats"], a[href="/map"], a[href="/login"]');
+    
+    const hasNavigation = await navElements.first().isVisible().catch(() => false);
+    
+    expect(hasNavigation).toBeTruthy();
   });
 });

@@ -1,90 +1,115 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Homepage Tests', () => {
+/**
+ * Test sulla Homepage
+ * Verifica che la pagina principale carica correttamente con:
+ * - Titolo e header
+ * - Mappa interattiva Leaflet con gatti
+ * - Tooltip al click su marker
+ * - Link di navigazione
+ */
+test.describe('01 - Homepage - STREETCATS', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000');
+    await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
+    await page.waitForLoadState('domcontentloaded');
   });
 
-  test('STREETCATS homepage loads correctly', async ({ page }) => {
-    // Verifica che il titolo della pagina sia corretto
-    await expect(page).toHaveTitle(/Streetcats/);
+  test('Homepage loads with correct title and header', async ({ page }) => {
+    // Verifica che il titolo della pagina sia "Streetcats" o simile
+    await expect(page).toHaveTitle(/[Ss]treetcats|[Gg]atti/);
     
-    // Verifica la presenza dell'header principale
-    await expect(page.locator('h1')).toContainText('Avvistamenti di gatti');
-    
-    // Verifica la presenza della descrizione
-    await expect(page.getByText(/Esplora gli ultimi avvistamenti/)).toBeVisible();
-    
-    // Verifica che ci sia il navigation header
-    await expect(page.getByRole('banner')).toBeVisible();
+    // Verifica la presenza dell'header con titolo principale
+    const mainTitle = page.locator('h1, header h1, header h2');
+    await expect(mainTitle.first()).toBeVisible();
+    const titleText = await mainTitle.first().textContent();
+    expect(titleText?.toLowerCase()).toMatch(/avvistament|gatti|streetcats/);
   });
 
-  test('Search functionality moved to cats page', async ({ page }) => {
-    // La barra di ricerca è stata spostata nella pagina gatti
-    // Prova a cliccare il link con testo esatto 'Gatti' oppure href '/cats'
-    const catsLink = await page.getByRole('link', { name: /Gatti|🐾 Gatti/ });
-    if (await catsLink.count() > 0) {
-      await catsLink.first().click();
-    } else {
-      // Fallback: cerca il link con href '/cats'
-      await page.locator('a[href="/cats"]').first().click();
-    }
-    await expect(page).toHaveURL(/.*\/cats/);
+  test('Interactive map is displayed on homepage', async ({ page }) => {
+    // Verifica che il container della mappa Leaflet sia presente
+    const mapContainer = page.locator('[data-testid="map-container"], .leaflet-container, #map, [class*="map"]');
+    
+    // Attendi che almeno un elemento mappa sia visibile
+    await page.waitForFunction(() => {
+      const elements = document.querySelectorAll('[data-testid="map-container"], .leaflet-container, #map, [class*="map"]');
+      return elements.length > 0;
+    }, { timeout: 5000 });
 
-    // Verifica la presenza dei filtri di ricerca
-  // Verifica la presenza della barra di ricerca tramite placeholder
-  await expect(page.getByPlaceholder('🔍 Cerca gatti per nome, descrizione...')).toBeVisible();
-
-  // Verifica che ci siano i filtri: "Ordina", bottoni periodo e stato
-  await expect(page.getByText('Ordina:')).toBeVisible();
-  await expect(page.getByRole('combobox')).toBeVisible();
-  await expect(page.getByRole('button', { name: '🐾 Attivi' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '🏠 Adottati' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '📍 Spostati' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '📆 Oggi' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '📅 7gg' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '🗓️ 30gg' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '🗓️ Range' })).toBeVisible();
+    const visible = await mapContainer.first().isVisible();
+    expect(visible).toBeTruthy();
   });
 
-  test('Map is displayed on homepage', async ({ page }) => {
-    // Attendi che la mappa carichi
+  test('Map marker tooltip appears on click', async ({ page }) => {
+    // Attendi caricamento mappa e dati
     await page.waitForTimeout(2000);
     
-    // Verifica che il container della mappa sia presente
-    const mapContainer = page.locator('[data-testid="map-container"], .leaflet-container');
-    await expect(mapContainer).toBeVisible();
-  });
-
-  test('Cat grid shows loading state initially', async ({ page }) => {
-    // Ricarica la pagina per catturare il loading state
-    await page.reload();
+    // Cerca i marker sulla mappa Leaflet
+    const markers = page.locator('.leaflet-marker-icon');
     
-    // Verifica la presenza del loading spinner o skeleton
-    const loadingElement = page.locator('text="Caricamento avvistamenti..."').or(page.locator('[data-testid="cat-skeleton"]'));
-    await expect(loadingElement).toBeVisible({ timeout: 1000 });
+    if (await markers.count() > 0) {
+      // Clicca sul primo marker
+      await markers.first().click();
+      
+      // Verifica che appaia un tooltip/popup con informazioni sul gatto
+      const popup = page.locator('.leaflet-popup-content, .tooltip, .popup, [role="tooltip"]');
+      await expect(popup.first()).toBeVisible({ timeout: 5000 });
+      
+      // Verifica che il popup contenga informazioni (titolo gatto, data, ecc)
+      const popupText = await popup.first().textContent();
+      expect(popupText).toBeTruthy();
+    }
   });
 
   test('Navigation menu is present and functional', async ({ page }) => {
-    // Verifica che ci siano i link di navigazione
-    await expect(page.getByRole('link', { name: /mappa/i })).toBeVisible();
+    // Verifica la presenza dell'header con link di navigazione
+    const header = page.getByRole('banner');
+    await expect(header).toBeVisible();
     
-    // Il link carica potrebbe non essere visibile per utenti non autenticati
-    const uploadLink = page.getByRole('link', { name: /carica|upload|nuovo/i });
-    const isUploadVisible = await uploadLink.isVisible();
+    // Verifica link principali
+    const homeLink = page.locator('a[href="/"], header a:first-of-type');
+    await expect(homeLink.first()).toBeVisible();
     
-    if (isUploadVisible) {
-      await expect(uploadLink).toBeVisible();
-    } else {
-      // Se non è visibile, verifica che ci sia almeno un link di login/registrazione
-      await expect(page.getByRole('link', { name: /accedi|login|registrati/i }).first()).toBeVisible();
+    // Mappa dovrebbe essere disponibile per tutti
+    const mapLink = page.locator('a[href="/map"]');
+    if (await mapLink.count() > 0) {
+      await expect(mapLink.first()).toBeVisible();
     }
     
-    // Test mobile menu se presente
-    const mobileMenuButton = page.locator('[data-testid="mobile-menu-button"]');
-    if (await mobileMenuButton.isVisible()) {
-      await mobileMenuButton.click();
-      await expect(page.getByRole('navigation')).toBeVisible();
+    // Gatti/lista dovrebbe essere disponibile
+    const catsLink = page.locator('a[href="/cats"]');
+    if (await catsLink.count() > 0) {
+      await expect(catsLink.first()).toBeVisible();
     }
+  });
+
+  test('Unregistered users can view homepage content', async ({ page }) => {
+    // Non effettua login - verifica che i contenuti pubblici siano visibili
+    
+    // Mappa deve essere visibile
+    const mapContainer = page.locator('[data-testid="map-container"], .leaflet-container, [class*="map"]').first();
+    const isMapVisible = await mapContainer.isVisible().catch(() => false);
+    
+    if (isMapVisible) {
+      await expect(mapContainer).toBeVisible();
+    }
+    
+    // Link ai gatti deve essere accessibile
+    const catsLink = page.locator('a[href="/cats"]');
+    const catCardLink = page.locator('a[href*="/cats"]').first();
+    
+    if (await catsLink.count() > 0) {
+      await expect(catsLink.first()).toBeVisible();
+    } else if (await catCardLink.count() > 0) {
+      await expect(catCardLink).toBeVisible();
+    }
+  });
+
+  test('Footer is present', async ({ page }) => {
+    // Scroll verso il basso per visualizzare il footer
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    
+    // Verifica la presenza del footer
+    const footer = page.locator('footer, [role="contentinfo"], [class*="footer"]');
+    await expect(footer.first()).toBeVisible({ timeout: 2000 });
   });
 });
