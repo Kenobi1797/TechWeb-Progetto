@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
  * Test Integrazione API - STREETCATS
  * Verifica: richieste REST, error handling, autenticazione
  */
-test.describe('06 - API Integration - STREETCATS', () => {
+test.describe('07 - API Integration - STREETCATS', () => {
   test('GET /api/cats returns cat data', async ({ page }) => {
     page.on('response', response => {
       if (response.url().includes('/api/cats')) {

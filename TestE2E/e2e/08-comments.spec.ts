@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
  * Test Commenti - STREETCATS
  * Verifica: posting commenti (solo utenti autenticati), visualizzazione, gestione
  */
-test.describe('07 - Comments - STREETCATS', () => {
+test.describe('08 - Comments - STREETCATS', () => {
   const testComment = {
     text: `Che gatto carino! Spero che trovi una casa accogliente. ${Date.now()}`,
   };
