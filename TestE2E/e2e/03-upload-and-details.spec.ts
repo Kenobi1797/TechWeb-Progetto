@@ -242,8 +242,9 @@ test.describe('03 - Upload and Details - STREETCATS', () => {
             }
           });
           await page.waitForTimeout(800);
-        } catch (e) {
+        } catch (error) {
           // Map click failed, continue
+          console.warn("Map click failed:", error);
         }
       }
     }
@@ -276,8 +277,9 @@ test.describe('03 - Upload and Details - STREETCATS', () => {
       await page.waitForFunction(() => {
         return document.querySelectorAll('.cat-card, [data-testid="cat-card"]').length > 0;
       }, { timeout: 10000 });
-    } catch (e) {
+    } catch (error) {
       // No cards found
+      console.warn("Failed to wait for cards:", error);
     }
     
     const catCards = page.locator('.cat-card, [data-testid="cat-card"]');
