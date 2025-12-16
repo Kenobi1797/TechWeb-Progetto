@@ -1,0 +1,20 @@
+# Fdb version 4
+["pdflatex"] 1765903891.51566 "/home/kenobi/Documenti/GitHub/TechWeb-Progetto/documentazione/documentazione.tex" "documentazione.pdf" "documentazione" 1765903891.60227 2
+  "/etc/texmf/web2c/texmf.cnf" 1752838060.96153 475 c0e671620eb5563b2130f56340a5fde8 ""
+  "/home/kenobi/Documenti/GitHub/TechWeb-Progetto/documentazione/documentazione.tex" 1765903674.61525 13692 afbe70fadcc08ecb0aeaecc370d289b1 ""
+  "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr12.tfm" 1136768653 1288 655e228510b4c2a1abe905c368440826 ""
+  "/usr/share/texlive/texmf-dist/tex/latex/base/article.cls" 1738182759 20144 63d8bacaf52e5abf4db3bc322373e1d4 ""
+  "/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty" 1738182759 5048 0270515b828149155424600fd2d58ac5 ""
+  "/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo" 1738182759 8449 ffe4ba2166a344827c3a832d1d5e0a91 ""
+  "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1741904018 41538 c016915c1d51223b6dbbfe27341748a8 ""
+  "/usr/share/texmf/web2c/texmf.cnf" 1741904018 41538 c016915c1d51223b6dbbfe27341748a8 ""
+  "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1761990006 1960021 c70f64b529126826742d4773a6127332 ""
+  "documentazione.aux" 1765903883.51476 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "documentazione.tex" 1765903674.61525 13692 afbe70fadcc08ecb0aeaecc370d289b1 ""
+  "utf-8.def" 0 -1 0 ""
+  (generated)
+  "documentazione.aux"
+  "documentazione.log"
+  "documentazione.pdf"
+  (rewritten before read)

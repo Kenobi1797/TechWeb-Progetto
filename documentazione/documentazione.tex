@@ -1,0 +1,423 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf-8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+\geometry{margin=1.5cm}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{StreetCats - TechWeb}
+\lhead{Documentazione Tecnica}
+\cfoot{Pagina \thepage\ di \pageref{LastPage}}
+
+\lstset{
+  language=TypeScript,
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  commentstyle=\color{gray},
+  stringstyle=\color{orange},
+  keywordstyle=\color{blue},
+  backgroundcolor=\color{lightgray!10},
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny
+}
+
+\title{\textbf{STREETCATS}\\Piattaforma Web per la Condivisione di Avvistamenti di Gatti Randagi\\
+\large Documentazione Tecnica e Implementativa}
+\author{StreetCats Development Team}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduzione}
+
+\textbf{StreetCats} è una piattaforma web full-stack progettata per la condivisione e la mappatura di avvistamenti di gatti randagi. L'applicazione consente agli utenti registrati di caricare foto georeferenziate con descrizioni formattate in Markdown, mentre gli utenti generici possono esplorare i dati tramite una mappa interattiva e lasciare commenti (se autenticati).
+
+La traccia di progetto richiesta (Traccia 4.A - WebTech's StreetCats) è stata interamente implementata con tecnologie moderne e best practice di sviluppo.
+
+\section{Stack Tecnologico}
+
+\subsection{Backend}
+\begin{itemize}
+  \item \textbf{Runtime}: Node.js con TypeScript
+  \item \textbf{Framework}: Express.js
+  \item \textbf{Database}: MySQL 8.0 (esecuzione via Docker)
+  \item \textbf{Autenticazione}: JWT (JSON Web Tokens)
+  \item \textbf{Upload File}: Multer
+  \item \textbf{Geocoding}: Geoapify API
+  \item \textbf{Markdown}: markdown-it
+  \item \textbf{Containerizzazione}: Docker
+\end{itemize}
+
+\subsection{Frontend}
+\begin{itemize}
+  \item \textbf{Framework}: Next.js 15+ (React)
+  \item \textbf{Linguaggio}: TypeScript
+  \item \textbf{Styling}: TailwindCSS + DaisyUI
+  \item \textbf{Mappa Interattiva}: Leaflet
+  \item \textbf{Containerizzazione}: Docker
+\end{itemize}
+
+\subsection{Testing}
+\begin{itemize}
+  \item \textbf{Framework E2E}: Playwright
+  \item \textbf{Test Suite}: 10+ test automatici
+  \item \textbf{Coverage}: Homepage, Navigazione, Upload, Ricerca, Responsività, Autenticazione, API Integration, Commenti, Mappa, Accessibilità
+\end{itemize}
+
+\section{Architettura dell'Applicazione}
+
+\subsection{Architettura Generale}
+
+L'applicazione segue il pattern \textbf{MVC (Model-View-Controller)} con separazione netta tra backend e frontend:
+
+\begin{verbatim}
+┌─────────────────────────────┐
+│    Frontend (Next.js)       │
+│  - SPA Responsive           │
+│  - React Components         │
+│  - TailwindCSS Styling      │
+└──────────────┬──────────────┘
+               │ HTTP/REST API
+┌──────────────▼──────────────┐
+│   Backend (Express.js)      │
+│  - REST API Endpoints       │
+│  - Middleware (Auth, CORS)  │
+│  - Business Logic           │
+└──────────────┬──────────────┘
+               │ SQL Queries
+┌──────────────▼──────────────┐
+│   Database (MySQL)          │
+│  - Cats Table               │
+│  - Users Table              │
+│  - Comments Table           │
+└─────────────────────────────┘
+\end{verbatim}
+
+\subsection{Backend - Struttura dei Moduli}
+
+\subsubsection{Controllers}
+Gestiscono la logica di business e orchestrano le operazioni:
+\begin{itemize}
+  \item \textbf{authController.ts}: Registrazione, Login, Validazione JWT
+  \item \textbf{catsController.ts}: CRUD gatti, Ricerca, Upload immagini
+  \item \textbf{commentsController.ts}: CRUD commenti, Autenticazione
+  \item \textbf{geocodeController.ts}: Integrazione Geoapify API
+\end{itemize}
+
+\subsubsection{Repository Layer}
+Incapsulano l'accesso ai dati:
+\begin{itemize}
+  \item \textbf{catsDb.ts}: Query per gatti (CREATE, READ, UPDATE, DELETE, SEARCH)
+  \item \textbf{commentsDb.ts}: Query per commenti (CREATE, READ per gatto)
+  \item \textbf{usersDb.ts}: Query per utenti (CREATE, FIND BY EMAIL, PASSWORD VALIDATION)
+\end{itemize}
+
+\subsubsection{Middleware}
+\begin{itemize}
+  \item \textbf{authMiddleware.ts}: Verifica JWT, Estrae dati utente dal token
+\end{itemize}
+
+\subsubsection{Routes}
+\begin{itemize}
+  \item \textbf{auth.ts}: POST /register, /login
+  \item \textbf{cats.ts}: GET /cats, POST /cats, GET /cats/:id, DELETE /cats/:id, GET /cats/search
+  \item \textbf{comments.ts}: POST /comments, GET /comments/:catId
+  \item \textbf{geocode.ts}: POST /geocode (coordinate di indirizzo)
+\end{itemize}
+
+\subsection{Frontend - Struttura dei Componenti}
+
+\subsubsection{Pagine (Routing Next.js)}
+\begin{itemize}
+  \item \textbf{page.tsx}: Homepage con visualizzazione gatti
+  \item \textbf{login/page.tsx}: Form autenticazione
+  \item \textbf{register/page.tsx}: Form registrazione
+  \item \textbf{cats/page.tsx}: Elenco gatti filtrati
+  \item \textbf{cats/[id]/page.tsx}: Dettagli gatto singolo
+  \item \textbf{upload/page.tsx}: Upload nuovo gatto (autenticato)
+  \item \textbf{map/page.tsx}: Vista mappa interattiva
+  \item \textbf{mylistings/page.tsx}: I miei gatti (autenticato)
+\end{itemize}
+
+\subsubsection{Componenti Riutilizzabili}
+\begin{itemize}
+  \item \textbf{CatCard.tsx}: Visualizzazione card gatto
+  \item \textbf{CatGrid.tsx}: Griglia responsive di card
+  \item \textbf{MapView.tsx}: Mappa Leaflet con cluster
+  \item \textbf{CommentForm.tsx}: Form aggiunta commenti
+  \item \textbf{AuthForm.tsx}: Form autenticazione
+  \item \textbf{Header.tsx}: Barra navigazione
+  \item \textbf{MarkdownViewer.tsx}: Rendering Markdown sicuro
+\end{itemize}
+
+\subsubsection{Context e Hook Personalizzati}
+\begin{itemize}
+  \item \textbf{DataContext.tsx}: Condivisione stato gatti tra componenti
+  \item \textbf{useAuth.ts}: Hook per gestione autenticazione e token JWT
+\end{itemize}
+
+\section{Implementazione Dettagliata dei Requisiti}
+
+\subsection{Requisito 1: Upload Foto e Dati Gatto}
+
+\subsubsection{Backend}
+L'endpoint \texttt{POST /api/cats} accetta:
+\begin{verbatim}
+{
+  title: string,
+  description: string (Markdown),
+  latitude: number,
+  longitude: number,
+  image: File (multipart/form-data)
+}
+\end{verbatim}
+
+Il middleware \textbf{authMiddleware} valida il JWT. Multer salva l'immagine in \texttt{uploads/}. Il controller inserisce il record in database con timestamp.
+
+\subsubsection{Frontend}
+La pagina \texttt{upload/page.tsx}:
+\begin{itemize}
+  \item Geolocalizzazione automatica via browser
+  \item MapPicker per selezione coordinate interattiva
+  \item Drag \& drop per upload immagini
+  \item Editor Markdown in tempo reale
+  \item Validazione form lato client
+\end{itemize}
+
+\subsection{Requisito 2: Mappa Interattiva con Clustering}
+
+Utilizzo di Leaflet con plugin MarkerClusterGroup:
+\begin{itemize}
+  \item Clustering automatico a zoom diversi
+  \item Tooltip con riassunto gatto
+  \item Click su marker per accedere a dettagli
+  \item Responsivo su mobile
+\end{itemize}
+
+\subsection{Requisito 3: Pagina Dettagli Gatto}
+
+Visualizzazione completa con:
+\begin{itemize}
+  \item Foto high-res
+  \item Mappa con posizione del gatto
+  \item Titolo, descrizione (Markdown renderizzato)
+  \item Data di inserimento
+  \item Sezione commenti con form autenticato
+\end{itemize}
+
+\subsection{Requisito 4: Sistema Commenti Autenticato}
+
+\begin{itemize}
+  \item Solo utenti registrati possono commentare
+  \item Validazione JWT nell'endpoint \texttt{POST /api/comments}
+  \item Commenti visualizzati in tempo reale
+  \item Associazione autore-commento tramite ID utente
+\end{itemize}
+
+\subsection{Requisito 5: Ricerca Avanzata}
+
+Endpoint \texttt{GET /api/cats/search}:
+\begin{verbatim}
+Query Parameters:
+  - title: string (LIKE search)
+  - description: string (LIKE search)
+  - sort: date|relevance
+\end{verbatim}
+
+\subsection{Requisito 6: Supporto Markdown}
+
+\begin{itemize}
+  \item \textbf{Backend}: Validazione input con markdown-it
+  \item \textbf{Frontend}: Sanitizzazione con DOMPurify, rendering con react-markdown
+  \item Supporto: **grassetto**, *corsivo*, [link]()
+\end{itemize}
+
+\subsection{Requisito 7: Design Responsive}
+
+\begin{itemize}
+  \item TailwindCSS breakpoints: sm, md, lg, xl, 2xl
+  \item Grid e flexbox dinamici
+  \item Mappa Leaflet responsive
+  \item Navigazione mobile ottimizzata
+\end{itemize}
+
+\subsection{Requisito 8: Autenticazione JWT}
+
+\subsubsection{Flusso}
+\begin{enumerate}
+  \item User registra account: password hashata con bcrypt
+  \item User fa login: credenziali verificate, JWT generato
+  \item JWT memorizzato in localStorage
+  \item Ogni request API include token in header \texttt{Authorization: Bearer <token>}
+  \item Backend verifica firma con secret key
+\end{enumerate}
+
+\section{Database Schema}
+
+\begin{verbatim}
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE cats (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  latitude DECIMAL(10,8),
+  longitude DECIMAL(11,8),
+  image_path VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE comments (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  cat_id INT NOT NULL,
+  user_id INT NOT NULL,
+  text TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (cat_id) REFERENCES cats(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+\end{verbatim}
+
+\section{Test End-to-End}
+
+Implementati 10+ test Playwright:
+
+\begin{enumerate}
+  \item \textbf{01-homepage.spec.ts}: Caricamento, visualizzazione gatti
+  \item \textbf{02-navigation.spec.ts}: Routing tra pagine
+  \item \textbf{03-upload-and-details.spec.ts}: Upload gatto, visualizzazione dettagli
+  \item \textbf{04-search.spec.ts}: Ricerca per titolo/descrizione
+  \item \textbf{05-responsive.spec.ts}: Layout mobile/desktop
+  \item \textbf{06-auth.spec.ts}: Registrazione, Login, JWT
+  \item \textbf{07-api-integration.spec.ts}: Chiamate API backend
+  \item \textbf{08-comments.spec.ts}: Commenti autenticati
+  \item \textbf{09-map.spec.ts}: Mappa interattiva, marker
+  \item \textbf{10-accessibility.spec.ts}: Aria labels, navigazione tastiera
+\end{enumerate}
+
+\section{Containerizzazione Docker}
+
+\subsection{Backend Dockerfile}
+\begin{verbatim}
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 5000
+CMD ["npm", "run", "dev"]
+\end{verbatim}
+
+\subsection{Frontend Dockerfile}
+\begin{verbatim}
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
+\end{verbatim}
+
+\subsection{Docker Compose}
+Orchestrazione di backend, frontend e MySQL in un singolo comando:
+\begin{verbatim}
+docker compose up --build
+\end{verbatim}
+
+\section{Sicurezza}
+
+\begin{itemize}
+  \item \textbf{Password}: Hash bcrypt (salt rounds: 10)
+  \item \textbf{JWT}: Firma con HS256, scadenza token
+  \item \textbf{CORS}: Configurazione whitelist origin
+  \item \textbf{Input Validation}: Middleware Express validator
+  \item \textbf{SQL Injection}: Prepared statements (mysql2)
+  \item \textbf{XSS Prevention}: Sanitizzazione Markdown, DOMPurify
+\end{itemize}
+
+\section{Performance e Optimizzazione}
+
+\begin{itemize}
+  \item \textbf{Lazy Loading}: Immagini con next/image
+  \item \textbf{Code Splitting}: Componenti dinamic() di Next.js
+  \item \textbf{Memoization}: React.memo su componenti ricchi
+  \item \textbf{Caching}: Browser cache, ETag headers
+  \item \textbf{Clustering Marker}: Riduce DOM nodes su mappa
+\end{itemize}
+
+\section{Tecnologie Utilizzate - Giustificazione}
+
+\subsection{Perché Express.js?}
+Framework lightweight, maturo, ecosistema middleware ricco, performance elevate.
+
+\subsection{Perché Next.js?}
+SSR/SSG per SEO, File-based routing, API routes integrate, zero-config, performance ottimale.
+
+\subsection{Perché TailwindCSS?}
+Utility-first, riduce CSS custom, rapid prototyping, bundle size ottimizzato.
+
+\subsection{Perché Leaflet?}
+Libreria geospaziale leggera, ampia comunità, plugin marker clustering.
+
+\subsection{Perché Playwright?}
+Cross-browser, headless, API moderna, generazione automatica test.
+
+\section{Istruzioni di Esecuzione}
+
+\subsection{Prerequisiti}
+\begin{itemize}
+  \item Docker e Docker Compose installati
+  \item Oppure: Node.js 18+, MySQL 8.0, npm
+\end{itemize}
+
+\subsection{Con Docker Compose}
+\begin{verbatim}
+cd /path/to/TechWeb-Progetto
+docker compose up --build
+# Frontend: http://localhost:3000
+# Backend: http://localhost:5000
+\end{verbatim}
+
+\subsection{Manuale}
+\begin{verbatim}
+# Backend
+cd backend
+npm install
+npm run dev
+
+# Frontend (nuovo terminal)
+cd techweb-frontend
+npm install
+npm run dev
+
+# Test E2E (nuovo terminal)
+cd TestE2E
+npm install
+npm run test:e2e
+\end{verbatim}
+
+\section{Conclusioni}
+
+StreetCats rappresenta un'implementazione completa e professionale dei requisiti della traccia 4.A. L'architettura è scalabile, il codice è modularizzato e ben documentato, i test E2E coprono le funzionalità critiche, e la containerizzazione facilita il deployment.
+
+\end{document}
