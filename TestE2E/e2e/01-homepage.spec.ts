@@ -10,8 +10,7 @@ import { test, expect } from '@playwright/test';
  */
 test.describe('01 - Homepage - STREETCATS', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
   });
 
   test('Homepage loads with correct title and header', async ({ page }) => {
@@ -84,6 +83,7 @@ test.describe('01 - Homepage - STREETCATS', () => {
 
   test('Unregistered users can view homepage content', async ({ page }) => {
     // Non effettua login - verifica che i contenuti pubblici siano visibili
+    await page.waitForTimeout(1000);
     
     // Mappa deve essere visibile
     const mapContainer = page.locator('[data-testid="map-container"], .leaflet-container, [class*="map"]').first();

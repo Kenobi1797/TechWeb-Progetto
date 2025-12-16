@@ -62,9 +62,9 @@ test.describe('06 - Authentication', () => {
     await page.click('button[type="submit"]').catch(() => {});
     // Attendi la risposta
     await page.waitForTimeout(2000);
-    // Cerca il bottone di logout
-    const logout = page.locator('button:has-text(/logout|esci)').first();
-    if (await logout.isVisible()) {
+    // Cerca il bottone di logout usando getByRole
+    const logout = page.getByRole('button', { name: /logout|esci/i }).first();
+    if (await logout.isVisible().catch(() => false)) {
       // Clicca logout
       await logout.click();
       // Attendi il completamento
