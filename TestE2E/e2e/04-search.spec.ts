@@ -55,10 +55,6 @@ test.describe('04 - Search and Filters - STREETCATS', () => {
       return document.querySelectorAll('.cat-card, [data-testid="cat-card"]').length > 0;
     }, { timeout: 10000 }).catch(() => {});
     
-    // Prendi il numero iniziale di card
-    const initialCards = page.locator('[class*="card"]');
-    const initialCount = await initialCards.count().catch(() => 0);
-    
     // Cerca la barra di ricerca
     const searchInput = page.locator(
       'input[type="search"], input[placeholder*="search"], input[placeholder*="Search"]'
