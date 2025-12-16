@@ -4,14 +4,14 @@ import { isAuthenticated, logoutUser, clearTokens, getAuthToken } from "./Server
 
 // Utility per decodificare JWT e ottenere il tempo di scadenza
 function getTokenExpiration(): number | null {
-  if (typeof globalThis.window === "undefined") return null;
+  if (globalThis.window === undefined) return null;
   const token = getAuthToken();
   if (!token) return null;
 
   try {
     const payload = token.split(".")[1];
     const decoded = JSON.parse(atob(payload));
-    return decoded.exp ? decoded.exp * 1000 : null; // Converti a millisecondi
+    return decoded.exp ? decoded.exp * 1000 : null;
   } catch (error) {
     console.warn("Failed to decode token:", error);
     return null;
@@ -46,7 +46,7 @@ export function useAuth() {
     window.addEventListener("storage", handleStorageChange);
     
     // Evento personalizzato per aggiornare lo stato dopo login/logout
-    if (typeof globalThis.window !== "undefined") {
+    if (globalThis.window !== undefined) {
       globalThis.window.addEventListener("authStateChanged", handleStorageChange);
     }
 
@@ -60,7 +60,7 @@ export function useAuth() {
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
-      if (typeof globalThis.window !== "undefined") {
+      if (globalThis.window !== undefined) {
         globalThis.window.removeEventListener("authStateChanged", handleStorageChange);
       }
       clearInterval(tokenCheckInterval);
@@ -75,12 +75,12 @@ export function useAuth() {
     } finally {
       clearTokens();
       setIsLoggedIn(false);
-      if (typeof globalThis.window !== "undefined") {
+      if (globalThis.window !== undefined) {
         globalThis.window.dispatchEvent(new Event("authStateChanged"));
       }
       
       // Redirect a login
-      if (typeof globalThis.window !== "undefined") {
+      if (globalThis.window !== undefined) {
         globalThis.window.location.href = "/login?session=expired";
       }
     }
@@ -92,7 +92,7 @@ export function useAuth() {
       clearTokens();
       setIsLoggedIn(false);
       // Dispatcha un evento personalizzato per notificare altri componenti
-      if (typeof globalThis.window !== "undefined") {
+      if (globalThis.window !== undefined) {
         globalThis.window.dispatchEvent(new Event("authStateChanged"));
       }
       return true;
@@ -108,7 +108,7 @@ export function useAuth() {
 
   const updateAuthState = () => {
     setIsLoggedIn(isAuthenticated());
-    if (typeof globalThis.window !== "undefined") {
+    if (globalThis.window !== undefined) {
       globalThis.window.dispatchEvent(new Event("authStateChanged"));
     }
   };

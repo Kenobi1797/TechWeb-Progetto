@@ -212,8 +212,8 @@ test.describe('07 - API Integration - STREETCATS', () => {
             expect(singleCatResponse.status() < 500 || singleCatResponse.status() === null).toBeTruthy();
           }
         }
-      } catch (e) {
-        // JSON parse error, continue
+      } catch (error) {
+        console.warn("Error parsing cat response:", error);
       }
     }
     
@@ -241,8 +241,8 @@ test.describe('07 - API Integration - STREETCATS', () => {
             expect(commentsResponse.status() < 500 || commentsResponse.status() === null).toBeTruthy();
           }
         }
-      } catch (e) {
-        // JSON parse error, continue
+      } catch (error) {
+        console.warn("Error parsing comments response:", error);
       }
     }
     
@@ -278,8 +278,8 @@ test.describe('07 - API Integration - STREETCATS', () => {
             expect(commentResponse.status() < 500 || commentResponse.status() === null).toBeTruthy();
           }
         }
-      } catch (e) {
-        // JSON parse error, continue
+      } catch (error) {
+        console.warn("Error posting comment:", error);
       }
     }
     
