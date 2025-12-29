@@ -68,13 +68,17 @@ test.describe('02 - Navigation', () => {
   });
 
   test('Back button works', async ({ page }) => {
+    // Naviga alla homepage prima
+    await page.goto('http://localhost:3000');
+    // Attendi caricamento
+    await page.waitForTimeout(500);
     // Naviga alla pagina dei gatti
     await page.goto('http://localhost:3000/cats');
     // Attendi caricamento
     await page.waitForTimeout(500);
     // Torna indietro con il browser
     await page.goBack();
-    // Verifica che siamo nella root
-    expect(page.url()).toContain('localhost');
+    // Verifica che siamo nella homepage
+    expect(page.url()).toContain('localhost:3000');
   });
 });

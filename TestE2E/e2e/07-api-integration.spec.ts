@@ -12,9 +12,9 @@ test.describe('07 - API Integration - STREETCATS', () => {
       }
     });
     
-    await page.goto('http://localhost:3000/cats', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:3000/cats', { waitUntil: 'load' });
     
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
     
     // Verifica che i dati siano stati caricati
     const catCards = page.locator('.cat-card, [data-testid="cat-card"]');
@@ -88,7 +88,7 @@ test.describe('07 - API Integration - STREETCATS', () => {
       }
     });
     
-    await page.goto('http://localhost:3000/cats', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:3000/cats', { waitUntil: 'load' });
     
     // Verifica che se c'è stato un errore, sia gestito correttamente
     const errorMessage = page.locator('.error, .error-message, [class*="error"]');
@@ -121,7 +121,7 @@ test.describe('07 - API Integration - STREETCATS', () => {
     await page.waitForTimeout(2000);
     
     // Naviga a una pagina protetta
-    await page.goto('http://localhost:3000/upload', { waitUntil: 'networkidle' }).catch(() => {});
+    await page.goto('http://localhost:3000/upload', { waitUntil: 'load' }).catch(() => {});
     
     // Se è autenticato, almeno una richiesta dovrebbe avere il token
     expect(authHeaderFound || true).toBeTruthy();
@@ -136,9 +136,9 @@ test.describe('07 - API Integration - STREETCATS', () => {
       }
     });
     
-    await page.goto('http://localhost:3000/cats', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:3000/cats', { waitUntil: 'load' });
     
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
     
     // Dovrebbe essere stato fatto almeno un caricamento di dati
     expect(requestTimes.length > 0 || true).toBeTruthy();
