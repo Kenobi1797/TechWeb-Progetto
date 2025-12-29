@@ -1,80 +1,72 @@
-\documentclass[11pt,a4paper]{article}
+\documentclass[10pt,a4paper]{article}
 \usepackage[T1]{fontenc}
 \usepackage[italian]{babel}
-\usepackage[margin=2.5cm]{geometry}
+\usepackage[margin=1.5cm]{geometry}
 \usepackage{xcolor}
 \usepackage{fancyhdr}
+\usepackage{graphicx}
 
-\definecolor{primary}{RGB}{255, 107, 107}
+\definecolor{primary}{RGB}{31, 78, 121}
 \definecolor{dark}{RGB}{51, 51, 51}
 
 \pagestyle{fancy}
 \fancyhf{}
-\rfoot{\small Streetcats - Progetto Accademico}
+\rfoot{\small Progetto di Tecnologie Web - A.A. 2024/2025}
 
 \begin{document}
 
 \thispagestyle{empty}
 
 \begin{center}
-{\Large\textbf{\textcolor{primary}{Streetcats}}}
+\includegraphics[width=3.5cm]{Federico-II.png}
 
-{\small\textcolor{dark}{Piattaforma web per avvistamenti di gatti randagi}}
+\vspace{0.3cm}
 
-\vspace{2cm}
+{\footnotesize UNIVERSITÀ DEGLI STUDI DI NAPOLI FEDERICO II}
 
-{\textcolor{primary}{\rule{10cm}{1.5pt}}}
+{\footnotesize LAUREA IN INFORMATICA}
 
-\vspace{2cm}
+{\footnotesize CORSO DI TECNOLOGIE WEB }
+
+{\footnotesize DOCENTE: Luigi Libero Lucio Starace}
+
+\vspace{0.8cm}
+
+{\large\textbf{\textcolor{primary}{Streetcats}}}
+
+{\footnotesize\textcolor{dark}{Piattaforma web per avvistamenti di gatti randagi}}
+
+\vspace{0.8cm}
+
+{\textcolor{primary}{\rule{10cm}{1pt}}}
+
+\vspace{0.8cm}
 \end{center}
 
 \section*{Dati Studente}
-\vspace{0.5cm}
+\vspace{0.2cm}
 
 \noindent
 \textbf{Nome:} Gino \\
 \textbf{Cognome:} Pandozzi-Trani \\
 \textbf{Matricola:} N86003116
 
-\vspace{1.5cm}
+\vspace{0.8cm}
 
 \section*{Traccia Progetto}
-\vspace{0.5cm}
+\vspace{0.2cm}
 
 \noindent
-Realizzazione di una piattaforma web per la condivisione di avvistamenti di gatti randagi con mappa interattiva, sistema di upload foto, ricerca avanzata e commenti.
+\textbf{4.A WEBTECH'S STREETCATS} \\[0.2cm]
+Si vuole realizzare STREETCATS, una piattaforma web dedicata alla condivisione di avvistamenti di gatti randagi. Gli utenti registrati potranno inserire nuovi gatti nel sistema, caricando una fotografia, indicando la posizione geografica tramite una mappa interattiva, e aggiungendo un titolo e una descrizione testuale. La descrizione dovrà supportare la formattazione del testo, permettendo l'uso di grassetto, corsivo e link ipertestuali (per esempio, utilizzando un linguaggio di annotazione come Markdown).
+
+Tutti gli utenti, anche quelli non registrati, potranno esplorare i gatti presenti sulla piattaforma visualizzandoli su una mappa interattiva. Cliccando su ciascun marker, sarà possibile visualizzare un tooltip di riepilogo, da cui si può accedere alla pagina di dettaglio del gatto. In tale pagina, verranno mostrate la foto, la posizione sulla mappa, la data di inserimento, il titolo, la descrizione formattata e i commenti lasciati dagli altri utenti. Solo gli utenti autenticati, però, potranno contribuire con nuovi commenti, arricchendo la community con osservazioni, consigli o semplici messaggi dedicati ai felini avvistati.
 
 \vspace{1.5cm}
 
-\section*{Tecnologie Utilizzate}
-\vspace{0.5cm}
-
-\noindent
-\textbf{Backend:}
-Express.js, TypeScript, Node.js, JWT, PostgreSQL, Docker
-
-\vspace{0.8cm}
-
-\noindent
-\textbf{Frontend:}
-React, Next.js, TypeScript, TailwindCSS, DaisyUI, Leaflet
-
-\vspace{0.8cm}
-
-\noindent
-\textbf{Testing \& Deployment:}
-Playwright, Docker, Docker Compose
-
-\vspace{0.8cm}
-
-\noindent
-\textbf{Strumenti:}
-Git, GitHub, VS Code, npm
-
-\vspace{2cm}
-
 \begin{center}
-{\small\textcolor{dark}{Progetto realizzato per il corso di Ingegneria del Web}}
+{\small\textcolor{dark}{Progetto realizzato per il corso di Tecnologie Web}} \\
+{\small\textcolor{dark}{Università degli Studi di Napoli Federico II}}
 \end{center}
 
 \end{document}
