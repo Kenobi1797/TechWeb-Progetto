@@ -1,13 +1,33 @@
+/**
+ * AuthController - Gestione Autenticazione e Autorizzazione
+ * 
+ * Funzioni principali:
+ * - register: Registrazione nuovo utente con bcrypt password hashing
+ * - login: Autenticazione con JWT token generation
+ * - logout: Revifica refresh token
+ * - refreshToken: Generazione nuovo access token
+ * 
+ * Sicurezza:
+ * - Password hashate con bcrypt (10 rounds)
+ * - JWT access token a breve termine (1h)
+ * - Refresh token salvati nel DB con scadenza
+ * - ReCAPTCHA V2 per prevenire registrazioni automatiche
+ * - Rate limiting consigliato per `/login` e `/register`
+ * 
+ * @author Gino Pandozzi-Trani
+ * @version 1.0.0
+ */
+
 import { Request, Response } from 'express';
 import pool from '../config/db';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
-import { AuthRequest } from '../dto/AuthDto';
+import { randomBytes } from 'node:crypto';
+import { verifyRecaptchaToken } from '../utils/recaptcha';
 
 // Funzione per generare refresh token
 const generateRefreshToken = (): string => {
-  return crypto.randomBytes(32).toString('hex');
+  return randomBytes(32).toString('hex');
 };
 
 // Funzione per salvare refresh token nel database
@@ -31,11 +51,66 @@ const cleanupExpiredTokens = async (): Promise<void> => {
   await pool.query('DELETE FROM refresh_tokens WHERE expires_at < NOW()');
 };
 
-export const register = async (req: Request, res: Response) => {
-  const { username, email, password } = req.body;
+// Helper: Valida i campi input registrazione
+const validateRegisterInput = (username: string, email: string, password: string): string | null => {
   if (!username || !email || !password) {
-    return res.status(400).json({ error: 'Tutti i campi sono obbligatori' });
+    return 'Tutti i campi sono obbligatori';
   }
+  return null;
+};
+
+// Helper: Valida il token ReCAPTCHA
+const validateRecaptcha = async (recaptchaToken?: string): Promise<string | null> => {
+  if (!recaptchaToken) return null;
+  
+  try {
+    const recaptchaResult = await verifyRecaptchaToken(recaptchaToken);
+    if (!recaptchaResult.success) {
+      return `Validazione ReCAPTCHA fallita: ${recaptchaResult.error_codes?.join(', ')}`;
+    }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Errore sconosciuto';
+    return `Errore nella validazione ReCAPTCHA: ${message}`;
+  }
+  return null;
+};
+
+// Helper: Gestisce errori di database
+const handleDatabaseError = (error: unknown): { status: number; message: string } => {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: string }).code === '23505'
+  ) {
+    const detail = (error as { detail?: string })?.detail as string;
+    if (detail?.includes('email')) {
+      return { status: 400, message: 'Email già registrata' };
+    }
+    if (detail?.includes('username')) {
+      return { status: 400, message: 'Username già registrato' };
+    }
+    return { status: 400, message: 'Utente già registrato' };
+  }
+  const msg = (error as { message?: string })?.message || 'Errore sconosciuto';
+  return { status: 500, message: `Errore durante la registrazione: ${msg}` };
+};
+
+export const register = async (req: Request, res: Response) => {
+  const { username, email, password, recaptchaToken } = req.body;
+
+  // Validazione input
+  const inputError = validateRegisterInput(username, email, password);
+  if (inputError) {
+    return res.status(400).json({ error: inputError });
+  }
+
+  // Validazione ReCAPTCHA
+  const recaptchaError = await validateRecaptcha(recaptchaToken);
+  if (recaptchaError) {
+    return res.status(400).json({ error: recaptchaError });
+  }
+
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
@@ -61,23 +136,8 @@ export const register = async (req: Request, res: Response) => {
       user 
     });
   } catch (error: unknown) {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'code' in error &&
-      (error as { code?: string }).code === '23505'
-    ) {
-      // Violazione di vincolo UNIQUE
-      const detail = (error as { detail?: string })?.detail as string;
-      if (detail?.includes('email')) {
-        return res.status(400).json({ error: 'Email già registrata' });
-      }
-      if (detail?.includes('username')) {
-        return res.status(400).json({ error: 'Username già registrato' });
-      }
-      return res.status(400).json({ error: 'Utente già registrato' });
-    }
-    res.status(500).json({ error: 'Errore durante la registrazione', details: (error as { message?: string }).message });
+    const { status, message } = handleDatabaseError(error);
+    res.status(status).json({ error: message });
   }
 };
 

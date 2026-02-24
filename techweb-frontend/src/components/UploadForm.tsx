@@ -404,8 +404,8 @@ export default function UploadFormNew({ onSubmit }: UploadFormProps) {
                     navigator.geolocation.getCurrentPosition(
                       (pos) => {
                         setPosition({
-                          lat: parseFloat(pos.coords.latitude.toFixed(6)),
-                          lng: parseFloat(pos.coords.longitude.toFixed(6))
+                          lat: Number.parseFloat(pos.coords.latitude.toFixed(6)),
+                          lng: Number.parseFloat(pos.coords.longitude.toFixed(6))
                         });
                         addToast({
                           type: "success",

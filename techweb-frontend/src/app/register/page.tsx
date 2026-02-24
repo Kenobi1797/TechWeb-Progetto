@@ -1,10 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import ReCAPTCHA from "react-google-recaptcha";
 import { registerUser } from "@/utils/ServerConnect";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,9 +37,16 @@ export default function RegisterPage() {
       return;
     }
 
+    // Validazione ReCAPTCHA
+    const recaptchaToken = recaptchaRef.current?.getValue();
+    if (!recaptchaToken) {
+      setError("Per favore, completa la verifica ReCAPTCHA");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await registerUser(username, email, password);
+      await registerUser(username, email, password, recaptchaToken);
       router.push("/login?message=Registrazione completata! Puoi ora effettuare l'accesso.");
     } catch (err: unknown) {
       if (
@@ -50,6 +59,8 @@ export default function RegisterPage() {
       } else {
         setError("Errore durante la registrazione");
       }
+      // Reset ReCAPTCHA on error
+      recaptchaRef.current?.reset();
     } finally {
       setIsLoading(false);
     }
@@ -231,6 +242,14 @@ export default function RegisterPage() {
                 </div>
               </div>
             )}
+
+            {/* ReCAPTCHA */}
+            <div className="flex justify-center py-4">
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+              />
+            </div>
 
             {/* Error message */}
             {error && (

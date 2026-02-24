@@ -81,9 +81,9 @@ async function extractError(res: Response, defaultMsg: string): Promise<string> 
 // Gestisce il logout forzato
 function forceLogout(message: string): void {
   clearTokens();
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event("authStateChanged"));
-    window.location.href = "/login";
+  if (globalThis.window != null) {
+    globalThis.window.dispatchEvent(new Event("authStateChanged"));
+    globalThis.window.location.href = "/login";
   }
   throw new Error(message);
 }
@@ -97,7 +97,6 @@ async function handleExpiredToken(fetchFunction: () => Promise<Response>): Promi
   } else {
     // Sessione scaduta completamente - forza logout
     forceLogout("Sessione scaduta, effettua il login");
-    throw new Error(); // Non raggiungerà mai questo punto
   }
 }
 
@@ -111,7 +110,6 @@ async function handle401Error(res: Response, fetchFunction: () => Promise<Respon
   } else {
     // Token non valido o altro errore - forza logout
     forceLogout("Autenticazione non valida, effettua il login");
-    throw new Error(); // Non raggiungerà mai questo punto
   }
 }
 
@@ -168,12 +166,12 @@ function mapCommentApiResponse(c: CommentApiResponse): Comment {
 
 // --- AUTH ---
 
-export async function registerUser(username: string, email: string, password: string): Promise<AuthResponse> {
+export async function registerUser(username: string, email: string, password: string, recaptchaToken?: string): Promise<AuthResponse> {
   return handleFetch<AuthResponse>(
     fetch(`${API_URL}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({ username, email, password, recaptchaToken }),
     }),
     "Errore durante la registrazione"
   );
@@ -211,29 +209,29 @@ export async function logoutUser(): Promise<{ message: string }> {
 }
 
 export function isAuthenticated(): boolean {
-  if (typeof window === "undefined") return false;
+  if (globalThis.window == null) return false;
   const token = localStorage.getItem("accessToken");
   return token !== null;
 }
 
 export function getAuthToken(): string {
-  if (typeof window === "undefined") return "";
+  if (globalThis.window == null) return "";
   return localStorage.getItem("accessToken") || "";
 }
 
 export function getRefreshToken(): string {
-  if (typeof window === "undefined") return "";
+  if (globalThis.window == null) return "";
   return localStorage.getItem("refreshToken") || "";
 }
 
 export function setTokens(accessToken: string, refreshToken: string): void {
-  if (typeof window === "undefined") return;
+  if (globalThis.window == null) return;
   localStorage.setItem("accessToken", accessToken);
   localStorage.setItem("refreshToken", refreshToken);
 }
 
 export function clearTokens(): void {
-  if (typeof window === "undefined") return;
+  if (globalThis.window == null) return;
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("user");

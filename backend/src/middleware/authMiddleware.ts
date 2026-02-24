@@ -1,4 +1,23 @@
-import { Request, Response, NextFunction } from 'express';
+/**
+ * AuthMiddleware - Validazione JWT Token
+ * 
+ * Proteggere rotte:
+ *   router.post('/protected-route', authMiddleware, controller)
+ * 
+ * Estrae il token JWT dall'header "Authorization: Bearer <token>"
+ * e verifica la validità con il JWT_SECRET
+ * 
+ * Errori gestiti:
+ * - MISSING_TOKEN: Header Authorization mancante
+ * - TOKEN_EXPIRED: Token scaduto
+ * - INVALID_TOKEN: Token non valido o corrotto
+ * - AUTH_ERROR: Errore generico di autenticazione
+ * 
+ * @author Gino Pandozzi-Trani
+ * @version 1.0.0
+ */
+
+import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { AuthRequest } from '../dto/AuthDto';
 
