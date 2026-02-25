@@ -108,8 +108,8 @@ function getRandomCoordsInCity(): { latitude: number; longitude: number; city: s
   // Usa direttamente le coordinate sicure della città per evitare warning
   // Aggiunge solo una piccola variazione per evitare sovrapposizioni
   const smallOffset = 0.002; // ~200m di variazione massima
-  const latitude = parseFloat((cityData.lat + (Math.random() - 0.5) * smallOffset).toFixed(6));
-  const longitude = parseFloat((cityData.lng + (Math.random() - 0.5) * smallOffset).toFixed(6));
+  const latitude = Number.parseFloat((cityData.lat + (Math.random() - 0.5) * smallOffset).toFixed(6));
+  const longitude = Number.parseFloat((cityData.lng + (Math.random() - 0.5) * smallOffset).toFixed(6));
   
   return { 
     latitude, 
@@ -174,13 +174,13 @@ async function createRandomCatSighting(users: any[]) {
     const { latitude, longitude, city } = getRandomCoordsInCity();
     
     // Validazione semplificata
-    if (!isValidLandCoordinate(latitude, longitude)) {
+    if (!(await isValidLandCoordinate(latitude, longitude))) {
       return; // Exit silenzioso
     }
     
     const adjustedCoords = await adjustPositionIfOverlapping(latitude, longitude);
     
-    if (!isValidLandCoordinate(adjustedCoords.lat, adjustedCoords.lon)) {
+    if (!(await isValidLandCoordinate(adjustedCoords.lat, adjustedCoords.lon))) {
       return; // Exit silenzioso
     }
     

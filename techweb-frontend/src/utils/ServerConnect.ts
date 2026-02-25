@@ -97,6 +97,7 @@ async function handleExpiredToken(fetchFunction: () => Promise<Response>): Promi
   } else {
     // Sessione scaduta completamente - forza logout
     forceLogout("Sessione scaduta, effettua il login");
+    throw new Error("Session expired");
   }
 }
 
@@ -110,6 +111,7 @@ async function handle401Error(res: Response, fetchFunction: () => Promise<Respon
   } else {
     // Token non valido o altro errore - forza logout
     forceLogout("Autenticazione non valida, effettua il login");
+    throw new Error("Authentication failed");
   }
 }
 

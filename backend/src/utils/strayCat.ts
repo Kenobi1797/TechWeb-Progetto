@@ -3,7 +3,7 @@ import { CityCoordinate, CityRegion } from "../dto/GeoapifyDto";
 export const safeUrbanCoordinates: CityCoordinate[] = [
   // Europa
   { name: "Roma", lat: 41.9028, lng: 12.4964, country: "IT" },
-  { name: "Milano", lat: 45.4642, lng: 9.1900, country: "IT" },
+  { name: "Milano", lat: 45.4642, lng: 9.19, country: "IT" },
   { name: "Napoli", lat: 40.8518, lng: 14.2681, country: "IT" },
   { name: "Venezia", lat: 45.4408, lng: 12.3155, country: "IT" },
   { name: "Firenze", lat: 43.7696, lng: 11.2558, country: "IT" },
@@ -11,20 +11,20 @@ export const safeUrbanCoordinates: CityCoordinate[] = [
   { name: "Torino", lat: 45.0703, lng: 7.6869, country: "IT" },
   { name: "Palermo", lat: 38.1157, lng: 13.3613, country: "IT" },
   { name: "Genova", lat: 44.4056, lng: 8.9463, country: "IT" },
-  { name: "Catania", lat: 37.5079, lng: 15.0830, country: "IT" },
+  { name: "Catania", lat: 37.5079, lng: 15.083, country: "IT" },
   { name: "Bari", lat: 41.1171, lng: 16.8719, country: "IT" },
   { name: "Madrid", lat: 40.4168, lng: -3.7038, country: "ES" },
   { name: "Barcelona", lat: 41.3851, lng: 2.1734, country: "ES" },
   { name: "Paris", lat: 48.8566, lng: 2.3522, country: "FR" },
   { name: "London", lat: 51.5074, lng: -0.1278, country: "UK" },
-  { name: "Berlin", lat: 52.5200, lng: 13.4050, country: "DE" },
+  { name: "Berlin", lat: 52.52, lng: 13.405, country: "DE" },
   { name: "Amsterdam", lat: 52.3676, lng: 4.9041, country: "NL" },
   { name: "Athens", lat: 37.9838, lng: 23.7275, country: "GR" },
   { name: "Istanbul", lat: 41.0082, lng: 28.9784, country: "TR" },
   { name: "Moscow", lat: 55.7558, lng: 37.6173, country: "RU" },
 
   // Nord America
-  { name: "New York", lat: 40.7128, lng: -74.0060, country: "US" },
+  { name: "New York", lat: 40.7128, lng: -74.006, country: "US" },
   { name: "San Francisco", lat: 37.7749, lng: -122.4194, country: "US" },
   { name: "Chicago", lat: 41.8781, lng: -87.6298, country: "US" },
   { name: "Los Angeles", lat: 34.0522, lng: -118.2437, country: "US" },
@@ -42,12 +42,12 @@ export const safeUrbanCoordinates: CityCoordinate[] = [
   // Asia
   { name: "Tokyo", lat: 35.6895, lng: 139.6917, country: "JP" },
   { name: "Osaka", lat: 34.6937, lng: 135.5023, country: "JP" },
-  { name: "Seoul", lat: 37.5665, lng: 126.9780, country: "KR" },
+  { name: "Seoul", lat: 37.5665, lng: 126.978, country: "KR" },
   { name: "Beijing", lat: 39.9042, lng: 116.4074, country: "CN" },
   { name: "Shanghai", lat: 31.2304, lng: 121.4737, country: "CN" },
   { name: "Bangkok", lat: 13.7563, lng: 100.5018, country: "TH" },
-  { name: "Mumbai", lat: 19.0760, lng: 72.8777, country: "IN" },
-  { name: "New Delhi", lat: 28.6139, lng: 77.2090, country: "IN" },
+  { name: "Mumbai", lat: 19.076, lng: 72.8777, country: "IN" },
+  { name: "New Delhi", lat: 28.6139, lng: 77.209, country: "IN" },
   { name: "Dubai", lat: 25.2048, lng: 55.2708, country: "AE" },
 
   // Africa

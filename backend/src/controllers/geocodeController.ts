@@ -25,9 +25,9 @@ export async function getGeocode(req: Request, res: Response) {
     }
     
     // Reverse geocoding: coordinate -> indirizzo
-    const lat = parseFloat(req.query.lat as string);
-    const lon = parseFloat(req.query.lon as string);
-    if (isNaN(lat) || isNaN(lon)) {
+    const lat = Number.parseFloat(req.query.lat as string);
+    const lon = Number.parseFloat(req.query.lon as string);
+    if (Number.isNaN(lat) || Number.isNaN(lon)) {
       return res.status(400).json({ error: 'Parametri lat e lon non validi' });
     }
     

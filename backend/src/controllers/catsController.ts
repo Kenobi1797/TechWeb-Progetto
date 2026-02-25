@@ -16,8 +16,8 @@ async function validateCatData(body: any): Promise<{ error?: string; validatedDa
   if (!description?.trim()) return { error: 'La descrizione è obbligatoria' };
   
   // Conversione esplicita delle coordinate in numeri
-  const coordLat = parseFloat(lat || latitude);
-  const coordLng = parseFloat(lng || longitude);
+  const coordLat = Number.parseFloat(lat || latitude);
+  const coordLng = Number.parseFloat(lng || longitude);
   
   if (Number.isNaN(coordLat) || Number.isNaN(coordLng)) {
     return { error: 'Coordinate non valide: devono essere numeri' };
@@ -119,8 +119,8 @@ function addRadiusFilter(
   radius: string, 
   values: unknown[]
 ): void {
-  const radiusKm = parseFloat(radius);
-  if (isNaN(radiusKm) || radiusKm <= 0) return;
+  const radiusKm = Number.parseFloat(radius);
+  if (Number.isNaN(radiusKm) || radiusKm <= 0) return;
 
   const latIdx = values.length - 1;
   const lngIdx = values.length;
@@ -139,8 +139,8 @@ function addRadiusFilter(
 async function buildCatsQuery(params: QueryParams): Promise<QueryBuilder> {
   const { from, to, lat, lon, radius, page = '1', limit = '20' } = params;
   
-  const pageNum = Math.max(1, parseInt(String(page)) || 1);
-  const limitNum = Math.min(100, Math.max(1, parseInt(String(limit)) || 20));
+  const pageNum = Math.max(1, Number.parseInt(String(page), 10) || 1);
+  const limitNum = Math.min(100, Math.max(1, Number.parseInt(String(limit), 10) || 20));
   const offset = (pageNum - 1) * limitNum;
 
   let baseQuery = 'SELECT id, title, latitude, longitude, image_url, status, created_at';

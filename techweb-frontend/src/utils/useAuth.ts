@@ -43,7 +43,7 @@ export function useAuth() {
       setIsLoggedIn(isAuthenticated());
     };
 
-    window.addEventListener("storage", handleStorageChange);
+    globalThis.window?.addEventListener("storage", handleStorageChange);
     
     // Evento personalizzato per aggiornare lo stato dopo login/logout
     if (globalThis.window !== undefined) {
@@ -59,7 +59,7 @@ export function useAuth() {
     }, 60000); // Check ogni 60 secondi
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      globalThis.window?.removeEventListener("storage", handleStorageChange);
       if (globalThis.window !== undefined) {
         globalThis.window.removeEventListener("authStateChanged", handleStorageChange);
       }
@@ -101,7 +101,7 @@ export function useAuth() {
       // Anche se il logout fallisce server-side, pulisci i token locali
       clearTokens();
       setIsLoggedIn(false);
-      window.dispatchEvent(new Event("authStateChanged"));
+      globalThis.window?.dispatchEvent(new Event("authStateChanged"));
       return false;
     }
   };
