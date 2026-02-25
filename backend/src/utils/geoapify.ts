@@ -1,10 +1,5 @@
 import axios from 'axios';
-import { CoordinateValidationResult, Coordinates } from '../dto/GeoapifyDto';
-import { CacheManager, RateLimiter } from './cache';
-
-// Cache per ottimizzare le richieste (1 ora TTL)
-const geocodeCache = new CacheManager<any>(60 * 60 * 1000);
-const rateLimiter = new RateLimiter(1000); // 1 secondo tra le richieste
+import { CoordinateValidationResult } from '../dto/GeoapifyDto';
 
 export class GeoapifyService {
   private readonly apiKey: string;
@@ -14,18 +9,8 @@ export class GeoapifyService {
     this.apiKey = apiKey;
   }
 
-  // Genera coordinate da un indirizzo con gestione cache
-  async getCoordinatesFromAddress(address: string): Promise<Coordinates | null> {
-    const cacheKey = `forward:${address.toLowerCase().trim()}`;
-    
-    // Controlla cache
-    const cached = geocodeCache.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
-    await rateLimiter.wait();
-
+  // Genera coordinate da un indirizzo
+  async getCoordinatesFromAddress(address: string) {
     try {
       const response = await axios.get(`${this.baseUrl}/geocode/search`, {
         params: {
@@ -37,165 +22,36 @@ export class GeoapifyService {
       });
 
       if (response.data.features && response.data.features.length > 0) {
-        const feature = response.data.features[0];
-        const props = feature.properties;
-        
-        const result = {
+        const props = response.data.features[0].properties;
+        return {
           lat: Number.parseFloat(Number.parseFloat(props.lat).toFixed(6)),
           lon: Number.parseFloat(Number.parseFloat(props.lon).toFixed(6)),
           address: props.formatted,
           city: props.city,
           country: props.country
         };
-
-        // Salva in cache
-        geocodeCache.set(cacheKey, result);
-        return result;
       }
-
-      geocodeCache.set(cacheKey, null);
       return null;
     } catch (error) {
       console.error('Errore nel geocoding:', error);
-      geocodeCache.set(cacheKey, null);
       return null;
     }
   }
 
-  // Genera coordinate casuali per una località specifica
-  async getRandomCoordinatesInLocation(location: string, count: number = 5, radiusKm: number = 5): Promise<Coordinates[]> {
-    try {
-      const locationCenter = await this.getCoordinatesFromAddress(location);
-      
-      if (!locationCenter) {
-        throw new Error(`Località ${location} non trovata`);
-      }
-
-      const coordinates: Coordinates[] = [];
-      const radiusInDegrees = (radiusKm / 111); // Approssimazione: 1 grado = 111km all'equatore
-      
-      for (let i = 0; i < count; i++) {
-        const offsetLat = (Math.random() - 0.5) * radiusInDegrees * 2;
-        const offsetLon = (Math.random() - 0.5) * radiusInDegrees * 2 / Math.cos(locationCenter.lat * Math.PI / 180);
-        
-        coordinates.push({
-          lat: Number.parseFloat((locationCenter.lat + offsetLat).toFixed(6)),
-          lon: Number.parseFloat((locationCenter.lon + offsetLon).toFixed(6)),
-          city: locationCenter.city,
-          country: locationCenter.country
-        });
-      }
-
-      return coordinates;
-    } catch (error) {
-      console.error('Errore nella generazione coordinate casuali:', error);
-      throw error;
-    }
-  }
-
-  // Cerca luoghi di un tipo specifico
-  async getPlacesCoordinates(
-    category: string, 
-    location: string, 
-    radius: number = 5000,
-    limit: number = 10
-  ): Promise<Coordinates[]> {
-    const cacheKey = `places:${category}:${location}:${radius}:${limit}`;
-    
-    const cached = geocodeCache.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
-    await rateLimiter.wait();
-
-    try {
-      const baseLocation = await this.getCoordinatesFromAddress(location);
-      
-      if (!baseLocation) {
-        throw new Error(`Località ${location} non trovata`);
-      }
-
-      const response = await axios.get(`${this.baseUrl}/places`, {
-        params: {
-          categories: category,
-          filter: `circle:${baseLocation.lon},${baseLocation.lat},${radius}`,
-          limit: limit,
-          apiKey: this.apiKey
-        },
-        timeout: 10000
-      });
-
-      const places: Coordinates[] = [];
-
-      if (response.data.features) {
-        for (const feature of response.data.features) {
-          const props = feature.properties;
-          places.push({
-            lat: Number.parseFloat(Number.parseFloat(props.lat).toFixed(6)),
-            lon: Number.parseFloat(Number.parseFloat(props.lon).toFixed(6)),
-            address: props.formatted,
-            city: props.city,
-            country: props.country
-          });
-        }
-      }
-
-      geocodeCache.set(cacheKey, places);
-      return places;
-    } catch (error) {
-      console.error('Errore nella ricerca places:', error);
-      geocodeCache.set(cacheKey, []);
-      return [];
-    }
-  }
-
-  // Genera coordinate di test per una lista di città
-  async getTestCoordinates(cities: string[]): Promise<Coordinates[]> {
-    const coordinates: Coordinates[] = [];
-
-    for (const city of cities) {
-      const coord = await this.getCoordinatesFromAddress(city);
-      if (coord) {
-        coordinates.push(coord);
-      }
-    }
-
-    return coordinates;
-  }
-
-  // Verifica e converte coordinate in indirizzo con cache
-  async reverseGeocode(lat: number, lon: number): Promise<string | null> {
-    const cacheKey = `reverse:${lat.toFixed(6)},${lon.toFixed(6)}`;
-    
-    const cached = geocodeCache.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
-    await rateLimiter.wait();
-
+  // Converte coordinate in indirizzo
+  async reverseGeocode(lat: number, lon: number) {
     try {
       const response = await axios.get(`${this.baseUrl}/geocode/reverse`, {
-        params: {
-          lat: lat,
-          lon: lon,
-          apiKey: this.apiKey
-        },
+        params: { lat, lon, apiKey: this.apiKey },
         timeout: 10000
       });
 
       if (response.data.features && response.data.features.length > 0) {
-        const result = response.data.features[0].properties.formatted;
-        geocodeCache.set(cacheKey, result);
-        return result;
+        return response.data.features[0].properties.formatted;
       }
-
-      geocodeCache.set(cacheKey, null);
       return null;
     } catch (error) {
       console.error('Errore nel reverse geocoding:', error);
-      geocodeCache.set(cacheKey, null);
       return null;
     }
   }
@@ -219,31 +75,21 @@ export class GeoapifyService {
       return { valid: false, error: "Longitudine non valida: deve essere tra -180 e 180 gradi" };
     }
 
-    // Verifica che le coordinate siano in un'area urbana
     try {
-      const address = await this.reverseGeocode(latitude, longitude);
-      if (!address) {
-        return { valid: false, error: "Coordinate non valide: posizione non trovata" };
-      }
-
-      // Ottieni i dettagli del luogo
       const response = await axios.get(`${this.baseUrl}/geocode/reverse`, {
         params: {
           lat: latitude,
           lon: longitude,
-          apiKey: this.apiKey,
-          type: 'city'
+          apiKey: this.apiKey
         },
         timeout: 10000
       });
 
       if (!response.data.features || response.data.features.length === 0) {
-        return { valid: false, error: "Coordinate non valide: non in area urbana" };
+        return { valid: false, error: "Coordinate non valide: posizione non trovata" };
       }
 
       const feature = response.data.features[0].properties;
-      
-      // Verifica la presenza di qualsiasi informazione di località
       const locality = feature.city || feature.town || feature.village || 
                       feature.suburb || feature.district || feature.county || 
                       feature.state || feature.country;
