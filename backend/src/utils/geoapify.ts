@@ -1,20 +1,10 @@
 import axios from 'axios';
 import { CoordinateValidationResult, Coordinates } from '../dto/GeoapifyDto';
+import { CacheManager, RateLimiter } from './cache';
 
-// Cache per ottimizzare le richieste
-const geocodeCache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_DURATION = 60 * 60 * 1000; // 1 ora
-const RATE_LIMIT_DELAY = 1000; // 1 secondo tra le richieste
-let lastRequestTime = 0;
-
-async function waitForRateLimit(): Promise<void> {
-  const now = Date.now();
-  const timeSinceLastRequest = now - lastRequestTime;
-  if (timeSinceLastRequest < RATE_LIMIT_DELAY) {
-    await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY - timeSinceLastRequest));
-  }
-  lastRequestTime = Date.now();
-}
+// Cache per ottimizzare le richieste (1 ora TTL)
+const geocodeCache = new CacheManager<any>(60 * 60 * 1000);
+const rateLimiter = new RateLimiter(1000); // 1 secondo tra le richieste
 
 export class GeoapifyService {
   private readonly apiKey: string;
@@ -30,11 +20,11 @@ export class GeoapifyService {
     
     // Controlla cache
     const cached = geocodeCache.get(cacheKey);
-    if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
-      return cached.data;
+    if (cached) {
+      return cached;
     }
 
-    await waitForRateLimit();
+    await rateLimiter.wait();
 
     try {
       const response = await axios.get(`${this.baseUrl}/geocode/search`, {
@@ -59,15 +49,15 @@ export class GeoapifyService {
         };
 
         // Salva in cache
-        geocodeCache.set(cacheKey, { data: result, timestamp: Date.now() });
+        geocodeCache.set(cacheKey, result);
         return result;
       }
 
-      geocodeCache.set(cacheKey, { data: null, timestamp: Date.now() });
+      geocodeCache.set(cacheKey, null);
       return null;
     } catch (error) {
       console.error('Errore nel geocoding:', error);
-      geocodeCache.set(cacheKey, { data: null, timestamp: Date.now() });
+      geocodeCache.set(cacheKey, null);
       return null;
     }
   }
@@ -113,11 +103,11 @@ export class GeoapifyService {
     const cacheKey = `places:${category}:${location}:${radius}:${limit}`;
     
     const cached = geocodeCache.get(cacheKey);
-    if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
-      return cached.data;
+    if (cached) {
+      return cached;
     }
 
-    await waitForRateLimit();
+    await rateLimiter.wait();
 
     try {
       const baseLocation = await this.getCoordinatesFromAddress(location);
@@ -151,11 +141,11 @@ export class GeoapifyService {
         }
       }
 
-      geocodeCache.set(cacheKey, { data: places, timestamp: Date.now() });
+      geocodeCache.set(cacheKey, places);
       return places;
     } catch (error) {
       console.error('Errore nella ricerca places:', error);
-      geocodeCache.set(cacheKey, { data: [], timestamp: Date.now() });
+      geocodeCache.set(cacheKey, []);
       return [];
     }
   }
@@ -179,11 +169,11 @@ export class GeoapifyService {
     const cacheKey = `reverse:${lat.toFixed(6)},${lon.toFixed(6)}`;
     
     const cached = geocodeCache.get(cacheKey);
-    if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
-      return cached.data;
+    if (cached) {
+      return cached;
     }
 
-    await waitForRateLimit();
+    await rateLimiter.wait();
 
     try {
       const response = await axios.get(`${this.baseUrl}/geocode/reverse`, {
@@ -197,15 +187,15 @@ export class GeoapifyService {
 
       if (response.data.features && response.data.features.length > 0) {
         const result = response.data.features[0].properties.formatted;
-        geocodeCache.set(cacheKey, { data: result, timestamp: Date.now() });
+        geocodeCache.set(cacheKey, result);
         return result;
       }
 
-      geocodeCache.set(cacheKey, { data: null, timestamp: Date.now() });
+      geocodeCache.set(cacheKey, null);
       return null;
     } catch (error) {
       console.error('Errore nel reverse geocoding:', error);
-      geocodeCache.set(cacheKey, { data: null, timestamp: Date.now() });
+      geocodeCache.set(cacheKey, null);
       return null;
     }
   }
