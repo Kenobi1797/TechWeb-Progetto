@@ -296,10 +296,14 @@ test.describe('3 - Cats Browsing', () => {
 
     if (detailLink) {
       await detailLink.click();
-      await page.waitForLoadState('networkidle');
+      // Dopo il click il dettaglio può aprirsi come nuova pagina SPA
+      // oppure come modal sulla stessa pagina: accettiamo entrambe le opzioni.
+      await page.waitForTimeout(1000);
       const url = page.url();
-      expect(url).not.toBe(`${FRONTEND_URL}/cats`);
-      expect(url).not.toBe(`${FRONTEND_URL}/cats/`);
+      const urlChanged = !url.endsWith('/cats') && !url.endsWith('/cats/');
+      const modalOpen = await page.locator('[role="dialog"], .modal, [class*="modal"]').first()
+        .isVisible({ timeout: 3000 }).catch(() => false);
+      expect(urlChanged || modalOpen).toBeTruthy();
     } else {
       // Nessun link diretto → prova click sulla card (potrebbe aprire modale)
       const firstCard = page.locator('[class*="card"], article').first();
