@@ -107,8 +107,9 @@ export default function CatCard({ cat, showStatus = false }: CatCardProps) {
   useEffect(() => {
     if (typeof cat.latitude === "number" && typeof cat.longitude === "number") {
       const key = `${cat.latitude},${cat.longitude}`;
-      if (window._geoCache?.[key]) {
-        setLocation(window._geoCache[key] ?? null);
+      const geoCache = (globalThis as any)._geoCache;
+      if (geoCache?.[key]) {
+        setLocation(geoCache[key] ?? null);
         return;
       }
       
@@ -120,8 +121,9 @@ export default function CatCard({ cat, showStatus = false }: CatCardProps) {
             if (!loc) {
               console.warn(`Geocoding fallito per coordinate: ${cat.latitude}, ${cat.longitude}`);
             }
-            window._geoCache ??= {};
-            window._geoCache[key] = loc;
+            const cache = globalThis as any;
+            cache._geoCache ??= {};
+            cache._geoCache[key] = loc;
           })
           .catch(err => {
             console.error("Errore geocoding:", err);

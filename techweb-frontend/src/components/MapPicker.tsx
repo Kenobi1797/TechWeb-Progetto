@@ -21,8 +21,8 @@ function MapPicker({ position, onChange }: MapPickerProps) {
   useMapEvents({
     click(e) {
       // Limita le coordinate a massimo 6 decimali
-      const lat = parseFloat(e.latlng.lat.toFixed(6));
-      const lng = parseFloat(e.latlng.lng.toFixed(6));
+      const lat = Number.parseFloat(e.latlng.lat.toFixed(6));
+      const lng = Number.parseFloat(e.latlng.lng.toFixed(6));
       onChange({ lat, lng });
     },
   });
@@ -52,8 +52,8 @@ function GeoLocateButton({ onChange }: Readonly<{ onChange: (pos: { lat: number;
       (pos) => {
         const { latitude, longitude } = pos.coords;
         // Limita le coordinate a massimo 6 decimali
-        const lat = parseFloat(latitude.toFixed(6));
-        const lng = parseFloat(longitude.toFixed(6));
+        const lat = Number.parseFloat(latitude.toFixed(6));
+        const lng = Number.parseFloat(longitude.toFixed(6));
         map.setView([lat, lng], 15);
         onChange({ lat, lng });
         setIsLocating(false);
@@ -99,7 +99,7 @@ export default function CatLocationPicker({ value, onChange }: Readonly<{
 }>) {
   // Lingua utente
   const userLang = useMemo(() => {
-    if (typeof window !== "undefined") {
+    if (globalThis.window !== undefined) {
       const lang = navigator.language || navigator.languages?.[0] || "en";
       return lang.split("-")[0];
     }
@@ -133,7 +133,7 @@ export default function CatLocationPicker({ value, onChange }: Readonly<{
           className="rounded-lg shadow h-full"
           style={{ width: "100%", height: "100%" }}
           maxBounds={[[-90, -180], [90, 180]]}
-          maxBoundsViscosity={1.0}
+          maxBoundsViscosity={1}
           worldCopyJump={false}
         >
           <TileLayer url={tileUrl} />

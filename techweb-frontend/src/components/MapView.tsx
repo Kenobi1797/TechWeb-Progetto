@@ -8,8 +8,11 @@ const Popup = dynamic(() => import("react-leaflet").then(mod => mod.Popup), { ss
 const ZoomControl = dynamic(() => import("react-leaflet").then(mod => mod.ZoomControl), { ssr: false });
 import { LayersControl, useMap } from "react-leaflet";
 import L from "leaflet";
+// @ts-expect-error - leaflet CSS import
 import "leaflet/dist/leaflet.css";
+// @ts-expect-error - leaflet marker cluster CSS import
 import "leaflet.markercluster/dist/MarkerCluster.css";
+// @ts-expect-error - leaflet marker cluster default CSS import
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import { useMemo, useState } from "react";
 import { useDataCache } from "../utils/DataContext";
@@ -178,7 +181,7 @@ export default function MapView({
   
   // Lingua utente
   const userLang = useMemo(() => {
-    if (typeof window !== "undefined") {
+    if (globalThis.window !== undefined) {
       const lang = navigator.language || navigator.languages?.[0] || "en";
       return lang.split("-")[0];
     }
@@ -199,13 +202,13 @@ export default function MapView({
 
   // Calcolo automatico del centro e zoom con validazione sicura
   const defaultPos: [number, number] = useMemo(() => {
-    if (center && isFinite(center[0]) && isFinite(center[1]) && 
+    if (center && Number.isFinite(center[0]) && Number.isFinite(center[1]) && 
         Math.abs(center[0]) <= 90 && Math.abs(center[1]) <= 180) {
       return center;
     }
     if (markers.length > 0) {
       const firstMarker = markers[0];
-      if (isFinite(firstMarker.lat) && isFinite(firstMarker.lng) && 
+      if (Number.isFinite(firstMarker.lat) && Number.isFinite(firstMarker.lng) && 
           Math.abs(firstMarker.lat) <= 90 && Math.abs(firstMarker.lng) <= 180) {
         return [firstMarker.lat, firstMarker.lng];
       }
@@ -288,7 +291,7 @@ export default function MapView({
           {showControls && <MapControlPanel markers={markers} />}
           {clusteredMarkers.map((m, i) => {
             // Verifica che le coordinate siano valide prima di renderizzare il marker
-            if (!isFinite(m.lat) || !isFinite(m.lng) || 
+            if (!Number.isFinite(m.lat) || !Number.isFinite(m.lng) || 
                 Math.abs(m.lat) > 90 || Math.abs(m.lng) > 180) {
               console.warn(`Coordinate non valide per marker ${i}:`, { lat: m.lat, lng: m.lng });
               return null;
