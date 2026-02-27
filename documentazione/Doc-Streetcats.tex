@@ -1,72 +1,169 @@
-\documentclass[10pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article}
 \usepackage[T1]{fontenc}
 \usepackage[italian]{babel}
-\usepackage[margin=1.5cm]{geometry}
+\usepackage[margin=1cm]{geometry}
 \usepackage{xcolor}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage[expansion=false]{microtype}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{array}
+\usepackage{setspace}
+\usepackage{multicol}
 
 \definecolor{primary}{RGB}{31, 78, 121}
+\definecolor{secondary}{RGB}{70, 130, 180}
+\definecolor{accent}{RGB}{200, 67, 88}
 \definecolor{dark}{RGB}{51, 51, 51}
+\definecolor{light}{RGB}{240, 245, 250}
+\definecolor{frontbg}{RGB}{230, 240, 250}
+\definecolor{backbg}{RGB}{240, 230, 250}
 
-\pagestyle{fancy}
-\fancyhf{}
-\rfoot{\small Progetto di Tecnologie Web - A.A. 2024/2025}
+\newcommand{\sectiontitle}[1]{%
+  \vspace*{0.2cm}
+  {\Large\textbf{\textcolor{primary}{#1}}}
+  \vspace*{0.1cm}
+  \noindent\textcolor{secondary}{\rule{\linewidth}{3pt}}
+  \vspace*{0.12cm}
+}
+
+\newcommand{\techitem}[1]{%
+  \tikz[baseline=(text.base)]{\node[rectangle, fill=light, draw=secondary, line width=1.2pt, rounded corners=3pt, inner sep=5pt] (text) {\small\textbf{#1}};}\hspace{0.1cm}%
+}
+
+\newcommand{\stackbox}[2]{%
+  \begin{tikzpicture}[overlay]
+    \node[rectangle, fill=#1!20, draw=#1, line width=2pt, rounded corners=5pt, text width=0.42\textwidth, text height=0.08\textwidth] at (0.21\textwidth,0) {};
+  \end{tikzpicture}
+  \vspace*{0.02cm}
+  \textbf{\small\textcolor{#1}{#2}}
+}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \rfoot{\tiny\textcolor{dark!60}{Progetto Tecnologie Web -- A.A. 2024/2025}}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+}
+
+\pagestyle{plain}
+\setlength{\parindent}{0pt}
+\linespread{1.1}
+\raggedbottom
 
 \begin{document}
 
 \thispagestyle{empty}
 
 \begin{center}
-\includegraphics[width=3.5cm]{Federico-II.png}
+\vspace*{0.12cm}
 
-\vspace{0.3cm}
+{\small\textcolor{dark!40}{UNIVERSITÀ DEGLI STUDI DI NAPOLI FEDERICO II $\bullet$ LAUREA IN INFORMATICA}}
 
-{\footnotesize UNIVERSITÀ DEGLI STUDI DI NAPOLI FEDERICO II}
+\vspace*{0.12cm}
 
-{\footnotesize LAUREA IN INFORMATICA}
+\includegraphics[width=2.5cm]{Federico-II.png}
 
-{\footnotesize CORSO DI TECNOLOGIE WEB }
+\vspace*{0.1cm}
 
-{\footnotesize DOCENTE: Luigi Libero Lucio Starace}
+\begin{tikzpicture}
+\node[rectangle, fill=primary!5, draw=primary, line width=2.8pt, rounded corners=8pt, inner sep=8pt] {
+  \begin{tabular}{c}
+    {\huge\textbf{\textcolor{primary}{StreetCats}}}\\[3pt]
+    {\small\textcolor{secondary}{Piattaforma Web Collaborativa}}
+  \end{tabular}
+};
+\end{tikzpicture}
 
-\vspace{0.8cm}
+\vspace*{0.08cm}
 
-{\large\textbf{\textcolor{primary}{Streetcats}}}
+{\small\textbf{\textcolor{dark}{Gino Pandozzi-Trani}} $\vert$ \textcolor{dark!60}{N86003116}}
 
-{\footnotesize\textcolor{dark}{Piattaforma web per avvistamenti di gatti randagi}}
-
-\vspace{0.8cm}
-
-{\textcolor{primary}{\rule{10cm}{1pt}}}
-
-\vspace{0.8cm}
 \end{center}
 
-\section*{Dati Studente}
-\vspace{0.2cm}
+\vfill
 
-\noindent
-\textbf{Nome:} Gino \\
-\textbf{Cognome:} Pandozzi-Trani \\
-\textbf{Matricola:} N86003116
+\sectiontitle{$\blacktriangleright$ Descrizione}
 
-\vspace{0.8cm}
+{\small\setlength{\parskip}{0.03cm}
+Piattaforma web full-stack per segnalazioni collaborative di gatti randagi via \textbf{mappa interattiva}. Autenticazione, geolocalizzazione, upload foto con Markdown, commenti. Accesso pubblico in lettura.
+}
 
-\section*{Traccia Progetto}
-\vspace{0.2cm}
+\vfill
 
-\noindent
-\textbf{4.A WEBTECH'S STREETCATS} \\[0.2cm]
-Si vuole realizzare STREETCATS, una piattaforma web dedicata alla condivisione di avvistamenti di gatti randagi. Gli utenti registrati potranno inserire nuovi gatti nel sistema, caricando una fotografia, indicando la posizione geografica tramite una mappa interattiva, e aggiungendo un titolo e una descrizione testuale. La descrizione dovrà supportare la formattazione del testo, permettendo l'uso di grassetto, corsivo e link ipertestuali (per esempio, utilizzando un linguaggio di annotazione come Markdown).
+\sectiontitle{$\blacktriangleright$ Stack Tecnologico}
 
-Tutti gli utenti, anche quelli non registrati, potranno esplorare i gatti presenti sulla piattaforma visualizzandoli su una mappa interattiva. Cliccando su ciascun marker, sarà possibile visualizzare un tooltip di riepilogo, da cui si può accedere alla pagina di dettaglio del gatto. In tale pagina, verranno mostrate la foto, la posizione sulla mappa, la data di inserimento, il titolo, la descrizione formattata e i commenti lasciati dagli altri utenti. Solo gli utenti autenticati, però, potranno contribuire con nuovi commenti, arricchendo la community con osservazioni, consigli o semplici messaggi dedicati ai felini avvistati.
+\begin{minipage}[t]{0.48\textwidth}
+\begin{tikzpicture}
+\node[rectangle, fill=secondary!10, draw=secondary, line width=1.8pt, rounded corners=5pt, inner sep=6pt, text width=4.3cm] {
+\begin{minipage}{3.9cm}
+{\normalsize\textbf{\textcolor{secondary}{Frontend}}}
 
-\vspace{1.5cm}
+\vspace*{0.08cm}
+
+\techitem{Next.js} \techitem{React} \techitem{TypeScript}
+\techitem{Leaflet} \techitem{TailwindCSS}
+
+\vspace*{0.05cm}
+
+{\small SPA responsiva, mappe, auth}
+\end{minipage}
+};
+\end{tikzpicture}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\begin{tikzpicture}
+\node[rectangle, fill=accent!10, draw=accent, line width=1.8pt, rounded corners=5pt, inner sep=6pt, text width=4.3cm] {
+\begin{minipage}{3.9cm}
+{\normalsize\textbf{\textcolor{accent}{Backend}}}
+
+\vspace*{0.08cm}
+
+\techitem{Node.js} \techitem{Express} \techitem{PostgreSQL}
+\techitem{JWT Auth} \techitem{Playwright E2E}
+
+\vspace*{0.05cm}
+
+{\small API REST, DB, sicurezza, test}
+\end{minipage}
+};
+\end{tikzpicture}
+\end{minipage}
+
+\vfill
+
+\sectiontitle{$\blacktriangleright$ Funzionalità}
+
+\begin{minipage}[t]{0.5\textwidth}
+{\normalsize
+\begin{itemize}
+\setlength{\itemsep}{0.12cm}
+\setlength{\leftmargin}{0.3cm}
+\item[\textcolor{secondary}{$\bullet$}] \textbf{JWT Auth} + sanitizzazione
+\item[\textcolor{secondary}{$\bullet$}] \textbf{Geolocalizzazione} Geoapify
+\item[\textcolor{secondary}{$\bullet$}] \textbf{Upload} con cropping
+\end{itemize}
+}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+{\normalsize
+\begin{itemize}
+\setlength{\itemsep}{0.12cm}
+\setlength{\leftmargin}{0.3cm}
+\item[\textcolor{secondary}{$\bullet$}] \textbf{Markdown} rendering live
+\item[\textcolor{secondary}{$\bullet$}] \textbf{Commenti} real-time
+\item[\textcolor{secondary}{$\bullet$}] \textbf{Cluster mapping} avanzato
+\end{itemize}
+}
+\end{minipage}
+
+\vfill
 
 \begin{center}
-{\small\textcolor{dark}{Progetto realizzato per il corso di Tecnologie Web}} \\
-{\small\textcolor{dark}{Università degli Studi di Napoli Federico II}}
+{\small\textcolor{dark!55}{$\bullet$ Progetto Tecnologie Web -- A.A. 2024/2025 $\bullet$}}
 \end{center}
 
 \end{document}
