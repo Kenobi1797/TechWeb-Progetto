@@ -4,6 +4,8 @@ services:
       context: ./backend
     volumes:
       - ./backend:/usr/src/app
+      - /usr/src/app/node_modules          # ← Docker mantiene il suo node_modules
+      - /usr/src/app/dist                  # ← build TypeScript compilato
       - ./backend/uploads:/usr/src/app/uploads
     ports:
       - "5000:5000"
@@ -20,6 +22,8 @@ services:
       context: ./techweb-frontend
     volumes:
       - ./techweb-frontend:/usr/src/app
+      - /usr/src/app/node_modules          # ← Docker mantiene il suo node_modules
+      - /usr/src/app/.next                 # ← build Next.js generata nel container
     ports:
       - "3000:3000"
     environment:
