@@ -48,30 +48,7 @@ npm install
 npx playwright install firefox
 ```
 
-### 4. Configure Environment
-
-**Backend `.env` (backend/.env):**
-```env
-PORT=5000
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/TechWeb-24-25
-POSTGRES_PASSWORD=postgres
-JWT_SECRET=your_super_secret_key_here_min_32_chars
-RECAPTCHA_SECRET_KEY=your_recaptcha_secret_key
-```
-
-Generate JWT_SECRET:
-```bash
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-```
-
-Get reCAPTCHA keys from: https://www.google.com/recaptcha/admin/create
-
-**Frontend `.env` (techweb-frontend/.env):**
-```env
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
-```
-
-### 5. Start Application
+### 4. Start Application
 
 **Terminal 1 - Backend:**
 ```bash
@@ -89,7 +66,7 @@ Access at:
 - Frontend: http://localhost:3000
 - Backend: http://localhost:5000
 
-### 6. Run Tests
+### 5. Run Tests
 
 ```bash
 cd TestE2E
